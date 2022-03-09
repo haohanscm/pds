@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.ServiceOrderDao">
+    
+	<sql id="serviceOrderColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.service_id AS "serviceId",
+		a.trade_id AS "tradeId",
+		a.delivery_id AS "deliveryId",
+		a.buy_id AS "buyId",
+		a.buyer_id AS "buyerId",
+		a.supplier_id AS "supplierId",
+		a.deal_result AS "dealResult",
+		a.feedback_info AS "feedbackInfo",
+		a.refund_amount AS "refundAmount",
+		a.delivery_time AS "deliveryTime",
+		a.service_category AS "serviceCategory",
+		a.stage AS "stage",
+		a.link_man AS "linkMan",
+		a.status AS "status",
+		a.link_phone AS "linkPhone",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="serviceOrderJoins">
+
+	</sql>
+    
+	<select id="get" resultType="ServiceOrder">
+		SELECT 
+			<include refid="serviceOrderColumns"/>
+		FROM scm_service_order a
+		<include refid="serviceOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ServiceOrder">
+		SELECT 
+			<include refid="serviceOrderColumns"/>
+		FROM scm_service_order a
+		<include refid="serviceOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="serviceId != null and serviceId != ''">
+				AND a.service_id = #{serviceId}
+			</if>
+			<if test="tradeId != null and tradeId != ''">
+				AND a.trade_id = #{tradeId}
+			</if>
+			<if test="deliveryId != null and deliveryId != ''">
+				AND a.delivery_id = #{deliveryId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+            <if test="buyId != null and buyId != ''">
+                AND a.buy_id = #{buyId}
+            </if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="serviceCategory != null and serviceCategory != ''">
+				AND a.service_category = #{serviceCategory}
+			</if>
+			<if test="stage != null and stage != ''">
+				AND a.stage = #{stage}
+			</if>
+			<if test="linkMan != null and linkMan != ''">
+				AND a.link_man LIKE 
+					<if test="dbName == 'oracle'">'%'||#{linkMan}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{linkMan}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{linkMan},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="linkPhone != null and linkPhone != ''">
+				AND a.link_phone LIKE 
+					<if test="dbName == 'oracle'">'%'||#{linkPhone}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{linkPhone}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{linkPhone},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.service_id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ServiceOrder">
+		SELECT 
+			<include refid="serviceOrderColumns"/>
+		FROM scm_service_order a
+		<include refid="serviceOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_service_order(
+			tenant_id,
+			id,
+			pm_id,
+			service_id,
+			trade_id,
+			delivery_id,
+			buy_id,
+			buyer_id,
+			supplier_id,
+			deal_result,
+			feedback_info,
+			refund_amount,
+			delivery_time,
+			service_category,
+			stage,
+			link_man,
+			status,
+			link_phone,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{serviceId},
+			#{tradeId},
+			#{deliveryId},
+			#{buyId},
+			#{buyerId},
+			#{supplierId},
+			#{dealResult},
+			#{feedbackInfo},
+			#{refundAmount},
+			#{deliveryTime},
+			#{serviceCategory},
+			#{stage},
+			#{linkMan},
+			#{status},
+			#{linkPhone},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_service_order SET
+			pm_id = #{pmId},
+			trade_id = #{tradeId},
+			service_id = #{serviceId},
+			delivery_id = #{deliveryId},
+			buy_id = #{buyId},
+			buyer_id = #{buyerId},
+			supplier_id = #{supplierId},
+			deal_result = #{dealResult},
+			feedback_info = #{feedbackInfo},
+			refund_amount = #{refundAmount},
+			delivery_time = #{deliveryTime},
+			service_category = #{serviceCategory},
+			stage = #{stage},
+			link_man = #{linkMan},
+			status = #{status},
+			link_phone = #{linkPhone},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_service_order SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<!--  带pmName / buyerName / supplierName -->
+	<select id="findJoinList" resultType="ServiceOrder">
+		SELECT
+		<include refid="serviceOrderColumns"/>
+        ,
+        m.merchant_name AS "pmName",
+        b.buyer_name AS "buyerName",
+        s.supplier_name AS "supplierName"
+		FROM scm_service_order a
+        <include refid="serviceOrderJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        LEFT JOIN scm_buyer b ON b.id = a.buyer_id
+        LEFT JOIN scm_sms_supplier s ON s.id = a.supplier_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="serviceId != null and serviceId != ''">
+                AND a.service_id = #{serviceId}
+            </if>
+			<if test="tradeId != null and tradeId != ''">
+				AND a.trade_id = #{tradeId}
+			</if>
+			<if test="deliveryId != null and deliveryId != ''">
+				AND a.delivery_id = #{deliveryId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="serviceCategory != null and serviceCategory != ''">
+				AND a.service_category = #{serviceCategory}
+			</if>
+			<if test="stage != null and stage != ''">
+				AND a.stage = #{stage}
+			</if>
+			<if test="linkMan != null and linkMan != ''">
+				AND a.link_man LIKE
+				<if test="dbName == 'oracle'">'%'||#{linkMan}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{linkMan}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{linkMan},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+            <if test="buyId != null and buyId != ''">
+                AND a.buy_id = #{buyId}
+            </if>
+			<if test="linkPhone != null and linkPhone != ''">
+				AND a.link_phone LIKE
+				<if test="dbName == 'oracle'">'%'||#{linkPhone}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{linkPhone}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{linkPhone},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

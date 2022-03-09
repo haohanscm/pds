@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.pay.RefundManageDao">
+    
+	<sql id="refundManageColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.request_id AS "requestId",
+		a.partner_id AS "partnerId",
+		a.order_id AS "orderId",
+		a.org_req_id AS "orgReqId",
+		a.org_trans_id AS "orgTransId",
+		a.order_amount AS "orderAmount",
+		a.pay_amount AS "payAmount",
+		a.refund_amount AS "refundAmount",
+		a.bus_type AS "busType",
+		a.refund_apply_time AS "refundApplyTime",
+		a.status AS "status",
+		a.resp_code AS "respCode",
+		a.resp_desc AS "respDesc",
+		a.trade_no AS "tradeNo",
+		a.resp_time AS "respTime",
+		a.refund_cause AS "refundCause",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="refundManageJoins">
+	</sql>
+    
+	<select id="get" resultType="RefundManage">
+		SELECT 
+			<include refid="refundManageColumns"/>
+		FROM scm_refund_manage a
+		<include refid="refundManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RefundManage">
+		SELECT 
+			<include refid="refundManageColumns"/>
+		FROM scm_refund_manage a
+		<include refid="refundManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name = #{merchantName}
+			</if>
+			<if test="requestId != null and requestId != ''">
+				AND a.request_id = #{requestId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="refundApplyTime != null and refundApplyTime != ''">
+				AND a.refund_apply_time = #{refundApplyTime}
+			</if>
+			<if test="partnerId != null and partnerId != ''">
+				AND a.partner_id = #{partnerId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RefundManage">
+		SELECT 
+			<include refid="refundManageColumns"/>
+		FROM scm_refund_manage a
+		<include refid="refundManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_refund_manage(
+			id,
+			merchant_id,
+			merchant_name,
+			request_id,
+			partner_id,
+			order_id,
+			org_req_id,
+			org_trans_id,
+			order_amount,
+			pay_amount,
+			refund_amount,
+			bus_type,
+			refund_apply_time,
+			status,
+			resp_code,
+			resp_desc,
+			trade_no,
+			resp_time,
+			refund_cause,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{merchantName},
+			#{requestId},
+			#{partnerId},
+			#{orderId},
+			#{orgReqId},
+			#{orgTransId},
+			#{orderAmount},
+			#{payAmount},
+			#{refundAmount},
+			#{busType},
+			#{refundApplyTime},
+			#{status},
+			#{respCode},
+			#{respDesc},
+			#{tradeNo},
+			#{respTime},
+			#{refundCause},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_refund_manage SET
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			request_id = #{requestId},
+			partner_id = #{partnerId},
+			order_id = #{orderId},
+			org_req_id = #{orgReqId},
+			org_trans_id = #{orgTransId},
+			order_amount = #{orderAmount},
+			pay_amount = #{payAmount},
+			refund_amount = #{refundAmount},
+			bus_type = #{busType},
+			refund_apply_time = #{refundApplyTime},
+			status = #{status},
+			resp_code = #{respCode},
+			resp_desc = #{respDesc},
+			trade_no = #{tradeNo},
+			resp_time = #{respTime},
+			refund_cause = #{refundCause},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_refund_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="fetchRefundTotalAmount" resultType="BigDecimal">
+		SELECT SUM(a.refund_amount) FROM scm_refund_manage a
+		WHERE a.order_id = #{0} AND a.status = #{1} AND a.del_flag = '0'
+	</select>
+	
+</mapper>

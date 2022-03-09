@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.pay.ChannelRateManageDao">
+    
+	<sql id="channelRateManageColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.payinfo_id AS "payInfoId",
+		a.wx_qrcode AS "wxQrcode",
+		a.wx_paycard AS "wxPaycard",
+		a.wx_mp AS "wxMp",
+		a.alipay_qrcode AS "alipayQrcode",
+		a.alipay_barcode AS "alipayBarcode",
+		a.alipay_service AS "alipayService",
+		a.channel AS "channel",
+		a.rate AS "rate",
+		a.category AS "category",
+		a.cust_id AS "custId",
+		a.resp_code AS "respCode",
+		a.resp_msg AS "respMsg",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="channelRateManageJoins">
+	</sql>
+    
+	<select id="get" resultType="ChannelRateManage">
+		SELECT 
+			<include refid="channelRateManageColumns"/>
+		FROM scm_channel_rate_manage a
+		<include refid="channelRateManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ChannelRateManage">
+		SELECT 
+			<include refid="channelRateManageColumns"/>
+		FROM scm_channel_rate_manage a
+		<include refid="channelRateManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="payInfoId != null and payInfoId != ''">
+				AND a.payinfo_id = #{payInfoId}
+			</if>
+			<if test="channel != null and channel != ''">
+				AND a.channel = #{channel}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ChannelRateManage">
+		SELECT 
+			<include refid="channelRateManageColumns"/>
+		FROM scm_channel_rate_manage a
+		<include refid="channelRateManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_channel_rate_manage(
+			id,
+			merchant_id,
+			payinfo_id,
+			wx_qrcode,
+			wx_paycard,
+			wx_mp,
+			alipay_qrcode,
+			alipay_barcode,
+			alipay_service,
+			channel,
+			rate,
+			category,
+			cust_id,
+			resp_code,
+			resp_msg,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{payInfoId},
+			#{wxQrcode},
+			#{wxPaycard},
+			#{wxMp},
+			#{alipayQrcode},
+			#{alipayBarcode},
+			#{alipayService},
+			#{channel},
+			#{rate},
+			#{category},
+			#{custId},
+			#{respCode},
+			#{respMsg},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_channel_rate_manage SET
+			merchant_id = #{merchantId},
+			payinfo_id = #{payInfoId},
+			wx_qrcode = #{wxQrcode},
+			wx_paycard = #{wxPaycard},
+			wx_mp = #{wxMp},
+			alipay_qrcode = #{alipayQrcode},
+			alipay_barcode = #{alipayBarcode},
+			alipay_service = #{alipayService},
+			channel = #{channel},
+			rate = #{rate},
+			category = #{category},
+			cust_id = #{custId},
+			resp_code = #{respCode},
+			resp_msg = #{respMsg},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_channel_rate_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

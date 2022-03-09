@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.order.GoodsOrderDetailDao">
+    
+	<sql id="goodsOrderDetailColumns">
+		a.id AS "id",
+		a.order_id AS "orderId",
+		a.merchant_id AS "merchantId",
+		a.goods_id AS "goodsId",
+		a.model_id AS "modelId",
+		a.goods_name AS "goodsName",
+		a.goods_price AS "goodsPrice",
+		a.market_price AS "marketPrice",
+		a.goods_num AS "goodsNum",
+		a.goods_unit AS "goodsUnit",
+		a.model_name AS "modelName",
+		a.goods_attr_ids AS "goodsAttrIds",
+		a.ext_attr AS "extAttr",
+		a.is_real AS "isReal",
+		a.cart_goods_type AS "cartGoodsType",
+		a.activity_id AS "activityId",
+		a.gift_name AS "giftName",
+		a.gift_id AS "giftId",
+		a.gift_schedule AS "giftSchedule",
+		a.gift_num AS "giftNum",
+		a.delivery_schedule AS "deliverySchedule",
+		a.delivery_start_date AS "deliveryStartDate",
+		a.arrive_type AS "arriveType",
+		a.delivery_num AS "deliveryNum",
+		a.delivery_plan_type AS "deliveryPlanType",
+		a.delivery_type AS "deliveryType",
+		a.delivery_total_num AS "deliveryTotalNum",
+		a.service_name AS "serviceName",
+		a.service_detail AS "serviceDetail",
+		a.service_price AS "servicePrice",
+		a.service_schedule AS "serviceSchedule",
+		a.service_num AS "serviceNum",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsOrderDetailJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsOrderDetail">
+		SELECT 
+			<include refid="goodsOrderDetailColumns"/>
+		FROM scm_goods_order_detail a
+		<include refid="goodsOrderDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsOrderDetail">
+		SELECT 
+			<include refid="goodsOrderDetailColumns"/>
+		FROM scm_goods_order_detail a
+		<include refid="goodsOrderDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="modelId != null and modelId != ''">
+				AND a.model_id = #{modelId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name = #{goodsName}
+			</if>
+			<if test="cartGoodsType != null and cartGoodsType != ''">
+				AND a.cart_goods_type = #{cartGoodsType}
+			</if>
+			<if test="deliverySchedule != null and deliverySchedule != ''">
+				AND a.delivery_schedule = #{deliverySchedule}
+			</if>
+			<if test="arriveType != null and arriveType != ''">
+				AND a.arrive_type = #{arriveType}
+			</if>
+			<if test="deliveryPlanType != null and deliveryPlanType != ''">
+				AND a.delivery_plan_type = #{deliveryPlanType}
+			</if>
+			<if test="deliveryType != null and deliveryType != ''">
+				AND a.delivery_type = #{deliveryType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsOrderDetail">
+		SELECT 
+			<include refid="goodsOrderDetailColumns"/>
+		FROM scm_goods_order_detail a
+		<include refid="goodsOrderDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="categorySaleStatis" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.order.resp.GoodsOrderCategoryStatisApiResp">
+		SELECT
+			SUM(a.goods_num) AS saleGoodsNum,
+			SUM(a.goods_num*a.goods_price) AS saleAmount,
+			c.id AS categoryId,
+			c.name AS categoryName
+		FROM scm_goods_order_detail a
+		INNER JOIN scm_goods_order o ON o.order_id = a.order_id AND o.del_flag = '0'
+		INNER JOIN scm_cms_goods g ON g.id = a.goods_id AND g.del_flag = '0'
+		INNER JOIN scm_cms_goods_category c ON c.id = g.goods_category_id AND c.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="merchantId != null and merchantId != ''">
+				AND o.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND o.shop_id = #{shopId}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND o.order_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			GROUP BY c.id,c.name
+		</where>
+	</select>
+
+	<select id="sumSaleVolume" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.TSaleVolumeResp">
+		SELECT a.goods_id AS goodsId,a.goods_name AS goodsName,SUM(a.goods_num)AS saleNum,SUM(a.goods_num*a.goods_price)AS saleAmount
+		FROM scm_goods_order_detail a LEFT JOIN scm_goods_order b ON a.order_id=b.order_id
+		<where>
+			<if test="shopId != null and shopId != ''">
+				AND b.shop_id = #{shopId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND b.merchant_id = #{merchantId}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND b.pay_status = #{payStatus}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND b.pay_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND b.goods_id = #{goodsId}
+			</if>
+			AND a.del_flag = '0'
+		</where>
+		GROUP BY a.goods_id,a.goods_name;
+	</select>
+
+	<select id="saleVolumeRank" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.order.resp.GoodsOrderSaleVolRankApiResp">
+		SELECT
+			a.goods_id AS goodsId,
+			a.goods_name AS goodsName,
+			IFNULL(SUM(a.goods_num),0) AS saleVolume,
+			IFNULL(SUM(a.goods_num*a.goods_price),0) AS saleAmount
+		FROM scm_goods_order_detail a
+		INNER JOIN scm_goods_order o ON o.order_id = a.order_id AND o.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="goodsOrder.merchantId != null and goodsOrder.merchantId != ''">
+				AND o.merchant_id = #{goodsOrder.merchantId}
+			</if>
+			<if test="goodsOrder.shopId != null and shopId != ''">
+				AND o.shop_id = #{goodsOrder.shopId}
+			</if>
+			<if test="goodsOrder.startTime != null and goodsOrder.startTime != '' and goodsOrder.endTime != null and goodsOrder.endTime != ''">
+				AND o.order_time BETWEEN #{goodsOrder.startTime} AND #{goodsOrder.endTime}
+			</if>
+			GROUP BY goodsId,goodsName
+			<if test="orderBy != null and orderBy != ''">
+				ORDER BY ${orderBy} DESC
+			</if>
+			<if test="limit != null and limit != ''">
+				limit ${limit}
+			</if>
+		</where>
+	</select>
+
+	<select id="countMemberBoughtNum" resultType="java.math.BigDecimal">
+		SELECT SUM(a.goods_num)
+		FROM scm_goods_order_detail a WHERE a.order_id IN
+			(SELECT b.order_id
+			FROM scm_goods_order b WHERE b.uid=#{0} AND b.pay_status='2')
+		AND a.goods_id=#{1}
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_goods_order_detail(
+			id,
+			order_id,
+			merchant_id,
+			goods_id,
+			model_id,
+			goods_name,
+			goods_price,
+			market_price,
+			goods_num,
+			goods_unit,
+			model_name,
+			goods_attr_ids,
+			ext_attr,
+			is_real,
+			cart_goods_type,
+			activity_id,
+			gift_name,
+			gift_id,
+			gift_schedule,
+			gift_num,
+			delivery_schedule,
+			delivery_start_date,
+			arrive_type,
+			delivery_num,
+			delivery_plan_type,
+			delivery_type,
+			delivery_total_num,
+			service_name,
+			service_detail,
+			service_price,
+			service_schedule,
+			service_num,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{orderId},
+			#{merchantId},
+			#{goodsId},
+			#{modelId},
+			#{goodsName},
+			#{goodsPrice},
+			#{marketPrice},
+			#{goodsNum},
+			#{goodsUnit},
+			#{modelName},
+			#{goodsAttrIds},
+			#{extAttr},
+			#{isReal},
+			#{cartGoodsType},
+			#{activityId},
+			#{giftName},
+			#{giftId},
+			#{giftSchedule},
+			#{giftNum},
+			#{deliverySchedule},
+			#{deliveryStartDate},
+			#{arriveType},
+			#{deliveryNum},
+			#{deliveryPlanType},
+			#{deliveryType},
+			#{deliveryTotalNum},
+			#{serviceName},
+			#{serviceDetail},
+			#{servicePrice},
+			#{serviceSchedule},
+			#{serviceNum},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_goods_order_detail SET
+			order_id = #{orderId},
+			merchant_id = #{merchantId},
+			goods_id = #{goodsId},
+			model_id = #{modelId},
+			goods_name = #{goodsName},
+			goods_price = #{goodsPrice},
+			market_price = #{marketPrice},
+			goods_num = #{goodsNum},
+			goods_unit = #{goodsUnit},
+			model_name = #{modelName},
+			goods_attr_ids = #{goodsAttrIds},
+			ext_attr = #{extAttr},
+			is_real = #{isReal},
+			cart_goods_type = #{cartGoodsType},
+			activity_id = #{activityId},
+			gift_name = #{giftName},
+			gift_id = #{giftId},
+			gift_schedule = #{giftSchedule},
+			gift_num = #{giftNum},
+			delivery_schedule = #{deliverySchedule},
+			delivery_start_date = #{deliveryStartDate},
+			arrive_type = #{arriveType},
+			delivery_num = #{deliveryNum},
+			delivery_plan_type = #{deliveryPlanType},
+			delivery_type = #{deliveryType},
+			delivery_total_num = #{deliveryTotalNum},
+			service_name = #{serviceName},
+			service_detail = #{serviceDetail},
+			service_price = #{servicePrice},
+			service_schedule = #{serviceSchedule},
+			service_num = #{serviceNum},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_goods_order_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

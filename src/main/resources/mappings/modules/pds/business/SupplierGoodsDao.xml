@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.business.SupplierGoodsDao">
+    
+	<sql id="supplierGoodsColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.supplier_id AS "supplierId",
+		a.goods_id AS "goodsId",
+		a.status AS "status",
+		a.supplier_merchant_id AS "supplierMerchantId",
+		a.goods_model_id AS "goodsModelId",
+		a.supplier_model_id AS "supplierModelId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="supplierGoodsJoins">
+	</sql>
+    
+	<select id="get" resultType="SupplierGoods">
+		SELECT 
+			<include refid="supplierGoodsColumns"/>
+		FROM scm_sms_supplier_goods a
+		<include refid="supplierGoodsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SupplierGoods">
+		SELECT 
+			<include refid="supplierGoodsColumns"/>
+		FROM scm_sms_supplier_goods a
+		<include refid="supplierGoodsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="supplierMerchantId != null and supplierMerchantId != ''">
+				AND a.supplier_merchant_id = #{supplierMerchantId}
+			</if>
+			<if test="goodsModelId != null and goodsModelId != ''">
+				AND a.goods_model_id = #{goodsModelId}
+			</if>
+			<if test="supplierModelId != null and supplierModelId != ''">
+				AND a.supplier_model_id = #{supplierModelId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SupplierGoods">
+		SELECT 
+			<include refid="supplierGoodsColumns"/>
+		FROM scm_sms_supplier_goods a
+		<include refid="supplierGoodsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_sms_supplier_goods(
+			tenant_id,
+			id,
+			pm_id,
+			supplier_id,
+			goods_id,
+			status,
+			supplier_merchant_id,
+            goods_model_id,
+            supplier_model_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{supplierId},
+			#{goodsId},
+			#{status},
+			#{supplierMerchantId},
+            #{goodsModelId},
+            #{supplierModelId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_sms_supplier_goods SET
+		    pm_id = #{pmId},
+			supplier_id = #{supplierId},
+			goods_id = #{goodsId},
+			status = #{status},
+            supplier_merchant_id = #{supplierMerchantId},
+            goods_model_id = #{goodsModelId},
+            supplier_model_id = #{supplierModelId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_sms_supplier_goods SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="SupplierGoods">
+        SELECT
+        <include refid="supplierGoodsColumns"/>
+        ,
+        m.merchant_name AS "pmName",
+        s.supplier_name AS "supplierName",
+        s.merchant_name AS "supplierMerchantName",
+        g1.goods_name AS "goodsName",
+        gm1.model_name AS "goodsModelName",
+        g2.goods_name AS "supplierGoodsName",
+        g2.id AS "supplierGoodsId",
+        gm2.model_name AS "supplierModelName"
+        FROM scm_sms_supplier_goods a
+        <include refid="supplierGoodsJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id AND m.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_sms_supplier s ON s.id = a.supplier_id AND s.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_cms_goods g1 ON g1.id = a.goods_id AND g1.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_cms_goods_model gm1 ON gm1.id = a.goods_model_id AND gm1.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_cms_goods_model gm2 ON gm2.id = a.supplier_model_id AND gm2.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_cms_goods g2 ON g2.id = gm2.goods_id AND g2.del_flag = #{DEL_FLAG_NORMAL}
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="supplierId != null and supplierId != ''">
+                AND a.supplier_id = #{supplierId}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="supplierMerchantId != null and supplierMerchantId != ''">
+                AND a.supplier_merchant_id = #{supplierMerchantId}
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="goodsModelId != null and goodsModelId != ''">
+                AND a.goods_model_id = #{goodsModelId}
+            </if>
+            <if test="supplierModelId != null and supplierModelId != ''">
+                AND a.supplier_model_id = #{supplierModelId}
+            </if>
+            <if test="supplierGoodsId != null and supplierGoodsId != ''">
+                AND g2.id = #{supplierGoodsId}
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND g1.goods_name LIKE concat('%',#{goodsName},'%')
+            </if>
+            <if test="goodsModelName != null and goodsModelName != ''">
+                AND gm1.model_name LIKE concat('%',#{goodsModelName},'%')
+            </if>
+            <if test="supplierModelName != null and supplierModelName != ''">
+                AND gm2.model_name LIKE concat('%',#{supplierModelName},'%')
+            </if>
+            <if test="supplierGoodsName != null and supplierGoodsName != ''">
+                AND g2.goods_name LIKE concat('%',#{supplierGoodsName},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 关联商品字段 -->
+    <sql id="extGoodsColumns">
+        a.id AS "id",
+		IFNULL(a.supplier_id, #{supplierId}) AS "supplierId",
+		IFNULL(a.goods_id, g.id) AS "goodsId",
+		IFNULL(a.status, '0') AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		g.id AS "goods.id",
+		g.shop_id AS "goods.shopId",
+		g.goods_category_id AS "goods.goodsCategoryId",
+		g.goods_name AS "goods.goodsName",
+		g.thumb_url AS "goods.thumbUrl"
+	</sql>
+
+
+    <select id="findExtList" resultType="SupplierGoodsExt">
+        SELECT
+        <include refid="extGoodsColumns"/>
+        FROM scm_cms_goods g
+        LEFT JOIN scm_sms_supplier_goods a
+            ON g.id = a.goods_id
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="supplierId != null and supplierId != ''">
+                AND a.supplier_id = #{supplierId}
+            </if>
+        <where>
+            g.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="goods != null and goods != '' and goods.shopId != null and goods.shopId != '' ">
+                AND g.shop_id = #{goods.shopId}
+            </if>
+            <if test="goods != null and goods != '' and goods.goodsCategoryId != null and goods.goodsCategoryId != ''">
+                AND FIND_IN_SET( #{goods.goodsCategoryId}, g.goods_category_id )
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="supplierMerchantId != null and supplierMerchantId != ''">
+                AND a.supplier_merchant_id = #{supplierMerchantId}
+            </if>
+            <if test="goodsModelId != null and goodsModelId != ''">
+                AND a.goods_model_id = #{goodsModelId}
+            </if>
+            <if test="supplierModelId != null and supplierModelId != ''">
+                AND a.supplier_model_id = #{supplierModelId}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY g.sort
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="findCategoryList" resultType="SupplierGoods">
+        SELECT
+        c.id AS "categoryId",
+        c.name AS "categoryName",
+        c.parent_id AS "parentId",
+        IFNULL(SUM( x.STATUS = '1' ), 0) AS "goodsNum",
+        IF (IFNULL(SUM( x.STATUS = '1' ), 0) = 0,'0',IF( SUM( x.STATUS = '1' ) = COUNT( x.STATUS ), '1', '2' ) ) AS "status"
+        FROM scm_cms_goods_category c
+        LEFT JOIN (
+            SELECT
+            g.goods_category_id AS "categoryId",
+            a.supplier_id AS "supplierId",
+            a.STATUS AS "status"
+            FROM
+            scm_sms_supplier_goods a
+            LEFT JOIN scm_cms_goods g ON a.goods_id = g.id
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="supplierId != null and supplierId != ''">
+                AND a.supplier_id = #{supplierId}
+            </if>
+            ) x ON FIND_IN_SET(c.id,x.categoryId)
+        <where>
+            c.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="shopId != null and shopId != '' ">
+                AND c.shop_id = #{shopId}
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                AND c.id = #{categoryId}
+            </if>
+        </where>
+        GROUP BY c.id,c.name
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY c.sort
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="querySupplyPriceList" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.supplier.SupplyPriceResp">
+        SELECT
+            sg.supplier_id AS "supplierId",
+            ps.supplier_name AS "supplierName",
+--             gm2.goods_id AS "goodsId",
+--             gm2.id AS "goodsModelId",
+--             g2.goods_name AS "goodsName",
+--             gm2.model_name AS "modelName",
+            IFNULL( gp.price, gm.model_price ) AS "supplyPrice"
+        FROM
+            scm_sms_supplier_goods sg
+            LEFT JOIN scm_cms_goods_model gm ON sg.supplier_model_id = gm.id AND gm.del_flag = #{DEL_FLAG_NORMAL}
+            LEFT JOIN scm_cms_goods g ON gm.goods_id = g.id AND g.del_flag = #{DEL_FLAG_NORMAL}
+--             LEFT JOIN scm_cms_goods_model gm2 ON sg.goods_model_id = gm2.id
+--             LEFT JOIN scm_cms_goods g2 ON gm2.goods_id = g2.id
+            LEFT JOIN scm_sms_supplier ps ON sg.supplier_id = ps.id
+            LEFT JOIN scm_platform_goods_price gp ON gp.model_id = sg.supplier_model_id
+            AND gp.pm_id = sg.supplier_merchant_id
+            AND gp.merchant_id = sg.pm_id
+            AND gp.del_flag = #{DEL_FLAG_NORMAL}
+            AND gp.status = #{status}
+            AND ( CURDATE( ) BETWEEN gp.start_date AND gp.end_date )
+        WHERE
+            sg.del_flag = #{DEL_FLAG_NORMAL}
+            AND sg.status = #{status}
+            AND g.is_marketable = #{status}
+            AND ps.status = #{status}
+            AND sg.goods_model_id = #{goodsModelId}
+            AND sg.pm_id = #{pmId}
+    </select>
+
+    <!--生成商品映射关系-->
+    <!--条件: 1.商品名称/规格名称/单位都相同;-->
+    <!--      2. 通用编号/规格名称或规格通用编号/单位都相同.-->
+    <!-- 排除已有的映射关系  -->
+    <select id="relationGoodsList" resultType="SupplierGoods">
+        SELECT
+        #{pmId} AS "pmId",
+        #{supplierId} AS "supplierId",
+        #{supplierMerchantId} AS "supplierMerchantId",
+        x.id AS "goodsId",
+        x.modleId AS "goodsModelId",
+        y.modleId AS "supplierModelId"
+        FROM
+            (SELECT
+                g.general_sn,
+                g.goods_name,
+                g.id,
+                m.model_name,
+                m.model_general_sn,
+                m.model_unit,
+                m.id AS "modleId"
+            FROM scm_cms_goods g
+            LEFT JOIN scm_cms_goods_model m  ON m.goods_id = g.id
+            WHERE
+                g.del_flag = '0'
+                AND m.del_flag = '0'
+                AND g.merchant_id = #{pmId}
+                AND g.shop_id = #{shopId}
+            ) x
+        INNER JOIN
+            (SELECT
+                g.general_sn,
+                g.goods_name,
+                g.id,
+                m.model_name,
+                m.model_general_sn,
+                m.model_unit,
+                m.id AS "modleId"
+            FROM scm_cms_goods g
+            LEFT JOIN scm_cms_goods_model m  ON m.goods_id = g.id
+            WHERE
+                g.del_flag = '0'
+                AND m.del_flag = '0'
+                AND g.merchant_id = #{supplierMerchantId}
+                AND g.shop_id = #{supplierShopId}
+            ) y
+        ON (x.model_unit = y.model_unit AND x.goods_name = y.goods_name AND x.model_name = y.model_name)
+            OR (x.general_sn IS NOT Null AND x.general_sn !='' AND x.model_unit = y.model_unit AND y.general_sn = x.general_sn AND (x.model_name = y.model_name OR x.model_general_sn = y.model_general_sn))
+        LEFT JOIN scm_sms_supplier_goods sg
+            ON sg.pm_id = #{pmId}
+                AND sg.supplier_merchant_id = #{supplierMerchantId}
+                AND sg.supplier_id = #{supplierId}
+                AND sg.goods_model_id = x.modleId
+                AND sg.supplier_model_id = y.modleId
+        WHERE sg.id is NULL
+    </select>
+
+</mapper>

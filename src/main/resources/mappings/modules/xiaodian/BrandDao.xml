@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.BrandDao">
+    
+	<sql id="brandColumns">
+		a.id AS "id",
+		a.industry AS "industry",
+		a.brand AS "brand",
+		a.logo AS "logo",
+		a.description AS "description",
+		a.website AS "website",
+		a.sort AS "sort",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="brandJoins">
+	</sql>
+    
+	<select id="get" resultType="Brand">
+		SELECT 
+			<include refid="brandColumns"/>
+		FROM scm_brand a
+		<include refid="brandJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Brand">
+		SELECT 
+			<include refid="brandColumns"/>
+		FROM scm_brand a
+		<include refid="brandJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="industry != null and industry != ''">
+				AND a.industry LIKE 
+					<if test="dbName == 'oracle'">'%'||#{industry}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{industry}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{industry},'%')</if>
+			</if>
+			<if test="brand != null and brand != ''">
+				AND a.brand LIKE 
+					<if test="dbName == 'oracle'">'%'||#{brand}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{brand}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{brand},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Brand">
+		SELECT 
+			<include refid="brandColumns"/>
+		FROM scm_brand a
+		<include refid="brandJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_brand(
+			id,
+			industry,
+			brand,
+			logo,
+			description,
+			website,
+			sort,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{industry},
+			#{brand},
+			#{logo},
+			#{description},
+			#{website},
+			#{sort},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_brand SET
+			industry = #{industry},
+			brand = #{brand},
+			logo = #{logo},
+			description = #{description},
+			website = #{website},
+			sort = #{sort},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_brand SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

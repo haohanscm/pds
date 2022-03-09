@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.ShopTemplateDao">
+    
+	<sql id="shopTemplateColumns">
+		a.id AS "id",
+		a.industry_category AS "industryCategory",
+		a.wx_model_id AS "wxModelId",
+		a.app_id AS "appId",
+		a.template_type AS "templateType",
+		a.template_name AS "templateName",
+		a.template_desc AS "templateDesc",
+		a.template_pic AS "templatePic",
+		a.version_no AS "versionNo",
+		a.version_desc AS "versionDesc",
+		a.upload_time AS "uploadTime",
+		a.resp_desc AS "respDesc",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="shopTemplateJoins">
+	</sql>
+    
+	<select id="get" resultType="ShopTemplate">
+		SELECT 
+			<include refid="shopTemplateColumns"/>
+		FROM scm_shop_template a
+		<include refid="shopTemplateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ShopTemplate">
+		SELECT 
+			<include refid="shopTemplateColumns"/>
+		FROM scm_shop_template a
+		<include refid="shopTemplateJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="templateName != null and templateName != ''">
+				AND a.template_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{templateName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{templateName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{templateName},'%')</if>
+			</if>
+			<if test="templateType != null and templateType != ''">
+				AND a.template_type = #{templateType}
+			</if>
+			<if test="beginUploadTime != null and endUploadTime != null and beginUploadTime != '' and endUploadTime != ''">
+				AND a.upload_time BETWEEN #{beginUploadTime} AND #{endUploadTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ShopTemplate">
+		SELECT 
+			<include refid="shopTemplateColumns"/>
+		FROM scm_shop_template a
+		<include refid="shopTemplateJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_shop_template(
+			id,
+			industry_category,
+			wx_model_id,
+			app_id,
+			template_type,
+			template_name,
+			template_desc,
+			template_pic,
+			version_no,
+			version_desc,
+			upload_time,
+			resp_desc,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{industryCategory},
+			#{wxModelId},
+			#{appId},
+			#{templateType},
+			#{templateName},
+			#{templateDesc},
+			#{templatePic},
+			#{versionNo},
+			#{versionDesc},
+			#{uploadTime},
+			#{respDesc},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_shop_template SET
+			industry_category = #{industryCategory},
+			wx_model_id = #{wxModelId},
+			app_id = #{appId},
+			template_type = #{templateType},
+			template_name = #{templateName},
+			template_desc = #{templateDesc},
+			template_pic = #{templatePic},
+			version_no = #{versionNo},
+			version_desc = #{versionDesc},
+			upload_time = #{uploadTime},
+			resp_desc = #{respDesc},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_shop_template SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

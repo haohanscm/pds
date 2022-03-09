@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.retail.GoodsPriceRuleDao">
+    
+	<sql id="goodsPriceRuleColumns">
+		a.id AS "id",
+		a.rule_name AS "ruleName",
+		a.shop_id AS "shopId",
+		a.merchant_id AS "merchantId",
+		a.goods_id AS "goodsId",
+		a.rule_desc AS "ruleDesc",
+		a.wholesale_price AS "wholesalePrice",
+		a.vip_price AS "vipPrice",
+		a.market_price AS "marketPrice",
+		a.virtual_price AS "virtualPrice",
+		a.unit AS "unit",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		g.goods_name AS "goodsName"
+	</sql>
+	
+	<sql id="goodsPriceRuleJoins">
+		LEFT JOIN scm_cms_goods g ON a.goods_id = g.id
+	</sql>
+    
+	<select id="get" resultType="GoodsPriceRule">
+		SELECT 
+			<include refid="goodsPriceRuleColumns"/>
+		FROM scm_cms_goods_price_rule a
+		<include refid="goodsPriceRuleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsPriceRule">
+		SELECT 
+			<include refid="goodsPriceRuleColumns"/>
+		FROM scm_cms_goods_price_rule a
+		<include refid="goodsPriceRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="ruleName != null and ruleName != ''">
+				AND a.rule_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{ruleName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{ruleName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{ruleName},'%')</if>
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND g.goods_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.shop_id, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsPriceRule">
+		SELECT 
+			<include refid="goodsPriceRuleColumns"/>
+		FROM scm_cms_goods_price_rule a
+		<include refid="goodsPriceRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_goods_price_rule(
+			tenant_id,
+			id,
+			rule_name,
+			shop_id,
+			merchant_id,
+			goods_id,
+			rule_desc,
+			wholesale_price,
+			vip_price,
+			market_price,
+			virtual_price,
+			unit,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{ruleName},
+			#{shopId},
+			#{merchantId},
+			#{goodsId},
+			#{ruleDesc},
+			#{wholesalePrice},
+			#{vipPrice},
+			#{marketPrice},
+			#{virtualPrice},
+			#{unit},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_goods_price_rule SET
+			rule_name = #{ruleName},
+			shop_id = #{shopId},
+			merchant_id = #{merchantId},
+			goods_id = #{goodsId},
+			rule_desc = #{ruleDesc},
+			wholesale_price = #{wholesalePrice},
+			vip_price = #{vipPrice},
+			market_price = #{marketPrice},
+			virtual_price = #{virtualPrice},
+			unit = #{unit},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_goods_price_rule SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 删除 同一商品id的所有 GoodsPriceRule -->
+    <update id="deleteGoodsId">
+		UPDATE scm_cms_goods_price_rule SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE goods_id = #{goodsId}
+	</update>
+
+    <!-- 根据商品分类id 删除对应分类及子父类拥有的商品的GoodsPriceRule;分类id用goodsId传入-->
+	<update id="deleteForCategory">
+		UPDATE scm_cms_goods_price_rule SET
+		del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			goods_id IN (
+				SELECT
+				DISTINCT(a.id)
+				FROM scm_cms_goods a,
+					(SELECT c.id AS category_id
+						FROM
+						scm_cms_goods_category c
+						WHERE c.del_flag = #{DEL_FLAG_NORMAL}
+						AND (c.parent_ids LIKE
+						<if test="dbName == 'oracle'">'%,'||#{goodsId}||',%'</if>
+						<if test="dbName == 'mssql'">'%,'+#{goodsId}+',%'</if>
+						<if test="dbName == 'mysql'">concat('%,',#{goodsId},',%')</if>
+						OR c.id = #{goodsId})
+					) x
+				WHERE FIND_IN_SET( x.category_id, a.goods_category_id ) > 0
+			)
+        </where>
+	</update>
+
+    <select id="findJoinList" resultType="GoodsPriceRule">
+        SELECT
+        <include refid="goodsPriceRuleColumns"/>,
+        s.name AS "shopName",
+        m.merchant_name AS "merchantName"
+        FROM scm_cms_goods_price_rule a
+        <include refid="goodsPriceRuleJoins"/>
+        LEFT JOIN scm_shop s ON a.shop_id = s.id
+        LEFT JOIN scm_merchant m ON s.merchant_id = m.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="ruleName != null and ruleName != ''">
+                AND a.rule_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{ruleName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{ruleName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{ruleName},'%')</if>
+            </if>
+            <if test="shopId != null and shopId != ''">
+                AND a.shop_id = #{shopId}
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}g
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND g.goods_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+            </if>
+            <if test="shopName != null and shopName != ''">
+                AND s.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND m.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.shop_id, a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

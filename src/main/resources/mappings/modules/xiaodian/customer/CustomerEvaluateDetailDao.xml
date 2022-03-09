@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.customer.CustomerEvaluateDetailDao">
+    
+	<sql id="customerEvaluateDetailColumns">
+		a.id AS "id",
+		a.evaluate_id AS "evaluateId",
+		a.evaluate_name AS "evaluateName",
+		a.score AS "score",
+		a.evaluate_type AS "evaluateType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="customerEvaluateDetailJoins">
+	</sql>
+    
+	<select id="get" resultType="CustomerEvaluateDetail">
+		SELECT 
+			<include refid="customerEvaluateDetailColumns"/>
+		FROM scm_customer_evaluate_detail a
+		<include refid="customerEvaluateDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CustomerEvaluateDetail">
+		SELECT 
+			<include refid="customerEvaluateDetailColumns"/>
+		FROM scm_customer_evaluate_detail a
+		<include refid="customerEvaluateDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="evaluateId != null and evaluateId != ''">
+				AND a.evaluate_id = #{evaluateId}
+			</if>
+			<if test="evaluateType != null and evaluateType != ''">
+				AND a.evaluate_type = #{evaluateType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CustomerEvaluateDetail">
+		SELECT 
+			<include refid="customerEvaluateDetailColumns"/>
+		FROM scm_customer_evaluate_detail a
+		<include refid="customerEvaluateDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_customer_evaluate_detail(
+			id,
+			evaluate_id,
+			evaluate_name,
+			score,
+			evaluate_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{evaluateId},
+			#{evaluateName},
+			#{score},
+			#{evaluateType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_customer_evaluate_detail SET
+			evaluate_id = #{evaluateId},
+			evaluate_name = #{evaluateName},
+			score = #{score},
+			evaluate_type = #{evaluateType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_customer_evaluate_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

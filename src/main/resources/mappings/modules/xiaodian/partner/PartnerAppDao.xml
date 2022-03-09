@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.partner.PartnerAppDao">
+    
+	<sql id="partnerAppColumns">
+		a.id AS "id",
+		a.partner_name AS "partnerName",
+		a.partner_num AS "partnerNum",
+		a.app_key AS "appKey",
+		a.app_secret AS "appSecret",
+		a.partner_desc AS "partnerDesc",
+		a.contact_user AS "contactUser",
+		a.contact_phone AS "contactPhone",
+		a.partner_address AS "partnerAddress",
+		a.partner_type AS "partnerType",
+		a.status AS "status",
+		a.notify_url AS "notifyUrl",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="partnerAppJoins">
+	</sql>
+    
+	<select id="get" resultType="PartnerApp">
+		SELECT 
+			<include refid="partnerAppColumns"/>
+		FROM scm_partner_app a
+		<include refid="partnerAppJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PartnerApp">
+		SELECT 
+			<include refid="partnerAppColumns"/>
+		FROM scm_partner_app a
+		<include refid="partnerAppJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="partnerName != null and partnerName != ''">
+				AND a.partner_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{partnerName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{partnerName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{partnerName},'%')</if>
+			</if>
+			<if test="appKey != null and appKey != ''">
+				AND a.app_key = #{appKey}
+			</if>
+			<if test="partnerType != null and partnerType != ''">
+				AND a.partner_type = #{partnerType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="partnerNum != null and partnerNum != ''">
+				AND a.partner_num = #{partnerNum}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PartnerApp">
+		SELECT 
+			<include refid="partnerAppColumns"/>
+		FROM scm_partner_app a
+		<include refid="partnerAppJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_partner_app(
+			id,
+			partner_name,
+			partner_num,
+			app_key,
+			app_secret,
+			partner_desc,
+			contact_user,
+			contact_phone,
+			partner_address,
+			partner_type,
+			status,
+			notify_url,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{partnerName},
+			#{partnerNum},
+			#{appKey},
+			#{appSecret},
+			#{partnerDesc},
+			#{contactUser},
+			#{contactPhone},
+			#{partnerAddress},
+			#{partnerType},
+			#{status},
+			#{notifyUrl},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_partner_app SET
+			partner_name = #{partnerName},
+			partner_num = #{partnerNum},
+			app_key = #{appKey},
+			app_secret = #{appSecret},
+			partner_desc = #{partnerDesc},
+			contact_user = #{contactUser},
+			contact_phone = #{contactPhone},
+			partner_address = #{partnerAddress},
+			partner_type = #{partnerType},
+			status = #{status},
+			notify_url = #{notifyUrl},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_partner_app SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

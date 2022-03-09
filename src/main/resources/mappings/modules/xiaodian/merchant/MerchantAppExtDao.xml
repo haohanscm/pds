@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.MerchantAppExtDao">
+    
+	<sql id="merchantAppExtColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.app_id AS "appId",
+		a.template_id AS "templateId",
+		a.merchant_id AS "merchantId",
+		a.field_name AS "fieldName",
+		a.field_code AS "fieldCode",
+		a.field_value AS "fieldValue",
+		a.field_type AS "fieldType",
+		a.is_need AS "isNeed",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="merchantAppExtJoins">
+	</sql>
+    
+	<select id="get" resultType="MerchantAppExt">
+		SELECT 
+			<include refid="merchantAppExtColumns"/>
+		FROM scm_merchant_app_ext a
+		<include refid="merchantAppExtJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MerchantAppExt">
+		SELECT 
+			<include refid="merchantAppExtColumns"/>
+		FROM scm_merchant_app_ext a
+		<include refid="merchantAppExtJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+					<if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+					<if test="dbName == 'mysql'">concat('%,',#{parentIds},',%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="templateId != null and templateId != ''">
+				AND a.template_id = #{templateId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="fieldName != null and fieldName != ''">
+				AND a.field_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{fieldName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{fieldName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{fieldName},'%')</if>
+			</if>
+		</where>
+		ORDER BY a.sort ASC, a.update_date DESC
+	</select>
+	
+	<select id="findAllList" resultType="MerchantAppExt">
+		SELECT 
+			<include refid="merchantAppExtColumns"/>
+		FROM scm_merchant_app_ext a
+		<include refid="merchantAppExtJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="MerchantAppExt">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM scm_merchant_app_ext a
+		<include refid="merchantAppExtJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_merchant_app_ext(
+			id,
+			parent_id,
+			parent_ids,
+			name,
+			app_id,
+			template_id,
+			merchant_id,
+			field_name,
+			field_code,
+			field_value,
+			field_type,
+			is_need,
+			sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{appId},
+			#{templateId},
+			#{merchantId},
+			#{fieldName},
+			#{fieldCode},
+			#{fieldValue},
+			#{fieldType},
+			#{isNeed},
+			#{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_merchant_app_ext SET
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			app_id = #{appId},
+			template_id = #{templateId},
+			merchant_id = #{merchantId},
+			field_name = #{fieldName},
+			field_code = #{fieldCode},
+			field_value = #{fieldValue},
+			field_type = #{fieldType},
+			is_need = #{isNeed},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE scm_merchant_app_ext SET
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_merchant_app_ext SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- parentIds 逗号分隔,目前结尾无逗号 -->
+	<update id="deleteWithChildren">
+		UPDATE scm_merchant_app_ext SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE
+		<if test="dbName == 'oracle'">'%,'||#{id}||'%'</if>
+		<if test="dbName == 'mssql'">'%,'+#{id}+'%'</if>
+		<if test="dbName == 'mysql'">concat('%,',#{id},'%')</if>
+	</update>
+
+	<select id="fetchAppId" resultType="MerchantAppExt">
+		SELECT
+		DISTINCT app_id
+		FROM scm_merchant_app_ext a
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND app_id != ''
+            <if test="parent != null and parent.id != null and parent.id != ''">
+                AND a.parent_id = #{parent.id}
+            </if>
+            <if test="parentIds != null and parentIds != ''">
+                AND a.parent_ids LIKE
+                <if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+                <if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+                <if test="dbName == 'mysql'">concat('%,',#{parentIds},',%')</if>
+            </if>
+            <if test="name != null and name != ''">
+                AND a.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+            </if>
+            <if test="appId != null and appId != ''">
+                AND a.app_id = #{appId}
+            </if>
+            <if test="templateId != null and templateId != ''">
+                AND a.template_id = #{templateId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="fieldName != null and fieldName != ''">
+                AND a.field_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{fieldName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{fieldName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{fieldName},'%')</if>
+            </if>
+        </where>
+	</select>
+
+    <select id="existExtInfoCount" resultType="java.lang.Integer">
+        SELECT
+        count(a.id)
+        FROM scm_merchant_app_ext a
+        <where>
+            <if test="appId != null and appId != ''">
+                AND a.app_id = #{appId}
+            </if>
+            <if test="templateId != null and templateId != ''">
+                AND a.template_id = #{templateId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

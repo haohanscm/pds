@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.cost.SettlementRecordDao">
+    
+	<sql id="settlementRecordColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.settlement_id AS "settlementId",
+		a.settlement_type AS "settlementType",
+		a.settlement_amount AS "settlementAmount",
+		a.settlement_begin_date AS "settlementBeginDate",
+		a.settlement_end_date AS "settlementEndDate",
+		a.pay_date AS "payDate",
+		a.company_type AS "companyType",
+		a.company_id AS "companyId",
+		a.company_name AS "companyName",
+		a.company_operator AS "companyOperator",
+		a.settlement_img AS "settlementImg",
+		a.settlement_desc AS "settlementDesc",
+		a.operator AS "operator",
+		a.payment_sn AS "paymentSn",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="settlementRecordJoins">
+	</sql>
+    
+	<select id="get" resultType="SettlementRecord">
+		SELECT 
+			<include refid="settlementRecordColumns"/>
+		FROM scm_settlement_record a
+		<include refid="settlementRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SettlementRecord">
+		SELECT 
+			<include refid="settlementRecordColumns"/>
+		FROM scm_settlement_record a
+		<include refid="settlementRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="settlementType != null and settlementType != ''">
+				AND a.settlement_type = #{settlementType}
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="settlementId != null and settlementId != ''">
+				AND a.settlement_id = #{settlementId}
+			</if>
+			<if test="beginPayDate != null and endPayDate != null and beginPayDate != '' and endPayDate != ''">
+				AND a.pay_date BETWEEN #{beginPayDate} AND #{endPayDate}
+			</if>
+			<if test="companyType != null and companyType != ''">
+				AND a.company_type = #{companyType}
+			</if>
+			<if test="companyName != null and companyName != ''">
+				AND a.company_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{companyName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{companyName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{companyName},'%')</if>
+			</if>
+			<if test="companyOperator != null and companyOperator != ''">
+				AND a.company_operator LIKE 
+					<if test="dbName == 'oracle'">'%'||#{companyOperator}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{companyOperator}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{companyOperator},'%')</if>
+			</if>
+			<if test="operator != null and operator != ''">
+				AND a.operator LIKE 
+					<if test="dbName == 'oracle'">'%'||#{operator}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{operator}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{operator},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.pay_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SettlementRecord">
+		SELECT 
+			<include refid="settlementRecordColumns"/>
+		FROM scm_settlement_record a
+		<include refid="settlementRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_settlement_record(
+			tenant_id,
+			id,
+			pm_id,
+			settlement_id,
+			settlement_type,
+			settlement_amount,
+			settlement_begin_date,
+			settlement_end_date,
+			pay_date,
+			company_type,
+			company_id,
+			company_name,
+			company_operator,
+			settlement_img,
+			settlement_desc,
+			operator,
+			payment_sn,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{settlementId},
+			#{settlementType},
+			#{settlementAmount},
+			#{settlementBeginDate},
+			#{settlementEndDate},
+			#{payDate},
+			#{companyType},
+			#{companyId},
+			#{companyName},
+			#{companyOperator},
+			#{settlementImg},
+			#{settlementDesc},
+			#{operator},
+			#{paymentSn},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_settlement_record SET
+			pm_id = #{pmId},
+			settlement_id = #{settlementId},
+			settlement_type = #{settlementType},
+			settlement_amount = #{settlementAmount},
+			settlement_begin_date = #{settlementBeginDate},
+			settlement_end_date = #{settlementEndDate},
+			pay_date = #{payDate},
+			company_type = #{companyType},
+			company_id = #{companyId},
+			company_name = #{companyName},
+			company_operator = #{companyOperator},
+			settlement_img = #{settlementImg},
+			settlement_desc = #{settlementDesc},
+			operator = #{operator},
+			payment_sn = #{paymentSn},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_settlement_record SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="SettlementRecord">
+        SELECT
+        <include refid="settlementRecordColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_settlement_record a
+        <include refid="settlementRecordJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="settlementType != null and settlementType != ''">
+                AND a.settlement_type = #{settlementType}
+            </if>
+            <if test="settlementId != null and settlementId != ''">
+                AND a.settlement_id = #{settlementId}
+            </if>
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="beginPayDate != null and endPayDate != null and beginPayDate != '' and endPayDate != ''">
+                AND a.pay_date BETWEEN #{beginPayDate} AND #{endPayDate}
+            </if>
+            <if test="companyType != null and companyType != ''">
+                AND a.company_type = #{companyType}
+            </if>
+            <if test="companyName != null and companyName != ''">
+                AND a.company_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{companyName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{companyName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{companyName},'%')</if>
+            </if>
+            <if test="companyOperator != null and companyOperator != ''">
+                AND a.company_operator LIKE
+                <if test="dbName == 'oracle'">'%'||#{companyOperator}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{companyOperator}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{companyOperator},'%')</if>
+            </if>
+            <if test="operator != null and operator != ''">
+                AND a.operator LIKE
+                <if test="dbName == 'oracle'">'%'||#{operator}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{operator}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{operator},'%')</if>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.pay_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.storage.WarehouseStockDao">
+    
+	<sql id="warehouseStockColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.warehouse_id AS "warehouseId",
+		a.bar_code AS "barCode",
+		a.goods_code AS "goodsCode",
+		a.goods_name AS "goodsName",
+		a.unit AS "unit",
+		a.attr AS "attr",
+		a.stock_num AS "stockNum",
+		a.price AS "price",
+		a.amount AS "amount",
+		a.supplier_id AS "supplierId",
+		a.instock_time AS "instockTime",
+		a.last_inventory_time AS "lastInventoryTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		w1.name AS "warehouseName"
+	</sql>
+	
+	<sql id="warehouseStockJoins">
+		LEFT JOIN scm_pss_warehouse w1 ON w1.id = a.warehouse_id AND w1.del_flag = '0'
+	</sql>
+    
+	<select id="get" resultType="WarehouseStock">
+		SELECT 
+			<include refid="warehouseStockColumns"/>
+		FROM scm_pss_warehouse_stock a
+		<include refid="warehouseStockJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="WarehouseStock">
+		SELECT 
+			<include refid="warehouseStockColumns"/>
+		FROM scm_pss_warehouse_stock a
+		<include refid="warehouseStockJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="warehouseId != null and warehouseId != ''">
+				AND a.warehouse_id LIKE
+					<if test="dbName == 'oracle'">'%'||#{warehouseId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{warehouseId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{warehouseId},'%')</if>
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="barCode != null and barCode != ''">
+				AND a.bar_code = #{barCode}
+			</if>
+			<if test="goodsCode != null and goodsCode != ''">
+				AND a.goods_code = #{goodsCode}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="WarehouseStock">
+		SELECT 
+			<include refid="warehouseStockColumns"/>
+		FROM scm_pss_warehouse_stock a
+		<include refid="warehouseStockJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_warehouse_stock(
+			id,
+			merchant_id,
+			warehouse_id,
+			bar_code,
+			goods_code,
+			goods_name,
+			unit,
+			attr,
+			stock_num,
+			price,
+			amount,
+			supplier_id,
+			instock_time,
+			last_inventory_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{warehouseId},
+			#{barCode},
+			#{goodsCode},
+			#{goodsName},
+			#{unit},
+			#{attr},
+			#{stockNum},
+			#{price},
+			#{amount},
+			#{supplierId},
+			#{instockTime},
+			#{lastInventoryTime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_warehouse_stock SET
+			merchant_id = #{merchantId},
+			warehouse_id = #{warehouseId},
+			bar_code = #{barCode},
+			goods_code = #{goodsCode},
+			goods_name = #{goodsName},
+			unit = #{unit},
+			attr = #{attr},
+			stock_num = #{stockNum},
+			price = #{price},
+			amount = #{amount},
+			supplier_id = #{supplierId},
+			instock_time = #{instockTime},
+			last_inventory_time = #{lastInventoryTime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_warehouse_stock SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

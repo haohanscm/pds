@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.business.PdsBuyerDao">
+
+    <sql id="pdsBuyerColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.passport_id AS "passportId",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.buyer_name AS "buyerName",
+		a.short_name AS "shortName",
+		a.contact AS "contact",
+		a.telephone AS "telephone",
+		a.wechat_id AS "wechatId",
+		a.operator AS "operator",
+		a.pay_period AS "payPeriod",
+		a.pay_day AS "payDay",
+		a.address AS "address",
+		a.need_confirmation AS "needConfirmation",
+		a.need_push AS "needPush",
+		a.buyer_type AS "buyerType",
+		a.status AS "status",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+
+    <sql id="pdsBuyerJoins">
+    </sql>
+
+    <select id="get" resultType="PdsBuyer">
+        SELECT
+        <include refid="pdsBuyerColumns"/>
+        FROM scm_buyer a
+        <include refid="pdsBuyerJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="PdsBuyer">
+        SELECT
+        <include refid="pdsBuyerColumns"/>
+        FROM scm_buyer a
+        <include refid="pdsBuyerJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="buyerName != null and buyerName != ''">
+                AND a.buyer_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{buyerName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{buyerName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{buyerName},'%')</if>
+            </if>
+            <if test="shortName != null and shortName != ''">
+                AND a.short_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{shortName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shortName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shortName},'%')</if>
+            </if>
+            <if test="needConfirmation != null and needConfirmation != ''">
+                AND a.need_confirmation = #{needConfirmation}
+            </if>
+            <if test="needPush != null and needPush != ''">
+                AND a.need_push = #{needPush}
+            </if>
+            <if test="telephone != null and telephone != ''">
+                AND a.telephone = #{telephone}
+            </if>
+            <if test="passportId != null and passportId != ''">
+                AND a.passport_id = #{passportId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND a.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+            <if test="buyerType != null and buyerType != ''">
+                AND a.buyer_type = #{buyerType}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.sort+0, a.status DESC, a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="PdsBuyer">
+        SELECT
+        <include refid="pdsBuyerColumns"/>
+        FROM scm_buyer a
+        <include refid="pdsBuyerJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.sort+0, a.status DESC, a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <insert id="insert">
+		INSERT INTO scm_buyer(
+			tenant_id,
+			id,
+			pm_id,
+			passport_id,
+			merchant_id,
+			merchant_name,
+			buyer_name,
+			short_name,
+			contact,
+			telephone,
+			wechat_id,
+			operator,
+			pay_period,
+			pay_day,
+			address,
+			need_confirmation,
+			need_push,
+			buyer_type,
+			status,
+		    sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{passportId},
+			#{merchantId},
+			#{merchantName},
+			#{buyerName},
+			#{shortName},
+			#{contact},
+			#{telephone},
+			#{wechatId},
+			#{operator},
+			#{payPeriod},
+			#{payDay},
+			#{address},
+			#{needConfirmation},
+			#{needPush},
+			#{buyerType},
+			#{status},
+            #{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE scm_buyer SET
+			pm_id = #{pmId},
+			passport_id = #{passportId},
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			buyer_name = #{buyerName},
+			short_name = #{shortName},
+			contact = #{contact},
+			telephone = #{telephone},
+			wechat_id = #{wechatId},
+			operator = #{operator},
+			pay_period = #{payPeriod},
+			pay_day = #{payDay},
+			address = #{address},
+			need_confirmation = #{needConfirmation},
+			need_push = #{needPush},
+			buyer_type = #{buyerType},
+			status = #{status},
+            sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE scm_buyer SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="getWithName" resultType="PdsBuyer">
+        SELECT
+        <include refid="pdsBuyerColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_buyer a
+        <include refid="pdsBuyerJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findJoinList" resultType="PdsBuyer">
+        SELECT
+        <include refid="pdsBuyerColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_buyer a
+        <include refid="pdsBuyerJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="buyerName != null and buyerName != ''">
+                AND a.buyer_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{buyerName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{buyerName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{buyerName},'%')</if>
+            </if>
+            <if test="shortName != null and shortName != ''">
+                AND a.short_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{shortName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shortName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shortName},'%')</if>
+            </if>
+            <if test="needConfirmation != null and needConfirmation != ''">
+                AND a.need_confirmation = #{needConfirmation}
+            </if>
+            <if test="needPush != null and needPush != ''">
+                AND a.need_push = #{needPush}
+            </if>
+            <if test="telephone != null and telephone != ''">
+                AND a.telephone = #{telephone}
+            </if>
+            <if test="passportId != null and passportId != ''">
+                AND a.passport_id = #{passportId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND a.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+            <if test="buyerType != null and buyerType != ''">
+                AND a.buyer_type = #{buyerType}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="bindStatus != null and bindStatus != ''">
+                AND if( #{bindStatus}='1',LENGTH(a.passport_id)>8 , (a.passport_id ='' OR a.passport_id is NULL))
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.sort+0, a.status DESC, a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findMerchantList" resultType="PdsBuyer">
+        SELECT
+        DISTINCT
+        a.merchant_id AS "merchantId",
+        a.merchant_name AS "merchantName"
+        FROM scm_buyer a
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.merchant_name DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 平台运营商家列表查询(采购商/供应商关联pmId) -->
+    <select id="findPlatformMerchantList" resultType="Merchant">
+        SELECT
+        a.id AS "id",
+        a.manage_user AS "upassport.id",
+        a.merchant_name AS "merchantName",
+        a.status AS "status",
+        a.del_flag AS "delFlag"
+        FROM
+        scm_merchant a
+        INNER JOIN (
+        SELECT DISTINCT
+        pm_id
+        FROM
+        scm_buyer
+        WHERE
+        del_flag = #{DEL_FLAG_NORMAL}
+        UNION
+        SELECT DISTINCT
+        pm_id
+        FROM
+        scm_sms_supplier
+        WHERE
+        del_flag = #{DEL_FLAG_NORMAL}
+        ) x ON a.id = x.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="countUserNum" resultType="java.lang.Integer">
+        SELECT
+          count(1)
+        FROM scm_buyer a
+        <where>
+            a.del_flag = '0'
+            <if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+                AND a.create_date BETWEEN #{startTime} AND #{endTime}
+            </if>
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

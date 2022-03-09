@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.pay.PayNotifyDao">
+    
+	<sql id="payNotifyColumns">
+		a.id AS "id",
+		a.request_id AS "requestId",
+		a.order_id AS "orderId",
+		a.order_time AS "orderTime",
+		a.pay_amount AS "payAmount",
+		a.pay_time AS "payTime",
+		a.ac_date AS "acDate",
+		a.fee AS "fee",
+		a.trans_id AS "transId",
+		a.result AS "result",
+		a.status AS "status",
+		a.resp_code AS "respCode",
+		a.resp_desc AS "respDesc",
+		a.is_notify_jsapp AS "isNotifyJsapp",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="payNotifyJoins">
+	</sql>
+    
+	<select id="get" resultType="PayNotify">
+		SELECT 
+			<include refid="payNotifyColumns"/>
+		FROM scm_pay_notify a
+		<include refid="payNotifyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PayNotify">
+		SELECT 
+			<include refid="payNotifyColumns"/>
+		FROM scm_pay_notify a
+		<include refid="payNotifyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="requestId != null and requestId != ''">
+				AND a.request_id = #{requestId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="beginOrderTime != null and endOrderTime != null and beginOrderTime != '' and endOrderTime != ''">
+				AND a.order_time BETWEEN #{beginOrderTime} AND #{endOrderTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PayNotify">
+		SELECT 
+			<include refid="payNotifyColumns"/>
+		FROM scm_pay_notify a
+		<include refid="payNotifyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pay_notify(
+			id,
+			request_id,
+			order_id,
+			order_time,
+			pay_amount,
+			pay_time,
+			ac_date,
+			fee,
+			trans_id,
+			result,
+			status,
+			resp_code,
+			resp_desc,
+			is_notify_jsapp,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{requestId},
+			#{orderId},
+			#{orderTime},
+			#{payAmount},
+			#{payTime},
+			#{acDate},
+			#{fee},
+			#{transId},
+			#{result},
+			#{status},
+			#{respCode},
+			#{respDesc},
+			#{isNotifyJsapp},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pay_notify SET
+			request_id = #{requestId},
+			order_id = #{orderId},
+			order_time = #{orderTime},
+			pay_amount = #{payAmount},
+			pay_time = #{payTime},
+			ac_date = #{acDate},
+			fee = #{fee},
+			trans_id = #{transId},
+			result = #{result},
+			status = #{status},
+			resp_code = #{respCode},
+			resp_desc = #{respDesc},
+			is_notify_jsapp = #{isNotifyJsapp},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pay_notify SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

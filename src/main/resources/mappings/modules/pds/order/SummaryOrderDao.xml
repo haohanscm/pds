@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.SummaryOrderDao">
+	<sql id="summaryOrderColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.summary_order_id AS "summaryOrderId",
+		a.goods_id AS "goodsId",
+		a.goods_img AS "goodsImg",
+		a.goods_name AS "goodsName",
+		a.goods_model AS "goodsModel",
+		a.market_price AS "marketPrice",
+		a.platform_price AS "platformPrice",
+		a.real_buy_num AS "realBuyNum",
+		a.need_buy_num AS "needBuyNum",
+		a.limit_supply_num AS "limitSupplyNum",
+		a.buy_time AS "buyTime",
+		a.buyer_num AS "buyerNum",
+		a.delivery_time AS "deliveryTime",
+		a.unit AS "unit",
+		a.status AS "status",
+		a.buy_seq AS "buySeq",
+		a.buy_avg_price AS "buyAvgPrice",
+		a.supply_avg_price AS "supplyAvgPrice",
+		a.is_gen_trade AS "isGenTrade",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.goods_category_id AS "goodsCategoryId"
+	</sql>
+
+	<sql id="sumOrderAdminColumns">
+		a.summary_order_id AS "summaryOrderId",
+		c.name AS "category",
+		c.id AS "categoryId",
+		c.parent_id AS "parentCategoryId",
+		a.goods_id AS "goodsId",
+		a.goods_name AS "goodsName",
+		a.goods_model AS "goodsModel",
+		a.unit AS "unit",
+		m.weight AS "weight",
+		m.volume AS "volume",
+		a.need_buy_num AS "needBuyNum",
+		a.real_buy_num AS "realBuyNum",
+		IFNULL(l.loss_rate,0) AS "lossPercent",
+		a.platform_price AS "platformPrice",
+		a.market_price AS "marketPrice",
+		a.buy_avg_price AS "buyAvgPrice",
+		a.limit_supply_num AS "limitSupplyNum",
+		a.delivery_time AS "deliveryDate",
+		a.status AS "status",
+		a.buy_seq AS "buySeq"
+	</sql>
+	
+	<sql id="summaryOrderJoins">
+	</sql>
+	<sql id="goodsModelJoin">
+		LEFT JOIN scm_cms_goods_model m ON m.id = a.goods_id AND m.del_flag = '0'
+	</sql>
+	<sql id="goodsJoin">
+		LEFT JOIN scm_cms_goods g ON g.id = m.goods_id AND g.del_flag = '0'
+	</sql>
+	<sql id="goodsCategoryJoin">
+		LEFT JOIN scm_cms_goods_category c ON c.id = a.goods_category_id AND c.del_flag = '0'
+	</sql>
+	<sql id="goodsLossJoin">
+		LEFT JOIN scm_pws_goods_loss_rate l ON l.goods_id = a.goods_id AND l.del_flag = '0'
+	</sql>
+
+	<select id="get" resultType="SummaryOrder">
+		SELECT 
+			<include refid="summaryOrderColumns"/>
+		FROM scm_ops_summary_order a
+		<include refid="summaryOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SummaryOrder">
+		SELECT 
+			<include refid="summaryOrderColumns"/>
+		FROM scm_ops_summary_order a
+		<include refid="summaryOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="summaryOrderId != null and summaryOrderId != ''">
+				AND a.summary_order_id = #{summaryOrderId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = #{deliveryTime}
+			</if>
+			<if test="isGenTrade != null and isGenTrade != ''">
+				AND a.is_gen_trade = #{isGenTrade}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.summary_order_id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SummaryOrder">
+		SELECT 
+			<include refid="summaryOrderColumns"/>
+		FROM scm_ops_summary_order a
+		<include refid="summaryOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+
+	<select id="findAdminSumOrderPage" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.params.PdsAdminSumBuyOrder">
+		SELECT
+		<include refid="sumOrderAdminColumns"/>
+		FROM scm_ops_summary_order a
+		<include refid="goodsModelJoin"/>
+		<include refid="goodsJoin"/>
+		<include refid="goodsLossJoin"/>
+		<include refid="goodsCategoryJoin"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="summaryOrderId != null and summaryOrderId != ''">
+				AND a.summary_order_id = #{summaryOrderId}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND a.delivery_time = DATE (#{deliveryDate})
+			</if>
+            <if test="goodsName != null and goodsName != ''">
+                AND g.goods_name LIKE concat('%',#{goodsName},'%')
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                AND (g.goods_category_id = #{categoryId}
+                OR c.parent_ids LIKE concat('%,',#{categoryId},',%'))
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_ops_summary_order(
+			tenant_id,
+			id,
+			pm_id,
+			summary_order_id,
+			goods_id,
+		    goods_category_id,
+			goods_img,
+			goods_name,
+			goods_model,
+			market_price,
+			platform_price,
+			real_buy_num,
+			need_buy_num,
+			limit_supply_num,
+			buy_time,
+			buyer_num,
+			delivery_time,
+			unit,
+			status,
+			buy_seq,
+			buy_avg_price,
+			supply_avg_price,
+			is_gen_trade,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{summaryOrderId},
+			#{goodsId},
+			#{goodsCategoryId},
+			#{goodsImg},
+			#{goodsName},
+			#{goodsModel},
+			#{marketPrice},
+			#{platformPrice},
+			#{realBuyNum},
+			#{needBuyNum},
+			#{limitSupplyNum},
+			#{buyTime},
+			#{buyerNum},
+			#{deliveryTime},
+			#{unit},
+			#{status},
+			#{buySeq},
+			#{buyAvgPrice},
+			#{supplyAvgPrice},
+			#{isGenTrade},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_ops_summary_order SET
+            pm_id = #{pmId},
+			summary_order_id = #{summaryOrderId},
+			goods_id = #{goodsId},
+			goods_category_id = #{goodsCategoryId},
+			goods_img = #{goodsImg},
+			goods_name = #{goodsName},
+			goods_model = #{goodsModel},
+			market_price = #{marketPrice},
+			platform_price = #{platformPrice},
+			real_buy_num = #{realBuyNum},
+			need_buy_num = #{needBuyNum},
+			limit_supply_num = #{limitSupplyNum},
+			buy_time = #{buyTime},
+			buyer_num = #{buyerNum},
+			delivery_time = #{deliveryTime},
+			unit = #{unit},
+			status = #{status},
+			buy_seq = #{buySeq},
+			buy_avg_price = #{buyAvgPrice},
+			supply_avg_price = #{supplyAvgPrice},
+			is_gen_trade = #{isGenTrade},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+    <update id="updatePrice">
+		UPDATE scm_ops_summary_order SET
+        <if test="marketPrice != null and marketPrice != ''">
+            market_price = #{marketPrice},
+        </if>
+        <if test="platformPrice != null and platformPrice != ''">
+            platform_price = #{platformPrice},
+        </if>
+        <if test="buyAvgPrice != null and buyAvgPrice != ''">
+            buy_avg_price = #{buyAvgPrice},
+        </if>
+        <if test="supplyAvgPrice != null and supplyAvgPrice != ''">
+            supply_avg_price = #{supplyAvgPrice},
+        </if>
+        <if test="status != null and status != ''">
+            status = #{status},
+        </if>
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateStatus">
+		UPDATE scm_ops_summary_order SET
+			status = #{status}
+		WHERE summary_order_id = #{summaryOrderId}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_ops_summary_order SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByDateSeqPmId">
+		UPDATE scm_ops_summary_order SET
+			del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			del_flag = #{DEL_FLAG_NORMAL}
+			AND delivery_time = #{deliveryTime}
+			AND pm_id = #{pmId}
+			AND buy_seq = #{buySeq}
+		</where>
+	</update>
+
+    <select id="findJoinList" resultType="SummaryOrder">
+        SELECT
+        <include refid="summaryOrderColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_ops_summary_order a
+        <include refid="summaryOrderJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="summaryOrderId != null and summaryOrderId != ''">
+                AND a.summary_order_id = #{summaryOrderId}
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND a.goods_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+            </if>
+            <if test="buySeq != null and buySeq != ''">
+                AND a.buy_seq = #{buySeq}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="deliveryTime != null and deliveryTime != ''">
+                AND a.delivery_time = #{deliveryTime}
+            </if>
+            <if test="isGenTrade != null and isGenTrade != ''">
+                AND a.is_gen_trade = #{isGenTrade}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.summary_order_id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="queryWaitOfferList" resultType="SummaryOrder">
+        SELECT
+        <include refid="summaryOrderColumns"/>
+        FROM scm_ops_summary_order a
+        LEFT JOIN scm_cms_goods_model m ON a.goods_id = m.id
+        <if test="supplierId != null and supplierId != ''">
+            INNER JOIN scm_sms_supplier_goods g ON m.goods_id = g.goods_id
+                  AND g.del_flag = #{DEL_FLAG_NORMAL}
+                  AND g.supplier_id = #{supplierId}
+        </if>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="buySeq != null and buySeq != ''">
+                AND a.buy_seq = #{buySeq}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="deliveryTime != null and deliveryTime != ''">
+                AND DATE (a.delivery_time) = DATE (#{deliveryTime})
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+	<select id="countNotOffer" resultType="java.lang.Integer">
+		SELECT
+		count(1)
+		FROM scm_ops_summary_order a
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			AND a.create_date BETWEEN #{startTime} AND #{endTime}
+		</where>
+	</select>
+
+</mapper>

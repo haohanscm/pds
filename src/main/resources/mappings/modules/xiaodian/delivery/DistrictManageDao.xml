@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.DistrictManageDao">
+    
+	<sql id="districtManageColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.district_area AS "districtArea",
+		a.province AS "province",
+		a.province_name AS "provinceName",
+		a.city AS "city",
+		a.city_name AS "cityName",
+		a.region AS "region",
+		a.region_name AS "regionName",
+		a.community_num AS "communityNum",
+		a.residents AS "residents",
+		a.population AS "population",
+		a.community_desc AS "communityDesc",
+		a.merchant_id AS "merchantId",
+		a.community_ids AS "communityIds",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		b.merchant_name AS "merchantName"
+	</sql>
+	
+	<sql id="districtManageJoins">
+		LEFT JOIN scm_merchant b ON a.merchant_id = b.id
+	</sql>
+    
+	<select id="get" resultType="DistrictManage">
+		SELECT 
+			<include refid="districtManageColumns"/>
+		FROM scm_district_manage a
+		<include refid="districtManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DistrictManage">
+		SELECT 
+			<include refid="districtManageColumns"/>
+		FROM scm_district_manage a
+		<include refid="districtManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="province != null and province != ''">
+				AND a.province = #{province}
+			</if>
+			<if test="city != null and city != ''">
+				AND a.city = #{city}
+			</if>
+			<if test="region != null and region != ''">
+				AND a.region = #{region}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="queryCommunityId != null and queryCommunityId != ''">
+				AND FIND_IN_SET(#{queryCommunityId},a.community_ids)
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DistrictManage">
+		SELECT 
+			<include refid="districtManageColumns"/>
+		FROM scm_district_manage a
+		<include refid="districtManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_district_manage(
+			id,
+			name,
+			district_area,
+			province,
+			province_name,
+			city,
+			city_name,
+			region,
+			region_name,
+			community_num,
+			residents,
+			population,
+			community_desc,
+			merchant_id,
+			community_ids,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{districtArea},
+			#{province},
+			#{provinceName},
+			#{city},
+			#{cityName},
+			#{region},
+			#{regionName},
+			#{communityNum},
+			#{residents},
+			#{population},
+			#{communityDesc},
+			#{merchantId},
+			#{communityIds},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_district_manage SET
+			name = #{name},
+			district_area = #{districtArea},
+			province = #{province},
+			province_name = #{provinceName},
+			city = #{city},
+			city_name = #{cityName},
+			region = #{region},
+			region_name = #{regionName},
+			community_num = #{communityNum},
+			residents = #{residents},
+			population = #{population},
+			community_desc = #{communityDesc},
+			merchant_id = #{merchantId},
+			community_ids = #{communityIds},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_district_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findListJoin" resultType="DistrictManage">
+		SELECT
+		<include refid="districtManageColumns"/>
+		,
+		(SELECT group_concat(c.name) FROM scm_community_manage c WHERE find_in_set(c.id, a.community_ids) )AS "communityNames"
+		FROM scm_district_manage a
+		<include refid="districtManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="province != null and province != ''">
+				AND a.province = #{province}
+			</if>
+			<if test="city != null and city != ''">
+				AND a.city = #{city}
+			</if>
+			<if test="region != null and region != ''">
+				AND a.region = #{region}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

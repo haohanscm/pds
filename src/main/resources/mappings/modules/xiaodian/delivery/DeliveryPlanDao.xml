@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.DeliveryPlanDao">
+    
+	<sql id="deliveryPlanColumns">
+		a.id AS "id",
+		a.the_day AS "theDay",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.order_id AS "orderId",
+		a.pay_status AS "payStatus",
+		a.order_remark AS "orderRemark",
+		a.delivery_order_id AS "deliveryOrderId",
+		a.goods_id AS "goodsId",
+		a.goods_name AS "goodsName",
+		a.goods_num AS "goodsNum",
+		a.ext_delivery_info AS "extDeliveryInfo",
+		a.reserve_time AS "reserveTime",
+		a.address AS "address",
+		a.province AS "province",
+		a.city AS "city",
+		a.area AS "area",
+		a.street AS "street",
+		a.district_area AS "districtArea",
+		a.community_id AS "communityId",
+		a.community_name AS "communityName",
+		a.buildings_num AS "buildingsNum",
+		a.floor AS "floor",
+		a.house_num AS "houseNum",
+		a.member_id AS "memberId",
+		a.member_name AS "memberName",
+		a.member_contact AS "memberContact",
+		a.delivery_time AS "deliveryTime",
+		a.status AS "status",
+		a.delivery_man_id AS "deliveryManId",
+		a.delivery_man_name AS "deliveryManName",
+		a.deliver_man_tel AS "deliverManTel",
+		a.goods_url AS "goodsUrl",
+    	a.gift_name AS "giftName",
+    	a.gift_num AS "giftNum",
+    	a.gift_url AS "giftUrl",
+    	a.goods_unit AS "goodsUnit",
+    	a.goods_info AS "goodsInfo",
+    	a.gift_unit AS "giftUnit",
+    	a.gift_info AS "giftInfo",
+    	a.service_content AS "serviceContent",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="deliveryPlanJoins">
+	</sql>
+    
+	<select id="get" resultType="DeliveryPlan">
+		SELECT 
+			<include refid="deliveryPlanColumns"/>
+		FROM scm_cms_delivery_plan a
+		<include refid="deliveryPlanJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DeliveryPlan">
+		SELECT 
+			<include refid="deliveryPlanColumns"/>
+		FROM scm_cms_delivery_plan a
+		<include refid="deliveryPlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="shopName != null and shopName != ''">
+				AND a.shop_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+            <if test="giftName != null and giftName != ''">
+                AND a.gift_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{giftName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{giftName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{giftName},'%')</if>
+            </if>
+			<if test="districtArea != null and districtArea != ''">
+				AND a.district_area = #{districtArea}
+			</if>
+			<if test="communityId != null and communityId != ''">
+				AND a.community_id = #{communityId}
+			</if>
+			<if test="communityName != null and communityName != ''">
+				AND a.community_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{communityName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{communityName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{communityName},'%')</if>
+			</if>
+			<if test="buildingsNum != null and buildingsNum != ''">
+				AND a.buildings_num = #{buildingsNum}
+			</if>
+			<if test="memberId != null and memberId != ''">
+				AND a.member_id = #{memberId}
+			</if>
+			<if test="memberName != null and memberName != ''">
+				AND a.member_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{memberName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{memberName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{memberName},'%')</if>
+			</if>
+			<if test="memberContact != null and memberContact != ''">
+				AND a.member_contact = #{memberContact}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND DATE(a.delivery_time) = DATE(#{deliveryTime})
+			</if>
+			<if test="status != null and status != ''">
+				AND FIND_IN_SET(a.status, #{status})
+			</if>
+			<if test="deliveryManId != null and deliveryManId != ''">
+				AND a.delivery_man_id = #{deliveryManId}
+			</if>
+			<if test="deliveryManName != null and deliveryManName != ''">
+				AND a.delivery_man_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{deliveryManName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{deliveryManName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{deliveryManName},'%')</if>
+			</if>
+			<if test="deliverManTel != null and deliverManTel != ''">
+				AND a.deliver_man_tel = #{deliverManTel}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="theDay != null and theDay != ''">
+				AND DATE(a.the_day) = DATE(#{theDay})
+			</if>
+			<if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND DATE(a.the_day) BETWEEN DATE(#{beginDate}) AND DATE(#{endDate})
+			</if>
+			<if test="beginDate != null and beginDate != '' and (endDate == null or endDate == '')">
+				AND a.the_day &gt;= #{beginDate}
+			</if>
+			<if test="(beginDate == null or beginDate == '') and endDate != null and endDate != ''">
+				AND a.the_day &lt; #{endDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC , a.the_day DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DeliveryPlan">
+		SELECT 
+			<include refid="deliveryPlanColumns"/>
+		FROM scm_cms_delivery_plan a
+		<include refid="deliveryPlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_delivery_plan(
+			id,
+			the_day,
+			merchant_id,
+			merchant_name,
+			shop_id,
+			shop_name,
+			order_id,
+			pay_status,
+			order_remark,
+			delivery_order_id,
+			goods_id,
+			goods_name,
+			goods_num,
+			ext_delivery_info,
+			reserve_time,
+			address,
+			province,
+			city,
+			area,
+			street,
+			district_area,
+			community_id,
+			community_name,
+			buildings_num,
+			floor,
+			house_num,
+			member_id,
+			member_name,
+			member_contact,
+			delivery_time,
+			status,
+			delivery_man_id,
+			delivery_man_name,
+			deliver_man_tel,
+			goods_url,
+			gift_name,
+			gift_num,
+			gift_url,
+            goods_unit,
+            goods_info,
+            gift_unit,
+            gift_info,
+            service_content,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{theDay},
+			#{merchantId},
+			#{merchantName},
+			#{shopId},
+			#{shopName},
+			#{orderId},
+			#{payStatus},
+			#{orderRemark},
+			#{deliveryOrderId},
+			#{goodsId},
+			#{goodsName},
+			#{goodsNum},
+			#{extDeliveryInfo},
+			#{reserveTime},
+			#{address},
+			#{province},
+			#{city},
+			#{area},
+			#{street},
+			#{districtArea},
+			#{communityId},
+			#{communityName},
+			#{buildingsNum},
+			#{floor},
+			#{houseNum},
+			#{memberId},
+			#{memberName},
+			#{memberContact},
+			#{deliveryTime},
+			#{status},
+			#{deliveryManId},
+			#{deliveryManName},
+			#{deliverManTel},
+			#{goodsUrl},
+			#{giftName},
+			#{giftNum},
+			#{giftUrl},
+            #{goodsUnit},
+            #{goodsInfo},
+            #{giftUnit},
+            #{giftInfo},
+            #{serviceContent},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_delivery_plan SET
+			the_day = #{theDay},
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			shop_id = #{shopId},
+			shop_name = #{shopName},
+			order_id = #{orderId},
+			pay_status = #{payStatus},
+			order_remark = #{orderRemark},
+			delivery_order_id = #{deliveryOrderId},
+			goods_id = #{goodsId},
+			goods_name = #{goodsName},
+			goods_num = #{goodsNum},
+			ext_delivery_info = #{extDeliveryInfo},
+			reserve_time = #{reserveTime},
+			address = #{address},
+			province = #{province},
+			city = #{city},
+			area = #{area},
+			street = #{street},
+			district_area = #{districtArea},
+			community_id = #{communityId},
+			community_name = #{communityName},
+			buildings_num = #{buildingsNum},
+			floor = #{floor},
+			house_num = #{houseNum},
+			member_id = #{memberId},
+			member_name = #{memberName},
+			member_contact = #{memberContact},
+			delivery_time = #{deliveryTime},
+			status = #{status},
+			delivery_man_id = #{deliveryManId},
+			delivery_man_name = #{deliveryManName},
+			deliver_man_tel = #{deliverManTel},
+			goods_url = #{goodsUrl},
+    		gift_name = #{giftName},
+    		gift_num = #{giftNum},
+    		gift_url = #{giftUrl},
+            goods_unit = #{goodsUnit},
+            goods_info = #{goodsInfo},
+            gift_unit = #{giftUnit},
+            gift_info = #{giftInfo},
+            service_content = #{serviceContent},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_delivery_plan SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteBatch">
+		UPDATE scm_cms_delivery_plan a SET
+			a.del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="memberId != null and memberId != ''">
+				AND a.member_id = #{memberId}
+			</if>
+			<if test="memberContact != null and memberContact != ''">
+				AND a.member_contact = #{memberContact}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.the_day BETWEEN #{beginDate} AND #{endDate}
+			</if>
+			<if test="beginDate != null and beginDate != '' and (endDate == null or endDate == '')">
+				AND a.the_day &gt;= #{beginDate}
+			</if>
+			<if test="(beginDate == null or beginDate == '') and endDate != null and endDate != ''">
+				AND a.the_day &lt;= #{endDate}
+			</if>
+		</where>
+	</update>
+
+
+	<!-- orderId 检查订单配送状态  0未配送 1配送中 2已配送 -->
+	<select id="checkOrderStatus" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.PlanDetailResp">
+		SELECT
+        <!-- 多条计划状态 全为未配送返回0未配送,有未配送返回1配送中,其他为2已配送  -->
+		IF ( SUM( a.status = '0' ) =COUNT(a.status), '0', IF (SUM(a.status = '0')>0,'1','2') ) AS "status"
+		FROM scm_cms_delivery_plan a
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="deliveryOrderId != null and deliveryOrderId != ''">
+                AND a.delivery_order_id = #{deliveryOrderId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                AND a.order_id = #{orderId}
+            </if>
+        </where>
+	</select>
+
+
+    <!-- 配送员uid 查询 配送会员 -->
+    <select id="findMemberByUid" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.MemberResp">
+        SELECT
+        a.member_id AS "memberId",
+        a.member_name AS "memberName",
+        a.member_contact AS "telephone",
+        a.address,
+        count(a.id)
+        FROM scm_cms_delivery_plan a
+        LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND b.uid = #{uid}
+            <if test="theDay != null and theDay != ''">
+                AND DATE(a.the_day) = DATE(#{theDay})
+            </if>
+        </where>
+        GROUP BY
+            a.member_id,
+            a.member_name,
+            a.member_contact,
+            a.address
+        ORDER BY a.member_name
+    </select>
+
+
+    <!-- 查找计划 并验证 配送员 -->
+    <select id="getWithUid" resultType="DeliveryPlan">
+        SELECT
+        <include refid="deliveryPlanColumns"/>
+        FROM scm_cms_delivery_plan a
+        LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+        WHERE a.id = #{deliveryPlanId}
+        AND b.uid = #{uid}
+    </select>
+
+    <!-- 配送 情况 汇总 必须配送员uid -->
+    <select id="querySummaryCount" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.SummaryCountResp">
+        SELECT
+            COUNT( DISTINCT a.community_id ) AS "communityNum",
+            COUNT( DISTINCT a.member_id ) AS "memberNum",
+            IFNULL( SUM( a.goods_num ), 0 ) AS "goodsNum",
+            IFNULL( SUM( a.gift_num ), 0 ) AS "giftNum",
+            COUNT( DISTINCT a.address ) AS "addressNum",
+            COUNT( a.id ) AS "totalNum",
+        	<!-- 配送状态 统计 -->
+            SUM( a.status = '0' ) AS "waitNum",
+			SUM( a.status = '1' ) AS "successNum",
+			SUM( a.status = '2' ) AS "failedNum",
+			SUM( a.status = '3' ) AS "changeNum",
+			SUM( a.status = '4' ) AS "cancelNum"
+        FROM scm_cms_delivery_plan a
+        LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="uid != null and uid != ''">
+				AND b.uid = #{uid}
+			</if>
+            <if test="theDay != null and theDay != ''">
+                AND DATE(a.the_day) = DATE(#{theDay})
+            </if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+        </where>
+    </select>
+
+    <!-- 所有小区配送 情况 汇总 必须配送员uid -->
+    <select id="queryCommunityCount" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.CommunityCountResp">
+            SELECT
+                t1.communityNo,
+                t1.memberNum,
+                t1.goodsNum,
+                t1.giftNum,
+                t1.totalNum,
+                t1.waitNum,
+                t1.successNum,
+                t1.failedNum,
+                t2.name AS "communityName",
+                t2.detail_address AS "areaDetail"
+            FROM
+                (
+                SELECT
+                    a.community_id AS "communityNo",
+                    COUNT( DISTINCT a.member_id ) AS "memberNum",
+                    IFNULL( SUM( a.goods_num ), 0 ) AS "goodsNum",
+                    IFNULL( SUM( a.gift_num ), 0 ) AS "giftNum",
+                    COUNT( a.id ) AS "totalNum",
+                    SUM( a.status = '0' ) AS "waitNum",
+                    SUM( a.status = '1' ) AS "successNum",
+                    SUM( CASE WHEN FIND_IN_SET( a.status, '2,3,4' ) THEN 1 ELSE 0 END ) AS "failedNum"
+                FROM
+                    scm_cms_delivery_plan a
+                    LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+                <where>
+                    a.del_flag = #{DEL_FLAG_NORMAL}
+                    AND b.uid = #{uid}
+                    <if test="theDay != null and theDay != ''">
+                        AND DATE(a.the_day) = DATE(#{theDay})
+                    </if>
+                </where>
+                GROUP BY
+                    a.community_id
+                ) t1
+            LEFT JOIN scm_community_manage t2 ON t1.communityNo = t2.id
+    </select>
+
+
+    <!-- 配送 商品 统计 必须配送员uid -->
+    <select id="queryGoodsCount" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.GoodsCountResp">
+        SELECT
+            a.goods_name AS "goodsName",
+            a.goods_unit AS "goodsUnit",
+            a.goods_info AS "goodsInfo",
+			IFNULL( SUM( a.goods_num ), 0 ) AS "goodsNum"
+        FROM
+            scm_cms_delivery_plan a
+            LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND b.uid = #{uid}
+            <if test="theDay != null and theDay != ''">
+                AND DATE(a.the_day) = DATE(#{theDay})
+            </if>
+            <if test="status != null and status!= ''">
+                AND FIND_IN_SET(a.status, #{status})
+            </if>
+            <if test="communityNo != null and communityNo!= ''">
+                AND a.community_id = #{communityNo}
+            </if>
+			<if test="memberId != null and memberId!= ''">
+				AND a.member_id = #{memberId}
+			</if>
+        </where>
+        GROUP BY
+            goodsName,
+            goodsUnit,
+            goodsInfo
+    </select>
+
+    <!-- 配送 商品 统计 必须配送员uid -->
+    <select id="queryGiftCount" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.GiftCountResp">
+        SELECT
+        a.gift_name AS "giftName",
+        a.gift_unit AS "giftUnit",
+        a.gift_info AS "giftInfo",
+		IFNULL( SUM( a.gift_num ), 0 ) AS "giftNum"
+        FROM
+        scm_cms_delivery_plan a
+        LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND b.uid = #{uid}
+            <if test="theDay != null and theDay != ''">
+                AND DATE(a.the_day) = DATE(#{theDay})
+            </if>
+            <if test="status != null and status!= ''">
+                AND FIND_IN_SET(a.status, #{status})
+            </if>
+            <if test="communityNo != null and communityNo!= ''">
+                AND a.community_id = #{communityNo}
+            </if>
+			<if test="memberId != null and memberId!= ''">
+				AND a.member_id = #{memberId}
+			</if>
+        </where>
+        GROUP BY
+        giftName,
+        giftUnit,
+        giftInfo
+    </select>
+
+
+    <!-- 配送商品数量按会员汇总统计 必须配送员uid -->
+    <select id="queryMemberCount" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.MemberCountResp">
+        SELECT
+            a.member_id AS "memberId",
+            a.member_name AS "memberName",
+            a.member_contact AS "telephone",
+            a.address AS "address",
+            a.community_name AS "communityName",
+			IFNULL( SUM( a.goods_num ), 0 ) AS "goodsNum",
+			IFNULL( SUM( a.gift_num ), 0 ) AS "giftNum",
+			<!-- 多条计划状态 有0为0,全1为1,其余为2  -->
+			IF (SUM(a.status = '0')>0,'0',IF (SUM(a.status = '1') = COUNT(a.status),'1','2')) AS "status"
+        FROM
+            scm_cms_delivery_plan a
+            LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND b.uid = #{uid}
+            <if test="theDay != null and theDay != ''">
+                AND DATE(a.the_day) = DATE(#{theDay})
+            </if>
+            <if test="status != null and status!= ''">
+                AND FIND_IN_SET(a.status, #{status})
+            </if>
+			<if test="memberId != null and memberId!= ''">
+				AND a.member_id = #{memberId}
+			</if>
+            <if test="telephone != null and telephone!= ''">
+                AND a.member_contact LIKE
+                <if test="dbName == 'oracle'">'%'||#{telephone}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{telephone}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{telephone},'%')</if>
+            </if>
+        </where>
+        GROUP BY
+            memberId,
+            memberName,
+            telephone,
+            address,
+            communityName
+    </select>
+
+
+    <!--  配送计划详细信息  必传 配送员 uid  -->
+    <select id="queryPlanDetail" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.PlanDetailWithMemberResp">
+        SELECT
+        <include refid="deliveryPlanColumns"/>,
+        a.member_contact AS "telephone",
+        a.id AS "deliveryPlanId"
+        FROM scm_cms_delivery_plan a
+        LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND b.uid = #{uid}
+            <if test="theDay != null and theDay != ''">
+                AND DATE(a.the_day) = DATE(#{theDay})
+            </if>
+            <if test="memberId != null and memberId!= ''">
+                AND a.member_id = #{memberId}
+            </if>
+			<if test="communityNo != null and communityNo!= ''">
+				AND a.community_id = #{communityNo}
+			</if>
+			<if test="deliveryPlanId != null and deliveryPlanId!= ''">
+				AND a.id = #{deliveryPlanId}
+			</if>
+			<if test="status != null and status!= ''">
+				AND FIND_IN_SET(a.status, #{status})
+			</if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.the_day DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+	<!-- 所有小区配送 情况 汇总 必须配送员uid -->
+	<select id="queryCommunityDelivery" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.BuildingDeliveryResp">
+		SELECT
+			t1.building,
+			t1.floor,
+			t1.house,
+			t1.memberId,
+			t1.memberName,
+			t1.status,
+			t2.name AS "communityName",
+			t2.detail_address AS "areaDetail"
+		FROM
+			(
+			SELECT
+				a.community_id AS "communityNo",
+				a.member_id AS "memberId",
+				a.member_name AS "memberName",
+				a.buildings_num AS "building",
+				a.floor AS "floor",
+				a.house_num	AS "house",
+				<!-- 多条计划状态 有0为0,全1为1,其余为2  -->
+				IF (SUM(a.status = '0')>0,'0',IF (SUM(a.status = '1') = COUNT(a.status),'1','2')) AS "status"
+			FROM
+				scm_cms_delivery_plan a
+				LEFT JOIN scm_deliver_man_manage b ON a.delivery_man_id = b.id
+			<where>
+				a.del_flag = #{DEL_FLAG_NORMAL}
+				AND b.uid = #{uid}
+				<if test="theDay != null and theDay != ''">
+					AND DATE(a.the_day) = DATE(#{theDay})
+				</if>
+				<if test="communityNo != null and communityNo!= ''">
+					AND a.community_id = #{communityNo}
+				</if>
+			</where>
+			GROUP BY
+				communityNo,
+				memberId,
+				memberName,
+				building,
+				floor,
+				house
+			ORDER BY a.community_id, a.buildings_num, a.floor, a.house_num
+			) t1
+		LEFT JOIN scm_community_manage t2 ON t1.communityNo = t2.id
+	</select>
+
+	<!--统计一笔订单商品已经完成配送的数量-->
+	<select id="statsGoodsNumHaveFinished" resultType="java.lang.Integer">
+		SELECT SUM(a.goods_num) FROM scm_cms_delivery_plan a
+		<where>
+			a.del_flag = '0'
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+
+		</where>
+
+	</select>
+
+	<select id="countTimes" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM
+		scm_cms_delivery_plan a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

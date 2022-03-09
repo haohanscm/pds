@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.printer.FeiePrinterDao">
+    
+	<sql id="feiePrinterColumns">
+		a.id AS "id",
+		a.shop_id AS "shopId",
+		a.merchant_id AS "merchantId",
+		a.printer_type AS "printerType",
+		a.printer_sn AS "printerSn",
+		a.printer_key AS "printerKey",
+		a.printer_name AS "printerName",
+		a.template_type AS "templateType",
+		a.template AS "template",
+		a.category AS "category",
+		a.times AS "times",
+		a.status AS "status",
+		a.useable AS "useable",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.name AS "shopName",
+		m.merchant_name AS "merchantName"
+	</sql>
+	
+	<sql id="feiePrinterJoins">
+		LEFT JOIN scm_shop s ON a.shop_id = s.id
+		LEFT JOIN scm_merchant m ON a.merchant_id = m.id
+	</sql>
+    
+	<select id="get" resultType="FeiePrinter">
+		SELECT 
+			<include refid="feiePrinterColumns"/>
+		FROM scm_feie_printer a
+		<include refid="feiePrinterJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FeiePrinter">
+		SELECT 
+			<include refid="feiePrinterColumns"/>
+		FROM scm_feie_printer a
+		<include refid="feiePrinterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopName != null and shopName != ''">
+				AND s.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND m.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="printerType != null and printerType != ''">
+				AND a.printer_type = #{printerType}
+			</if>
+			<if test="printerSn != null and printerSn != ''">
+				AND a.printer_sn = #{printerSn}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="useable != null and useable != ''">
+				AND a.useable = #{useable}
+			</if>
+			<if test="templateType != null and templateType != ''">
+				AND a.template_type = #{templateType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FeiePrinter">
+		SELECT 
+			<include refid="feiePrinterColumns"/>
+		FROM scm_feie_printer a
+		<include refid="feiePrinterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_feie_printer(
+			tenant_id,
+			id,
+			shop_id,
+			merchant_id,
+			printer_type,
+			printer_sn,
+			printer_key,
+			printer_name,
+			template_type,
+			template,
+			category,
+			times,
+			status,
+			useable,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{shopId},
+			#{merchantId},
+			#{printerType},
+			#{printerSn},
+			#{printerKey},
+			#{printerName},
+			#{templateType},
+			#{template},
+			#{category},
+			#{times},
+			#{status},
+			#{useable},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_feie_printer SET
+			shop_id = #{shopId},
+			merchant_id = #{merchantId},
+            <if test="printerType != null ">
+                printer_type = #{printerType},
+            </if>
+            <if test="printerSn != null ">
+                printer_sn = #{printerSn},
+            </if>
+            <if test="printerKey != null ">
+                printer_key = #{printerKey},
+            </if>
+            <if test="printerName != null ">
+                printer_name = #{printerName},
+            </if>
+            <if test="category != null ">
+                category = #{category},
+            </if>
+            <if test="times != null ">
+                times = #{times},
+            </if>
+			<if test="templateType != null ">
+				template_type = #{templateType},
+			</if>
+            <if test="template != null ">
+                template = #{template},
+            </if>
+            <if test="status != null ">
+                status = #{status},
+            </if>
+            <if test="useable != null ">
+                useable = #{useable},
+            </if>
+            <if test="remarks != null ">
+                remarks = #{remarks},
+            </if>
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_feie_printer SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

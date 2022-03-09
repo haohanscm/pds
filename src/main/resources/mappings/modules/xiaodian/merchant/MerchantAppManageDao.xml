@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.MerchantAppManageDao">
+    
+	<sql id="merchantAppManageColumns">
+		a.id AS "id",
+		a.app_id AS "appId",
+		a.app_name AS "appName",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.admin_id AS "adminId",
+		a.admin_name AS "adminName",
+		a.template_id AS "templateId",
+		a.template_name AS "templateName",
+		a.jisuapp_id AS "jisuAppId",
+		a.ext    AS "ext" ,
+		a.status AS "status",
+		a.online_time AS "onlineTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="merchantAppManageJoins">
+	</sql>
+    
+	<select id="get" resultType="MerchantAppManage">
+		SELECT 
+			<include refid="merchantAppManageColumns"/>
+		FROM scm_merchant_app_manage a
+		<include refid="merchantAppManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MerchantAppManage">
+		SELECT 
+			<include refid="merchantAppManageColumns"/>
+		FROM scm_merchant_app_manage a
+		<include refid="merchantAppManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="jisuAppId != null and jisuAppId != ''">
+				AND a.jisuapp_id = #{jisuAppId}
+			</if>
+			<if test="appName != null and appName != ''">
+				AND a.app_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{appName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{appName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{appName},'%')</if>
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="adminName != null and adminName != ''">
+				AND a.admin_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{adminName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{adminName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{adminName},'%')</if>
+			</if>
+			<if test="templateName != null and templateName != ''">
+				AND a.template_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{templateName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{templateName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{templateName},'%')</if>
+			</if>
+			<if test="ext != null and ext != ''">
+				AND a.ext LIKE
+				<if test="dbName == 'mysql'">concat('%',#{ext},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="beginOnlineTime != null and endOnlineTime != null and beginOnlineTime != '' and endOnlineTime != ''">
+				AND a.online_time BETWEEN #{beginOnlineTime} AND #{endOnlineTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MerchantAppManage">
+		SELECT 
+			<include refid="merchantAppManageColumns"/>
+		FROM scm_merchant_app_manage a
+		<include refid="merchantAppManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_merchant_app_manage(
+			id,
+			app_id,
+			app_name,
+			merchant_id,
+			merchant_name,
+			admin_id,
+			admin_name,
+			template_id,
+			template_name,
+			jisuapp_id,
+			ext,
+			status,
+			online_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{appId},
+			#{appName},
+			#{merchantId},
+			#{merchantName},
+			#{adminId},
+			#{adminName},
+			#{templateId},
+			#{templateName},
+			#{jisuAppId},
+			#{ext},
+			#{status},
+			#{onlineTime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_merchant_app_manage SET
+			app_id = #{appId},
+			app_name = #{appName},
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			admin_id = #{adminId},
+			admin_name = #{adminName},
+			template_id = #{templateId},
+			template_name = #{templateName},
+			jisuapp_id = #{jisuAppId},
+			ext = #{ext},
+			status = #{status},
+			online_time = #{onlineTime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_merchant_app_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

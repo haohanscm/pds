@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.customer.CustomerRevaluateDao">
+    
+	<sql id="customerRevaluateColumns">
+		a.id AS "id",
+		a.app_id AS "appId",
+		a.app_name AS "appName",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.service_type AS "serviceType",
+		a.evaluate_uid AS "evaluateUid",
+		a.evaluate_name AS "evaluateName",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="customerRevaluateJoins">
+	</sql>
+    
+	<select id="get" resultType="CustomerRevaluate">
+		SELECT 
+			<include refid="customerRevaluateColumns"/>
+		FROM scm_customer_revaluate a
+		<include refid="customerRevaluateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CustomerRevaluate">
+		SELECT 
+			<include refid="customerRevaluateColumns"/>
+		FROM scm_customer_revaluate a
+		<include refid="customerRevaluateJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="appName != null and appName != ''">
+				AND a.app_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{appName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{appName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{appName},'%')</if>
+			</if>
+			<if test="serviceType != null and serviceType != ''">
+				AND a.service_type = #{serviceType}
+			</if>
+			<if test="evaluateUid != null and evaluateUid != ''">
+				AND a.evaluate_uid = #{evaluateUid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CustomerRevaluate">
+		SELECT 
+			<include refid="customerRevaluateColumns"/>
+		FROM scm_customer_revaluate a
+		<include refid="customerRevaluateJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_customer_revaluate(
+			id,
+			app_id,
+			app_name,
+			merchant_id,
+			merchant_name,
+			service_type,
+			evaluate_uid,
+			evaluate_name,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{appId},
+			#{appName},
+			#{merchantId},
+			#{merchantName},
+			#{serviceType},
+			#{evaluateUid},
+			#{evaluateName},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_customer_revaluate SET
+			app_id = #{appId},
+			app_name = #{appName},
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			service_type = #{serviceType},
+			evaluate_uid = #{evaluateUid},
+			evaluate_name = #{evaluateName},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_customer_revaluate SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

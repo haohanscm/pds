@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.ShopServiceDistrictDao">
+    
+	<sql id="shopServiceDistrictColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.province AS "province",
+		a.city AS "city",
+		a.region AS "region",
+		a.district_area_id AS "districtAreaId",
+		a.community_id AS "communityId",
+		a.status AS "status",
+		a.service_type AS "serviceType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		d.name AS "districtAreaName",
+		c.name AS "communityName"
+	</sql>
+	
+	<sql id="shopServiceDistrictJoins">
+		LEFT JOIN scm_district_manage d ON d.id = a.district_area_id
+		LEFT join scm_community_manage c ON c.id = a.community_id
+	</sql>
+
+	<select id="get" resultType="ShopServiceDistrict">
+		SELECT 
+			<include refid="shopServiceDistrictColumns"/>
+		FROM scm_shop_service_district a
+		<include refid="shopServiceDistrictJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ShopServiceDistrict">
+		SELECT 
+			<include refid="shopServiceDistrictColumns"/>
+		FROM scm_shop_service_district a
+		<include refid="shopServiceDistrictJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="shopName != null and shopName != ''">
+				AND a.shop_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+			</if>
+			<if test="districtAreaId != null and districtAreaId != ''">
+				AND a.district_area_id = #{districtAreaId}
+			</if>
+			<if test="communityId != null and communityId != ''">
+				AND a.community_id = #{communityId}
+			</if>
+			<if test="serviceType != null and serviceType != ''">
+				AND a.service_type = #{serviceType}
+			</if>
+			<if test="districtAreaName != null and districtAreaName != ''">
+				AND d.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{districtAreaName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{districtAreaName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{districtAreaName},'%')</if>
+			</if>
+			<if test="communityName != null and communityName != ''">
+				AND c.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{communityName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{communityName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{communityName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ShopServiceDistrict">
+		SELECT 
+			<include refid="shopServiceDistrictColumns"/>
+		FROM scm_shop_service_district a
+		<include refid="shopServiceDistrictJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_shop_service_district(
+			id,
+			merchant_id,
+			merchant_name,
+			shop_id,
+			shop_name,
+			province,
+			city,
+			region,
+			district_area_id,
+			community_id,
+			status,
+			service_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{merchantName},
+			#{shopId},
+			#{shopName},
+			#{province},
+			#{city},
+			#{region},
+			#{districtAreaId},
+			#{communityId},
+			#{status},
+			#{serviceType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_shop_service_district SET
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			shop_id = #{shopId},
+			shop_name = #{shopName},
+			province = #{province},
+			city = #{city},
+			region = #{region},
+			district_area_id = #{districtAreaId},
+			community_id = #{communityId},
+			status = #{status},
+			service_type = #{serviceType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_shop_service_district SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

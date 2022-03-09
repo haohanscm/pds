@@ -1,0 +1,798 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.BuyOrderDetailDao">
+    
+	<sql id="buyOrderDetailColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.smmary_buy_id AS "smmaryBuyId",
+		a.buy_id AS "buyId",
+		a.buyer_id AS "buyerId",
+		a.goods_id AS "goodsId",
+		a.goods_img AS "goodsImg",
+		a.goods_name AS "goodsName",
+		a.goods_model AS "goodsModel",
+		a.goods_num AS "goodsNum",
+		a.market_price AS "marketPrice",
+		a.buy_price AS "buyPrice",
+		a.unit AS "unit",
+		a.status AS "status",
+		a.goods_order_detail_id AS "goodsOrderDetailId",
+		a.order_goods_num AS "orderGoodsNum",
+		a.buy_detail_sn AS "buyDetailSn",
+		a.summary_flag AS "summaryFlag",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		b.buyer_name AS buyerName
+	</sql>
+
+	<sql id="buyOrderSummaryRespColumns">
+		t.buySeq AS "buySeq" ,
+		t.goodsId AS "goodsId",
+		t.goodsNum AS "goodsNum",
+		g.goods_name AS "goodsName",
+		g.thumb_url AS "goodsImg",
+		m.model_name AS "goodsModel",
+		m.model_unit AS "goodsUnit",
+		m.model_price AS "marketPrice"
+	</sql>
+
+	<sql id="adminSumOrderDetailColums">
+		a.id AS "detailId",
+		a.buyer_id AS "buyerId",
+		a.buy_id AS "buyOrderId",
+		b.buyer_name AS "buyerName",
+  		a.goods_id AS "goodsId",
+		a.goods_num AS "goodsNum",
+		t.sort_out_num AS "sortOutNum",
+		a.buy_price AS "buyPrice",
+		a.market_price AS "marketPrice",
+		a.status AS "detailStatus"
+	</sql>
+
+	<sql id="buyOrderJoins">
+		LEFT JOIN scm_ops_buy_order d on d.buy_id = a.buy_id AND d.del_flag = '0'
+		LEFT JOIN scm_buyer b ON b.id = a.buyer_id AND b.del_flag = '0'
+	</sql>
+	<sql id="summaryOrderJoins">
+		LEFT JOIN scm_ops_summary_order s on s.summary_order_id = a.smmary_buy_id AND s.del_flag = '0'
+	</sql>
+	<sql id="buyerJoin">
+		LEFT JOIN scm_buyer b ON b.id = a.buyer_id AND b.del_flag = '0'
+	</sql>
+	<sql id="tradeOrderJoin">
+		LEFT JOIN scm_trade_order t ON t.buy_id = a.buy_id AND t.goods_id = a.goods_id AND t.del_flag = '0'
+	</sql>
+
+	<select id="get" resultType="BuyOrderDetail">
+		SELECT 
+			<include refid="buyOrderDetailColumns"/>
+		FROM scm_ops_buy_order_detail a
+		<include refid="buyOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="BuyOrderDetail">
+		SELECT 
+			<include refid="buyOrderDetailColumns"/>
+		FROM scm_ops_buy_order_detail a
+		<include refid="buyOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="smmaryBuyId != null and smmaryBuyId != ''">
+				AND a.smmary_buy_id = #{smmaryBuyId}
+			</if>
+			<if test="buyId != null and buyId != ''">
+				AND a.buy_id = #{buyId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND (a.status = #{status}
+                    <if test="finalStatus != null and finalStatus != ''">
+                        OR a.status = #{finalStatus}
+                    </if>
+                )
+			</if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND d.delivery_time = DATE(#{deliveryDate})
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND d.buy_seq = #{buySeq}
+			</if>
+            <if test="summaryFlag != null and summaryFlag != ''">
+                AND a.summary_flag = #{summaryFlag}
+            </if>
+			<if test="goodsOrderDetailId != null and goodsOrderDetailId != ''">
+				AND a.goods_order_detail_id = #{goodsOrderDetailId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.buy_id DESC, a.buy_detail_sn
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBySummaryOrder" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.req.admin.PdsAdminSumOrderDetail">
+		SELECT
+		<include refid="adminSumOrderDetailColums"/>
+		FROM scm_ops_buy_order_detail a
+		<include refid="buyerJoin"/>
+		<include refid="tradeOrderJoin"/>
+		<where>
+			a.del_flag = '0'
+			<if test="summaryBuyId != null and summaryBuyId != ''">
+				AND a.smmary_buy_id = #{summaryBuyId}
+			</if>
+		</where>
+	</select>
+
+	<select id="countBuyAvgPrice" resultType="java.math.BigDecimal">
+		SELECT
+		AVG(a.buy_price)
+		FROM scm_ops_buy_order_detail a
+		<where>
+			a.del_flag = "0"
+			AND a.smmary_buy_id = #{summaryOrderId}
+		</where>
+	</select>
+
+	<select id="countDealNum" resultType="java.math.BigDecimal">
+		SELECT sum(a.goods_num)
+		FROM scm_ops_buy_order_detail a
+		<include refid="buyOrderJoins"/>
+		<where>
+			a.del_flag = '0'
+			<if test="smmaryBuyId != null and smmaryBuyId != ''">
+				AND a.smmary_buy_id = #{smmaryBuyId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="status != null and status != ''">
+				AND d.status = #{status}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+		</where>
+	</select>
+
+	<select id="findGroupByGoodsId" resultType="com.haohan.platform.service.sys.modules.pds.entity.resp.BuyOrderSummaryResp">
+		SELECT
+		<include refid="buyOrderSummaryRespColumns"/>
+		FROM (
+			SELECT
+			a.goods_id AS "goodsId",
+			d.buy_seq AS "buySeq",
+			sum(a.goods_num) AS "goodsNum"
+			FROM scm_ops_buy_order_detail a
+			<include refid="buyOrderJoins"/>
+			<where>
+				a.del_flag = '0'
+                <if test="pmId != null and pmId != ''">
+                    AND a.pm_id = #{pmId}
+                </if>
+				<if test="buySeq != null and buySeq != ''">
+					AND d.buy_seq = #{buySeq}
+				</if>
+                <!-- 采购单和采购单明细状态都需限制 -->
+				<if test="status != null and status != ''">
+					AND (a.status = #{status}
+                        <if test="finalStatus != null and finalStatus != ''">
+                            OR a.status = #{finalStatus}
+                        </if>
+                    )
+					AND (d.status = #{status}
+                        <if test="finalStatus != null and finalStatus != ''">
+                            OR d.status = #{finalStatus}
+                        </if>
+                    )
+				</if>
+				<if test="deliveryDate != null and deliveryDate != ''">
+					AND d.delivery_time = #{deliveryDate}
+				</if>
+                <if test="summaryFlag != null and summaryFlag != ''">
+                    AND a.summary_flag = #{summaryFlag}
+                </if>
+			</where>
+			GROUP BY a.goods_id,d.buy_seq
+		) t
+		INNER JOIN scm_cms_goods_model m on t.goodsId = m.id AND m.del_flag = '0'
+		INNER JOIN scm_cms_goods g on m.goods_id = g.id AND g.del_flag = '0'
+	    ORDER BY goodsNum DESC
+	</select>
+
+	<select id="findAllList" resultType="BuyOrderDetail">
+		SELECT 
+			<include refid="buyOrderDetailColumns"/>
+		FROM scm_ops_buy_order_detail a
+		<include refid="buyOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countTotalAmount" resultType="java.math.BigDecimal">
+		SELECT
+		sum(a.goods_num*a.buy_price)
+		FROM scm_ops_buy_order_detail a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="buyId != null and buyId != ''">
+				AND a.buy_id = #{buyId}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_ops_buy_order_detail(
+			tenant_id,
+			id,
+			pm_id,
+			smmary_buy_id,
+			buy_id,
+			buyer_id,
+			goods_id,
+			goods_img,
+			goods_name,
+			goods_model,
+			goods_num,
+			market_price,
+			buy_price,
+			unit,
+			status,
+			goods_order_detail_id,
+			order_goods_num,
+			buy_detail_sn,
+			summary_flag,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+            #{tenantId},
+			#{id},
+			#{pmId},
+			#{smmaryBuyId},
+			#{buyId},
+			#{buyerId},
+			#{goodsId},
+			#{goodsImg},
+			#{goodsName},
+			#{goodsModel},
+			#{goodsNum},
+			#{marketPrice},
+			#{buyPrice},
+			#{unit},
+			#{status},
+			#{goodsOrderDetailId},
+			#{orderGoodsNum},
+			#{buyDetailSn},
+			#{summaryFlag},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_ops_buy_order_detail SET
+		    pm_id = #{pmId},
+			smmary_buy_id = #{smmaryBuyId},
+			buy_id = #{buyId},
+			buyer_id = #{buyerId},
+			goods_id = #{goodsId},
+			goods_img = #{goodsImg},
+			goods_name = #{goodsName},
+			goods_model = #{goodsModel},
+			goods_num = #{goodsNum},
+			market_price = #{marketPrice},
+			buy_price = #{buyPrice},
+			unit = #{unit},
+			status = #{status},
+			goods_order_detail_id = #{goodsOrderDetailId},
+            <if test="orderGoodsNum != null">
+                order_goods_num = #{orderGoodsNum},
+            </if>
+            buy_detail_sn = #{buyDetailSn},
+            summary_flag = #{summaryFlag},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_flag = #{delFlag},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_ops_buy_order_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="BuyOrderDetail">
+        SELECT
+        <include refid="buyOrderDetailColumns"/>
+        ,
+        d.delivery_time AS "deliveryDate",
+        d.buy_seq AS "buySeq",
+        m.merchant_name AS "pmName"
+        FROM scm_ops_buy_order_detail a
+        <include refid="buyOrderJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="smmaryBuyId != null and smmaryBuyId != ''">
+                AND a.smmary_buy_id = #{smmaryBuyId}
+            </if>
+            <if test="buyId != null and buyId != ''">
+                AND a.buy_id = #{buyId}
+            </if>
+            <if test="buyerId != null and buyerId != ''">
+                AND a.buyer_id = #{buyerId}
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND a.goods_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+            </if>
+            <if test="status != null and status != ''">
+                AND (a.status = #{status}
+                <if test="finalStatus != null and finalStatus != ''">
+                    OR a.status = #{finalStatus}
+                </if>
+                )
+            </if>
+            <if test="deliveryDate != null and deliveryDate != ''">
+                AND d.delivery_time = DATE(#{deliveryDate})
+            </if>
+            <if test="buySeq != null and buySeq != ''">
+                AND d.buy_seq = #{buySeq}
+            </if>
+            <if test="summaryFlag != null and summaryFlag != ''">
+                AND a.summary_flag = #{summaryFlag}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.buy_id DESC, a.buy_detail_sn
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 采购单明细列表 带交易单的状态/分拣数量 -->
+	<select id="findListWithTrade" resultType="com.haohan.platform.service.sys.modules.pds.entity.resp.BuyOrderDetailResp">
+		SELECT
+		<include refid="buyOrderDetailColumns"/>
+        ,
+        d.buy_seq AS "buySeq",
+        d.delivery_time AS "deliveryTime",
+        x.buyerStatus AS "buyerStatus",
+		x.sortOutNum AS "sortOutNum"
+		FROM scm_ops_buy_order_detail a
+        LEFT JOIN scm_ops_buy_order d on d.buy_id = a.buy_id
+        LEFT JOIN scm_buyer b ON b.id = a.buyer_id AND b.del_flag = #{DEL_FLAG_NORMAL}
+		INNER JOIN (
+			SELECT
+			<!-- 交易单中采购商状态 0:待发货,1:待验货,2:已收货;  多条合并后的状态:有待验货则为待验货  -->
+			IF (SUM( t.buyer_status = '1' ) > 0,'1',IF( SUM( t.buyer_status = '0' ) = COUNT( t.buyer_status ), '0',IF ( SUM( t.buyer_status = '2' ) = COUNT( t.buyer_status ), '2', '1' ) ) ) AS "buyerStatus",
+			SUM(t.sort_out_num) AS "sortOutNum",
+			t.buy_id,
+			t.goods_id
+			FROM scm_trade_order t
+			<where>
+				t.del_flag = #{DEL_FLAG_NORMAL}
+                <if test="buyId != null and buyId != ''">
+                    AND t.buy_id = #{buyId}
+                </if>
+				<if test="buyerId != null and buyerId != ''">
+					AND t.buyer_id = #{buyerId}
+				</if>
+				<if test="deliveryDate != null and deliveryDate != ''">
+					AND DATE(t.delivery_time) = DATE(#{deliveryDate})
+				</if>
+				<if test="buySeq != null and buySeq != ''">
+					AND t.buy_seq = #{buySeq}
+				</if>
+			</where>
+			GROUP BY t.buy_id,t.goods_id
+		) x on x.buy_id = a.buy_id and x.goods_id =a.goods_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="buyId != null and buyId != ''">
+                AND a.buy_id = #{buyId}
+            </if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND DATE(d.delivery_time) = DATE(#{deliveryDate})
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND d.buy_seq = #{buySeq}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="buyerStatus != null and buyerStatus != ''">
+				AND x.buyerStatus = #{buyerStatus}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.buy_id, a.buy_detail_sn
+			</otherwise>
+		</choose>
+	</select>
+
+    <!-- 按批次/送货时间/状态  修改对应采购单及采购明细的状态 -->
+    <update id="updateStatusBatch">
+        UPDATE scm_ops_buy_order a
+        LEFT JOIN scm_ops_buy_order_detail d ON a.buy_id = d.buy_id AND d.del_flag = #{DEL_FLAG_NORMAL} AND d.status = #{status}
+        SET a.status = #{finalStatus},
+            a.update_date = NOW(),
+            d.status = #{finalStatus},
+            d.update_date = NOW()
+        WHERE
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            ANd a.pm_id = #{pmId}
+            AND a.buy_seq = #{buySeq}
+            AND DATE(a.delivery_time) = DATE(#{deliveryDate})
+            AND a.status = #{status}
+	</update>
+
+    <!-- 按采购编号/状态  修改对应采购单及采购明细的状态 -->
+    <update id="updateStatusByBuyId">
+        UPDATE scm_ops_buy_order a
+        LEFT JOIN scm_ops_buy_order_detail d ON a.buy_id = d.buy_id AND d.del_flag = #{DEL_FLAG_NORMAL} AND d.status = #{status}
+        SET a.status = #{finalStatus},
+            a.update_date = NOW(),
+            d.status = #{finalStatus},
+            d.update_date = NOW()
+        WHERE
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.buy_id = #{buyId}
+            AND a.status = #{status}
+	</update>
+	
+	<select id="categoryPercent" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiCategoryPercentResp">
+		SELECT
+		IFNULL(count(distinct a.id),0) as num,
+		c.name as categoryName
+		from scm_ops_buy_order_detail a
+		INNER JOIN scm_ops_buy_order b on a.buy_id = b.buy_id and b.del_flag = '0'
+		INNER JOIN scm_cms_goods_model m on m.id = a.goods_id and m.del_flag = '0'
+		INNER JOIN scm_cms_goods g on g.id = m.goods_id and g.del_flag = '0'
+		INNER JOIN scm_cms_goods_category c on c.id = g.goods_category_id and c.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND DATE(b.buy_time) BETWEEN DATE(#{startDate}) AND DATE(#{endDate})
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			GROUP BY c.id,c.name
+		</where>
+	</select>
+
+	<select id="goodsTopN" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiTopNSaleResp">
+		SELECT
+		a.goods_id as goodsId,
+		a.goods_name as goodsName,
+		IFNULL(sum(a.goods_num),0) as saleNum,
+		IFNULL(sum(a.goods_num*buy_price),0) as saleAmount
+		FROM scm_ops_buy_order_detail a
+		INNER JOIN scm_ops_buy_order b on b.buy_id = a.buy_id and b.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND b.buy_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND b.buyer_id = #{buyerId}
+			</if>
+			GROUP BY goodsId,goodsName
+		</where>
+		order by ${opt} desc limit #{limitNum}
+	</select>
+
+	<select id="sumBuyOrderProfit" resultType="java.math.BigDecimal">
+		SELECT
+		SUM(a.goods_num*a.buy_price)-SUM(a.goods_num*s.supply_avg_price)
+		FROM scm_ops_buy_order_detail a
+		INNER JOIN scm_ops_buy_order b on b.buy_id = a.buy_id and b.del_flag = '0'
+		INNER JOIN scm_ops_summary_order s on s.summary_order_id = a.smmary_buy_id and s.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND b.buy_time BETWEEN #{startDate} AND #{endDate}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND b.buyer_id = #{buyerId}
+			</if>
+		</where>
+	</select>
+
+	<select id="orderAmountCurve" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiStatisCurveResp">
+		SELECT
+		IFNULL(sum(IFNULL(a.buy_price,a.market_price)*a.goods_num),0) as amount,
+		DATE_FORMAT(b.buy_time,'%Y-%m-%d') as buyDate
+		FROM scm_ops_buy_order_detail a
+		INNER JOIN scm_ops_buy_order b on b.buy_id = a.buy_id and b.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND b.buy_time BETWEEN #{startDate} AND #{endDate}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND b.buyer_id = #{buyerId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+		</where>
+		GROUP BY buyDate
+	</select>
+
+	<select id="costCurve" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiStatisCurveResp">
+		SELECT
+		IFNULL(sum(s.supply_avg_price*a.goods_num),0) as amount,
+		DATE_FORMAT(b.buy_time,'%Y-%m-%d') as buyDate
+		FROM scm_ops_buy_order_detail a
+		INNER JOIN scm_ops_buy_order b on b.buy_id = a.buy_id and b.del_flag = '0'
+		LEFT JOIN scm_ops_summary_order s on s.summary_order_id = a.smmary_buy_id and s.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND b.buy_time BETWEEN #{startDate} AND #{endDate}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND b.buyer_id = #{buyerId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			GROUP BY buyDate
+		</where>
+	</select>
+
+	<select id="buyerSaleTop" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiBuyerSaleTopResp">
+		SELECT
+		b.buyer_name as buyerName,
+		IFNULL(sum(a.goods_num*a.buy_price),0) as amount,
+		IFNULL(count(DISTINCT b.buy_id),0) as orderNum
+		FROM scm_ops_buy_order_detail a
+		INNER JOIN scm_ops_buy_order b on b.buy_id = a.buy_id and b.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND b.buy_time BETWEEN #{startDate} AND #{endDate}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			GROUP BY b.buyer_id,b.buyer_name
+		</where>
+		order by ${opt} desc limit #{limit}
+	</select>
+
+	<select id="orderAnalyze" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiOrderAnalyzeResp">
+		SELECT
+		IFNULL(sum(a.buy_price*a.goods_num),0) as orderAmount,
+		IFNULL(count(DISTINCT a.buy_id),0) as orderNum,
+		IFNULL((SELECT sum(a2.ship_fee)
+			FROM scm_ops_buy_order a2
+			<where>
+				a2.del_flag = '0'
+				<if test="pmId != null and pmId != ''">
+					AND a2.pm_id = #{pmId}
+				</if>
+				<if test="buyerId != null and buyerId != ''">
+					AND a2.buyer_id = #{buyerId}
+				</if>
+				<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a2.buy_time BETWEEN #{startDate} AND #{endDate}
+				</if>
+				<if test="status != null and status != ''">
+					AND a2.status = #{status}
+				</if>
+			</where>
+		),0) AS shipFee
+		FROM scm_ops_buy_order_detail a
+		INNER JOIN scm_ops_buy_order b on b.buy_id = a.buy_id and b.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND b.buyer_id = #{buyerId}
+			</if>
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND b.buy_time BETWEEN #{startDate} AND #{endDate}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+	</select>
+
+    <!-- 按采购商的商家分组 -->
+    <select id="findListGroupByMerchant" resultType="BuyOrderDetail">
+        SELECT
+        b.merchant_id AS "merchantId",
+        b.merchant_name AS "merchantName",
+        bo.delivery_time AS "deliveryDate",
+        bo.buy_seq AS "buySeq",
+        a.goods_id AS "goodsId",
+        a.goods_name AS "goodsName",
+        a.goods_model AS "goodsModel",
+        a.unit AS "unit",
+        IFNULL( SUM( a.goods_num ), 0 ) AS "goodsNum",
+        GROUP_CONCAT( a.buy_id ) AS "buyId"
+        FROM
+        scm_ops_buy_order_detail a
+        LEFT JOIN scm_ops_buy_order bo ON a.buy_id = bo.buy_id
+        LEFT JOIN scm_buyer b ON a.buyer_id = b.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="deliveryDate != null and deliveryDate != ''">
+                AND DATE(bo.delivery_time) = DATE(#{deliveryDate})
+            </if>
+            <if test="buySeq != null and buySeq != ''">
+                AND bo.buy_seq = #{buySeq}
+            </if>
+            <if test="status != null and status != ''">
+                AND FIND_IN_SET(a.status, #{status})
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND b.merchant_id = #{merchantId}
+            </if>
+        </where>
+        GROUP BY
+        b.merchant_id,
+        b.merchant_name,
+        bo.delivery_time,
+        bo.buy_seq,
+        a.goods_id,
+        a.goods_name,
+        a.goods_model,
+        a.unit
+    </select>
+
+	<select id="selectPreSummaryOrders" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsPreSumOrderApiResp">
+		SELECT
+		m.id AS goodsId,
+		m.model_name AS goodsModel,
+		g.goods_name AS goodsName,
+		g.thumb_url AS goodsImg,
+		m.model_unit AS goodsUnit,
+		x.goodsNum AS goodsNum,
+		DATE(#{reqDate}) AS deliveryDate
+		FROM(
+			SELECT
+				a.goods_id AS modelId,
+				SUM(a.goods_num) AS goodsNum
+			FROM scm_ops_buy_order_detail a
+			LEFT JOIN scm_ops_buy_order b ON b.buy_id = a.buy_id
+			WHERE b.delivery_time = DATE(#{reqDate})
+			GROUP BY a.goods_id) AS x
+		INNER JOIN scm_cms_goods_model m ON m.id = x.modelId AND m.del_flag = '0'
+		LEFT JOIN scm_cms_goods g ON g.id = m.goods_id AND g.del_flag = '0'
+	</select>
+
+    <!--  查询上次采购价  已成交 规格商品 同一采购商家  -->
+    <select id="fetchLastDeal" resultType="BuyOrderDetail">
+		SELECT
+        a.buy_price AS "lastPrice",
+        b.delivery_time AS "lastDate",
+        c.merchant_name AS "merchantName"
+        FROM
+        scm_ops_buy_order_detail a
+        LEFT JOIN scm_ops_buy_order b ON a.buy_id = b.buy_id
+        LEFT JOIN scm_buyer c ON b.buyer_id = c.id
+        <if  test="buyerId != null and buyerId != ''">
+            LEFT JOIN scm_buyer d ON c.merchant_id = d.merchant_id
+        </if>
+        WHERE
+        a.del_flag = '0'
+        AND a.`status` = '3'
+        <if  test="pmId != null and pmId != ''">
+            AND a.pm_id = #{pmId}
+        </if>
+        <if  test="goodsModelId != null and goodsModelId != ''">
+            AND a.goods_id = #{goodsModelId}
+        </if>
+        <if  test="buyerId != null and buyerId != ''">
+            AND d.id = #{buyerId}
+        </if>
+        ORDER BY b.delivery_time DESC, a.buy_detail_sn DESC
+        limit 0,1
+	</select>
+
+</mapper>

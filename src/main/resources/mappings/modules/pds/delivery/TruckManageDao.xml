@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.delivery.TruckManageDao">
+    
+	<sql id="truckManageColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.truck_no AS "truckNo",
+		a.brand AS "brand",
+		a.truck_name AS "truckName",
+		a.principal AS "principal",
+		a.driver AS "driver",
+		a.telephone AS "telephone",
+		a.carry_weight AS "carryWeight",
+		a.carry_volume AS "carryVolume",
+		a.create_by AS "createBy.id",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="truckManageJoins">
+	</sql>
+
+	<sql id="buyOrderTruckJoins">
+		LEFT JOIN scm_lms_delivery_flow df on df.truck_no = a.truck_no AND df.del_flag = '0'
+		LEFT JOIN scm_distribution d1 on d1.delivery_id = df.delivery_id AND d1.del_flag = '0'
+		LEFT JOIN scm_trade_order t1 on t1.trade_id = d1.trade_id AND t1.del_flag = '0'
+		LEFT JOIN scm_ops_buy_order b1 on b1.buy_id = t1.buy_id AND b1.del_flag = '0'
+	</sql>
+    
+	<select id="get" resultType="TruckManage">
+		SELECT 
+			<include refid="truckManageColumns"/>
+		FROM scm_lms_truck_manage a
+		<include refid="truckManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TruckManage">
+		SELECT 
+			<include refid="truckManageColumns"/>
+		FROM scm_lms_truck_manage a
+		<include refid="truckManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="truckNo != null and truckNo != ''">
+				AND a.truck_no = #{truckNo}
+			</if>
+			<if test="brand != null and brand != ''">
+				AND a.brand = #{brand}
+			</if>
+			<if test="truckName != null and truckName != ''">
+				AND a.truck_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{truckName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{truckName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{truckName},'%')</if>
+			</if>
+			<if test="principal != null and principal != ''">
+				AND a.principal LIKE 
+					<if test="dbName == 'oracle'">'%'||#{principal}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{principal}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{principal},'%')</if>
+			</if>
+			<if test="driver != null and driver != ''">
+				AND a.driver LIKE 
+					<if test="dbName == 'oracle'">'%'||#{driver}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{driver}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{driver},'%')</if>
+			</if>
+			<if test="telephone != null and telephone != ''">
+				AND a.telephone LIKE 
+					<if test="dbName == 'oracle'">'%'||#{telephone}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{telephone}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{telephone},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TruckManage">
+		SELECT 
+			<include refid="truckManageColumns"/>
+		FROM scm_lms_truck_manage a
+		<include refid="truckManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBuyOrderTrucks" resultType="TruckManage">
+		SELECT
+		<include refid="truckManageColumns"/>
+		FROM scm_lms_truck_manage a
+		INNER JOIN
+		(SELECT
+			DISTINCT a1.truck_no
+			FROM scm_lms_truck_manage a1
+			<include refid="buyOrderTruckJoins"/>
+			<where>
+				a1.del_flag = '0'
+				AND b1.buy_id = #{buyId}
+			</where>
+		)a2 on a2.truck_no = a.truck_no
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_lms_truck_manage(
+			tenant_id,
+			id,
+			pm_id,
+			truck_no,
+			brand,
+			truck_name,
+			principal,
+			driver,
+			telephone,
+			carry_weight,
+			carry_volume,
+			create_by,
+			status,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{truckNo},
+			#{brand},
+			#{truckName},
+			#{principal},
+			#{driver},
+			#{telephone},
+			#{carryWeight},
+			#{carryVolume},
+			#{createBy.id},
+			#{status},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_lms_truck_manage SET
+			pm_id = #{pmId},
+			truck_no = #{truckNo},
+			brand = #{brand},
+			truck_name = #{truckName},
+			principal = #{principal},
+			driver = #{driver},
+			telephone = #{telephone},
+			carry_weight = #{carryWeight},
+			carry_volume = #{carryVolume},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_lms_truck_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="TruckManage">
+        SELECT
+        <include refid="truckManageColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_lms_truck_manage a
+        <include refid="truckManageJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="truckNo != null and truckNo != ''">
+                AND a.truck_no = #{truckNo}
+            </if>
+            <if test="brand != null and brand != ''">
+                AND a.brand = #{brand}
+            </if>
+            <if test="truckName != null and truckName != ''">
+                AND a.truck_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{truckName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{truckName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{truckName},'%')</if>
+            </if>
+            <if test="principal != null and principal != ''">
+                AND a.principal LIKE
+                <if test="dbName == 'oracle'">'%'||#{principal}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{principal}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{principal},'%')</if>
+            </if>
+            <if test="driver != null and driver != ''">
+                AND a.driver LIKE
+                <if test="dbName == 'oracle'">'%'||#{driver}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{driver}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{driver},'%')</if>
+            </if>
+            <if test="telephone != null and telephone != ''">
+                AND a.telephone LIKE
+                <if test="dbName == 'oracle'">'%'||#{telephone}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{telephone}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{telephone},'%')</if>
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

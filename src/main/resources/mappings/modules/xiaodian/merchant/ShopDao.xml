@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.ShopDao">
+    
+	<sql id="shopColumns">
+		a.id AS "id",
+		a.code AS "code",
+		a.name AS "name",
+		a.area_id AS "area.id",
+		a.address AS "address",
+		a.manager AS "manager",
+		a.telephone AS "telephone",
+		a.map_longitude AS "mapLongitude",
+		a.map_latitude AS "mapLatitude",
+		a.merchant_id AS "merchantId",
+		a.online_time AS "onlineTime",
+		a.shop_service AS "shopService",
+		a.template_id AS "templateId",
+		a.photo_group_num AS "photoGroupNum",
+		a.shop_desc AS "shopDesc",
+		a.status AS "status",
+		a.pay_code AS "payCode",
+		a.qrcode AS "qrcode",
+		a.shop_logo AS "shopLogo",
+		a.shop_location AS "shopLocation",
+		a.shop_type AS "shopType",
+		a.deliver_distence AS "deliverDistence",
+		a.shop_level AS "shopLevel",
+		a.is_update_jisu AS "isUpdateJisu",
+		a.service_type AS "serviceType",
+		a.industry AS "industry",
+		a.shop_category AS "shopCategory",
+		a.auth_type AS "authType",
+		a.aggregation_type AS "aggregationType",
+		a.trade_type AS "tradeType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a4.name AS "area.name"
+	</sql>
+	
+	<sql id="shopJoins">
+		LEFT JOIN sys_area a4 ON a4.id = a.area_id
+	</sql>
+
+    <sql id="shopCondition">
+        a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="id != null and id != ''">
+			AND a.id = #{id}
+		</if>
+        <if test="code != null and code != ''">
+            AND a.code = #{code}
+        </if>
+        <if test="name != null and name != ''">
+            AND a.name LIKE
+            <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+        </if>
+        <if test="manager != null and manager != ''">
+            AND a.manager LIKE
+            <if test="dbName == 'oracle'">'%'||#{manager}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{manager}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{manager},'%')</if>
+        </if>
+        <if test="merchantId != null and merchantId != ''">
+            AND a.merchant_id = #{merchantId}
+        </if>
+        <if test="shopLevel != null and shopLevel != ''">
+            AND a.shop_level = #{shopLevel}
+        </if>
+        <if test="shopType != null and shopType != ''">
+            AND a.shop_type = #{shopType}
+        </if>
+        <if test="status != null and status != ''">
+            AND a.status = #{status}
+        </if>
+        <if test="isUpdateJisu != null and isUpdateJisu != ''">
+            AND a.is_update_jisu = #{isUpdateJisu}
+        </if>
+        <if test="serviceType != null and serviceType != ''">
+            AND a.service_type = #{serviceType}
+        </if>
+        <if test="industry != null and industry != ''">
+            AND a.industry = #{industry}
+        </if>
+        <if test="shopCategory != null and shopCategory != ''">
+            AND a.shop_category = #{shopCategory}
+        </if>
+        <if test="authType != null and authType != ''">
+            AND a.auth_type = #{authType}
+        </if>
+        <if test="aggregationType != null and aggregationType != ''">
+            AND a.aggregation_type = #{aggregationType}
+        </if>
+        <if test="tradeType != null and tradeType != ''">
+            AND FIND_IN_SET(#{tradeType}, a.trade_type)
+        </if>
+    </sql>
+
+	<select id="get" resultType="Shop">
+		SELECT 
+			<include refid="shopColumns"/>
+		FROM scm_shop a
+		<include refid="shopJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Shop">
+		SELECT 
+			<include refid="shopColumns"/>
+		FROM scm_shop a
+		<include refid="shopJoins"/>
+		<where>
+		    <include refid="shopCondition"/>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Shop">
+		SELECT 
+			<include refid="shopColumns"/>
+		FROM scm_shop a
+		<include refid="shopJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_shop(
+			tenant_id,
+			id,
+			code,
+			name,
+			area_id,
+			address,
+			manager,
+			telephone,
+			map_longitude,
+			map_latitude,
+			merchant_id,
+			online_time,
+			shop_service,
+			template_id,
+			photo_group_num,
+			shop_desc,
+			status,
+			pay_code,
+			qrcode,
+			shop_logo,
+			shop_location,
+			shop_type,
+			deliver_distence,
+			shop_level,
+			is_update_jisu,
+			service_type,
+			industry,
+			shop_category,
+			auth_type,
+			aggregation_type,
+			trade_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{code},
+			#{name},
+			#{area.id},
+			#{address},
+			#{manager},
+			#{telephone},
+			#{mapLongitude},
+			#{mapLatitude},
+			#{merchantId},
+			#{onlineTime},
+			#{shopService},
+			#{templateId},
+			#{photoGroupNum},
+			#{shopDesc},
+			#{status},
+			#{payCode},
+			#{qrcode},
+			#{shopLogo},
+			#{shopLocation},
+			#{shopType},
+			#{deliverDistence},
+			#{shopLevel},
+			#{isUpdateJisu},
+			#{serviceType},
+			#{industry},
+			#{shopCategory},
+			#{authType},
+			#{aggregationType},
+			#{tradeType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_shop SET
+			code = #{code},
+			name = #{name},
+			area_id = #{area.id},
+			address = #{address},
+			manager = #{manager},
+			telephone = #{telephone},
+			map_longitude = #{mapLongitude},
+			map_latitude = #{mapLatitude},
+			merchant_id = #{merchantId},
+			online_time = #{onlineTime},
+			shop_service = #{shopService},
+			template_id = #{templateId},
+			photo_group_num = #{photoGroupNum},
+			shop_desc = #{shopDesc},
+			status = #{status},
+			pay_code = #{payCode},
+			shop_logo = #{shopLogo},
+			qrcode = #{qrcode},
+			shop_location = #{shopLocation},
+			shop_type = #{shopType},
+			deliver_distence = #{deliverDistence},
+			shop_level = #{shopLevel},
+			is_update_jisu = #{isUpdateJisu},
+			service_type = #{serviceType},
+			industry = #{industry},
+			shop_category = #{shopCategory},
+			auth_type = #{authType},
+			aggregation_type = #{aggregationType},
+			trade_type = #{tradeType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_shop SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="modifyShopInfo">
+		UPDATE scm_shop SET
+		<if test="shopLogo != null and shopLogo != ''">
+			shop_logo = #{shopLogo},
+		</if>
+		<if test="shopDesc != null and shopDesc != ''">
+			shop_desc = #{shopDesc},
+		</if>
+		<if test="address != null and address != ''">
+			address = #{address},
+		</if>
+		<if test="shopLocation != null and shopLocation != ''">
+			shop_location = #{shopLocation},
+		</if>
+		<if test="mapLongitude != null and mapLongitude != ''">
+			map_longitude = #{mapLongitude},
+		</if>
+		<if test="mapLatitude != null and mapLatitude != ''">
+			map_latitude = #{mapLatitude},
+		</if>
+		<if test="manager != null and manager != ''">
+			manager = #{manager},
+		</if>
+		<if test="telephone != null and telephone != ''">
+			telephone = #{telephone},
+		</if>
+		<if test="onlineTime != null and onlineTime != ''">
+			online_time = #{onlineTime},
+		</if>
+		<if test="shopService != null and shopService != ''">
+			shop_service = #{shopService},
+		</if>
+		<if test="deliverDistence != null and deliverDistence != ''">
+			deliver_distence = #{deliverDistence},
+		</if>
+		<if test="payCode != null and payCode != ''">
+			pay_code = #{payCode},
+		</if>
+		<if test="qrcode != null and qrcode != ''">
+			qrcode = #{qrcode},
+		</if>
+		<if test="industry != null and industry != ''">
+			industry = #{industry},
+		</if>
+		<if test="shopCategory != null and shopCategory != ''">
+			shop_category = #{shopCategory},
+		</if>
+		<if test="authType != null and authType != ''">
+			auth_type = #{authType},
+		</if>
+		<if test="aggregationType != null and aggregationType != ''">
+			aggregation_type = #{aggregationType},
+		</if>
+		<if test="tradeType != null and tradeType != ''">
+			trade_type = #{tradeType},
+		</if>
+		update_by = #{updateBy.id},
+		update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="Shop">
+        SELECT
+        <include refid="shopColumns"/>
+        ,
+        m.merchant_name AS "merchantName"
+        FROM scm_shop a
+        <include refid="shopJoins"/>
+        LEFT JOIN scm_merchant m ON a.merchant_id = m.id
+        <where>
+            <include refid="shopCondition"/>
+            <if test="merchantName != null and merchantName != ''">
+                AND m.merchant_name LIKE concat('%',#{merchantName},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="fetchByName" resultType="Shop">
+        SELECT
+        <include refid="shopColumns"/>
+        FROM scm_shop a
+        <include refid="shopJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.name  = #{name}
+        </where>
+    </select>
+
+    <select id="findListWithPmId" resultType="Shop">
+        SELECT
+        <include refid="shopColumns"/>
+        ,
+        m.merchant_name AS "merchantName"
+        FROM scm_shop a
+        <include refid="shopJoins"/>
+        LEFT JOIN scm_merchant m ON a.merchant_id = m.id
+        <where>
+            <include refid="shopCondition"/>
+            AND (m.id = #{pmId} OR m.parent_id = #{pmId})
+            <if test="id != null and id != ''">
+                AND a.id = #{id}
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND m.merchant_name LIKE concat('%',#{merchantName},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

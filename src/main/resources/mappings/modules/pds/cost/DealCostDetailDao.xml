@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.cost.DealCostDetailDao">
+    
+	<sql id="dealCostDetailColumns">
+		a.id AS "id",
+		a.deal_date AS "dealDate",
+		a.pm_id AS "pmId",
+		a.cost_no AS "costNo",
+		a.name AS "name",
+		a.number AS "number",
+		a.amount AS "amount",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="dealCostDetailJoins">
+	</sql>
+    
+	<select id="get" resultType="DealCostDetail">
+		SELECT 
+			<include refid="dealCostDetailColumns"/>
+		FROM scm_deal_cost_detail a
+		<include refid="dealCostDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DealCostDetail">
+		SELECT 
+			<include refid="dealCostDetailColumns"/>
+		FROM scm_deal_cost_detail a
+		<include refid="dealCostDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="dealDate != null and dealDate != ''">
+				AND a.deal_date = #{dealDate}
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="costNo != null and costNo != ''">
+				AND a.cost_no = #{costNo}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DealCostDetail">
+		SELECT 
+			<include refid="dealCostDetailColumns"/>
+		FROM scm_deal_cost_detail a
+		<include refid="dealCostDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_deal_cost_detail(
+			tenant_id,
+			id,
+			deal_date,
+			pm_id,
+			cost_no,
+			name,
+			number,
+			amount,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{dealDate},
+			#{pmId},
+			#{costNo},
+			#{name},
+			#{number},
+			#{amount},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_deal_cost_detail SET
+			deal_date = #{dealDate},
+			pm_id = #{pmId},
+			cost_no = #{costNo},
+			name = #{name},
+			number = #{number},
+			amount = #{amount},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_deal_cost_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

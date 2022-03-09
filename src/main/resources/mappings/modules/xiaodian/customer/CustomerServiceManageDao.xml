@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.customer.CustomerServiceManageDao">
+    
+	<sql id="customerServiceManageColumns">
+		a.id AS "id",
+		a.merchant AS "merchant.id",
+		a.service_type AS "serviceType",
+		a.service_content AS "serviceContent",
+		a.service_desc AS "serviceDesc",
+		a.service_time AS "serviceTime",
+		a.pay_type AS "payType",
+		a.pay_amount AS "payAmount",
+		a.pay_time AS "payTime",
+		a.biz_user AS "bizUser.id",
+		a.op_user AS "opUser.id",
+		a.tech_user AS "techUser.id",
+		a.service_info AS "serviceInfo",
+		a.finance_user AS "financeUser.id",
+		a.service_status AS "serviceStatus",
+		a.custorm_evaluate AS "custormEvaluate",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u10.name AS "bizUser.name",
+		u11.name AS "opUser.name",
+		u12.name AS "techUser.name",
+		m.merchant_name AS "merchant.merchantName"
+	</sql>
+	
+	<sql id="customerServiceManageJoins">
+		LEFT JOIN sys_user u10 ON u10.id = a.biz_user
+		LEFT JOIN sys_user u11 ON u11.id = a.op_user
+		LEFT JOIN sys_user u12 ON u12.id = a.tech_user
+		LEFT JOIN scm_merchant m ON m.id = a.merchant
+	</sql>
+    
+	<select id="get" resultType="CustomerServiceManage">
+		SELECT 
+			<include refid="customerServiceManageColumns"/>
+		FROM scm_customer_service_manage a
+		<include refid="customerServiceManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CustomerServiceManage">
+		SELECT 
+			<include refid="customerServiceManageColumns"/>
+		FROM scm_customer_service_manage a
+		<include refid="customerServiceManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="serviceType != null and serviceType != ''">
+				AND a.service_type = #{serviceType}
+			</if>
+			<if test="beginServiceTime != null and endServiceTime != null and beginServiceTime != '' and endServiceTime != ''">
+				AND a.service_time BETWEEN #{beginServiceTime} AND #{endServiceTime}
+			</if>
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="bizUser != null and bizUser.id != null and bizUser.id != ''">
+				AND a.biz_user = #{bizUser.id}
+			</if>
+			<if test="opUser != null and opUser.id != null and opUser.id != ''">
+				AND a.op_user = #{opUser.id}
+			</if>
+			<if test="beginPayTime != null and endPayTime != null and beginPayTime != '' and endPayTime != ''">
+				AND a.pay_time BETWEEN #{beginPayTime} AND #{endPayTime}
+			</if>
+			<if test="merchant != null and merchant.merchantName != null and merchant.merchantName != ''">
+				AND m.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchant.merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchant.merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchant.merchantName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CustomerServiceManage">
+		SELECT 
+			<include refid="customerServiceManageColumns"/>
+		FROM scm_customer_service_manage a
+		<include refid="customerServiceManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_customer_service_manage(
+			id,
+			merchant,
+			service_type,
+			service_content,
+			service_desc,
+			service_time,
+			pay_type,
+			pay_amount,
+			pay_time,
+			biz_user,
+			op_user,
+			tech_user,
+			service_info,
+			finance_user,
+			service_status,
+			custorm_evaluate,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchant.id},
+			#{serviceType},
+			#{serviceContent},
+			#{serviceDesc},
+			#{serviceTime},
+			#{payType},
+			#{payAmount},
+			#{payTime},
+			#{bizUser.id},
+			#{opUser.id},
+			#{techUser.id},
+			#{serviceInfo},
+			#{financeUser.id},
+			#{serviceStatus},
+			#{custormEvaluate},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_customer_service_manage SET
+			merchant = #{merchant.id},
+			service_type = #{serviceType},
+			service_content = #{serviceContent},
+			service_desc = #{serviceDesc},
+			service_time = #{serviceTime},
+			pay_type = #{payType},
+			pay_amount = #{payAmount},
+			pay_time = #{payTime},
+			biz_user = #{bizUser.id},
+			op_user = #{opUser.id},
+			tech_user = #{techUser.id},
+			service_info = #{serviceInfo},
+			finance_user = #{financeUser.id},
+			service_status = #{serviceStatus},
+			custorm_evaluate = #{custormEvaluate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_customer_service_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

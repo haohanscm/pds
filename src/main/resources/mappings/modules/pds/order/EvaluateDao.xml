@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.EvaluateDao">
+    
+	<sql id="evaluateColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.order_id AS "orderId",
+		a.buy_order_id AS "buyOrderId",
+		a.delivery_no AS "deliveryNo",
+		a.supplier_id AS "supplierId",
+		a.buyer_id AS "buyerId",
+		a.goods_id AS "goodsId",
+		a.evaluation_detail AS "evaluationDetail",
+		a.evaluation_desc AS "evaluationDesc",
+		a.evaluation_date AS "evaluationDate",
+		a.status AS "status",
+		a.evaluation_user AS "evaluationUser",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="evaluateJoins">
+	</sql>
+    
+	<select id="get" resultType="Evaluate">
+		SELECT 
+			<include refid="evaluateColumns"/>
+		FROM scm_evaluate a
+		<include refid="evaluateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Evaluate">
+		SELECT 
+			<include refid="evaluateColumns"/>
+		FROM scm_evaluate a
+		<include refid="evaluateJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="buyOrderId != null and buyOrderId != ''">
+				AND a.buy_order_id = #{buyOrderId}
+			</if>
+			<if test="deliveryNo != null and deliveryNo != ''">
+				AND a.delivery_no = #{deliveryNo}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="evaluationDesc != null and evaluationDesc != ''">
+				AND a.evaluation_desc LIKE 
+					<if test="dbName == 'oracle'">'%'||#{evaluationDesc}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{evaluationDesc}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{evaluationDesc},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Evaluate">
+		SELECT 
+			<include refid="evaluateColumns"/>
+		FROM scm_evaluate a
+		<include refid="evaluateJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_evaluate(
+			id,
+			pm_id,
+			order_id,
+			buy_order_id,
+			delivery_no,
+			supplier_id,
+			buyer_id,
+			goods_id,
+			evaluation_detail,
+			evaluation_desc,
+			evaluation_date,
+			status,
+			evaluation_user,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{pmId},
+			#{orderId},
+			#{buyOrderId},
+			#{deliveryNo},
+			#{supplierId},
+			#{buyerId},
+			#{goodsId},
+			#{evaluationDetail},
+			#{evaluationDesc},
+			#{evaluationDate},
+			#{status},
+			#{evaluationUser},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_evaluate SET
+			pm_id = #{pmId},
+			order_id = #{orderId},
+			buy_order_id = #{buyOrderId},
+			delivery_no = #{deliveryNo},
+			supplier_id = #{supplierId},
+			buyer_id = #{buyerId},
+			goods_id = #{goodsId},
+			evaluation_detail = #{evaluationDetail},
+			evaluation_desc = #{evaluationDesc},
+			evaluation_date = #{evaluationDate},
+			status = #{status},
+			evaluation_user = #{evaluationUser},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_evaluate SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

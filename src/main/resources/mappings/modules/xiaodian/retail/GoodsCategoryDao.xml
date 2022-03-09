@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.retail.GoodsCategoryDao">
+    
+	<sql id="goodsCategoryColumns">
+		a.id AS "id",
+		a.shop_id AS "shopId",
+		a.industry AS "industry",
+		a.keywords AS "keywords",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.description AS "description",
+		a.category_type AS "categoryType",
+		a.logo AS "logo",
+		a.category_sn AS "categorySn",
+		a.merchant_id AS "merchantId",
+		a.goods_type AS "goodsType",
+		a.parent_sn AS "parentSn",
+		a.general_category_sn AS "generalCategorySn",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsCategoryJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsCategory">
+		SELECT 
+			<include refid="goodsCategoryColumns"/>
+		FROM scm_cms_goods_category a
+		<include refid="goodsCategoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="GoodsCategory">
+        SELECT
+            <include refid="goodsCategoryColumns"/>
+        FROM scm_cms_goods_category a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+				<if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+				<if test="dbName == 'mysql'">concat(',%',#{parentIds},',%')</if>
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="keywords != null and keywords != ''">
+				AND a.keywords LIKE 
+					<if test="dbName == 'oracle'">'%'||#{keywords}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{keywords}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{keywords},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="categoryType != null and categoryType != ''">
+				AND a.category_type = #{categoryType}
+			</if>
+			<if test="categorySn != null and categorySn != ''">
+				AND FIND_IN_SET(a.category_sn, #{categorySn})
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="parentSn != null and parentSn != ''">
+				AND a.parent_sn = #{parentSn}
+			</if>
+			<if test="goodsType != null and goodsType != ''">
+				AND a.goods_type = #{goodsType}
+			</if>
+            <if test="generalCategorySn != null and generalCategorySn != ''">
+                AND a.general_category_sn = #{generalCategorySn}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.shop_id, a.category_type
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsCategory">
+		SELECT 
+			<include refid="goodsCategoryColumns"/>
+		FROM scm_cms_goods_category a
+		<include refid="goodsCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findByParentIdsLike" resultType="GoodsCategory">
+		SELECT
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids
+		FROM scm_cms_goods_category a
+		<include refid="goodsCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE
+			<if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+			<if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+			<if test="dbName == 'mysql'">concat('%,',#{parentIds},',%')</if>
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_goods_category(
+			tenant_id,
+			id,
+			shop_id,
+			industry,
+			keywords,
+			parent_id,
+			parent_ids,
+			name,
+			sort,
+			description,
+			category_type,
+			logo,
+			category_sn,
+			merchant_id,
+			parent_sn,
+			goods_type,
+			general_category_sn,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{shopId},
+			#{industry},
+			#{keywords},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{sort},
+			#{description},
+			#{categoryType},
+			#{logo},
+			#{categorySn},
+			#{merchantId},
+			#{parentSn},
+			#{goodsType},
+			#{generalCategorySn},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_goods_category SET
+			shop_id = #{shopId},
+			industry = #{industry},
+			keywords = #{keywords},
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			sort = #{sort},
+			description = #{description},
+			category_type = #{categoryType},
+			logo = #{logo},
+			category_sn = #{categorySn},
+			merchant_id = #{merchantId},
+			parent_sn = #{parentSn},
+			goods_type = #{goodsType},
+			general_category_sn = #{generalCategorySn},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+
+
+    <update id="updateParentIds">
+		UPDATE scm_cms_goods_category SET
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_goods_category SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <update id="deleteChildren">
+        UPDATE scm_cms_goods_category SET
+            del_flag = #{DEL_FLAG_DELETE}
+		WHERE parent_ids LIKE
+		<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+		<if test="dbName == 'mssql'">'%,'+#{id}+',%'</if>
+		<if test="dbName == 'mysql'">concat('%,',#{id},',%')</if>
+	</update>
+
+	<select id="findJoinList" resultType="GoodsCategory">
+		SELECT
+		<include refid="goodsCategoryColumns"/>
+		,
+        s.name AS "shopName",
+        m.merchant_name AS "merchantName"
+		<!-- 需要查询分类下的商品数量 -->
+		<if test='goodsCount == "-1" '>
+			,( SELECT count( g.id ) FROM scm_cms_goods g WHERE g.del_flag = #{DEL_FLAG_NORMAL} AND FIND_IN_SET( a.id, g.goods_category_id ) > 0 ) AS "goodsCount"
+		</if>
+		FROM scm_cms_goods_category a
+		LEFT JOIN scm_shop s ON a.shop_id = s.id
+        LEFT JOIN scm_merchant m ON a.merchant_id = m.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+				<if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+				<if test="dbName == 'mysql'">concat(',%',#{parentIds},',%')</if>
+			</if>
+			<if test="keywords != null and keywords != ''">
+				AND a.keywords LIKE
+				<if test="dbName == 'oracle'">'%'||#{keywords}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{keywords}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{keywords},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+            <if test="shopName != null and shopName != ''">
+                AND s.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+            </if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+            <if test="merchantName != null and merchantName != ''">
+                AND m.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+			<if test="categoryType != null and categoryType != ''">
+				AND a.category_type = #{categoryType}
+			</if>
+            <if test="categorySn != null and categorySn != ''">
+                AND FIND_IN_SET(a.category_sn, #{categorySn})
+            </if>
+            <if test="parentSn != null and parentSn != ''">
+                AND a.parent_sn = #{parentSn}
+            </if>
+            <if test="goodsType != null and goodsType != ''">
+                AND a.goods_type = #{goodsType}
+            </if>
+            <if test="generalCategorySn != null and generalCategorySn != ''">
+                AND a.general_category_sn = #{generalCategorySn}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.shop_id, a.category_type ,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <!-- 通过分类id的列表(","连接)找到对应的分类 结果带jisuappId/updateJisu -->
+	<select id="getForIds" resultType="GoodsCategory">
+        SELECT
+        <include refid="goodsCategoryColumns"/>
+        ,
+        s.code AS "jisuappId",
+		s.is_update_jisu AS "updateJisu"
+        FROM scm_cms_goods_category a
+        <include refid="goodsCategoryJoins"/>
+        LEFT JOIN scm_shop s ON a.shop_id = s.id
+        WHERE FIND_IN_SET( a.id, #{ids}) > 0
+	</select>
+
+	<select id="fetchShopId" resultType="GoodsCategory">
+		SELECT
+		DISTINCT a.shop_id
+		FROM scm_cms_goods_category a
+		<include refid="goodsCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+				<if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+				<if test="dbName == 'mysql'">concat(',%',#{parentIds},',%')</if>
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="keywords != null and keywords != ''">
+				AND a.keywords LIKE
+				<if test="dbName == 'oracle'">'%'||#{keywords}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{keywords}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{keywords},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="categoryType != null and categoryType != ''">
+				AND a.category_type = #{categoryType}
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取分类id列表 根据sn列表 逗号连接  -->
+	<select id="getCategoryIds" resultType="GoodsCategory">
+		SELECT
+            GROUP_CONCAT(a.id) AS "id"
+        FROM
+            scm_cms_goods_category a
+        WHERE
+            FIND_IN_SET( a.category_sn, #{categorySn} )
+	</select>
+
+    <!-- 根据merchantId 和 多个分类id 批量删除分类 -->
+    <update id="deleteByIds">
+        UPDATE scm_cms_goods_category SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE FIND_IN_SET( id ,#{id})
+        <if test="merchantId != null and merchantId != ''">
+            AND merchant_id = #{merchantId}
+        </if>
+    </update>
+
+    <!-- 通过分类id的列表(","连接)找到对应的分类及子分类 -->
+    <select id="fetchWithChildrenForIds" resultType="GoodsCategory">
+        SELECT
+        <include refid="goodsCategoryColumns"/>
+        FROM scm_cms_goods_category a
+        WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+        <if test="shopId != null and shopId != ''">
+            AND a.shop_id = #{shopId}
+        </if>
+        AND (FIND_IN_SET( a.id, #{id}) OR FIND_IN_SET( a.parent_id, #{id}))
+    </select>
+
+</mapper>

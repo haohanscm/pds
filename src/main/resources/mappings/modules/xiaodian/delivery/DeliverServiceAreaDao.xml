@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.DeliverServiceAreaDao">
+    
+	<sql id="deliverServiceAreaColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.merchant_name	AS "merchantName",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.deliver_man_id AS "deliverManId",
+		a.community_id AS "communityId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		d.real_name AS "deliverManName",
+		c.name AS "communityName"
+	</sql>
+	
+	<sql id="deliverServiceAreaJoins">
+		LEFT JOIN scm_deliver_man_manage d ON d.id = a.deliver_man_id
+		LEFT JOIN scm_community_manage c ON c.id = a.community_id
+	</sql>
+    
+	<select id="get" resultType="DeliverServiceArea">
+		SELECT 
+			<include refid="deliverServiceAreaColumns"/>
+		FROM scm_deliver_service_area a
+		<include refid="deliverServiceAreaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DeliverServiceArea">
+		SELECT 
+			<include refid="deliverServiceAreaColumns"/>
+		FROM scm_deliver_service_area a
+		<include refid="deliverServiceAreaJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="deliverManId != null and deliverManId != ''">
+				AND a.deliver_man_id = #{deliverManId}
+			</if>
+			<if test="communityId != null and communityId != ''">
+				AND a.community_id = #{communityId}
+			</if>
+			<if test="shopName != null and shopName != ''">
+				AND a.shop_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="deliverManName != null and deliverManName != ''">
+				AND d.real_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{deliverManName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{deliverManName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{deliverManName},'%')</if>
+			</if>
+			<if test="communityName != null and communityName != ''">
+				AND c.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{communityName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{communityName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{communityName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DeliverServiceArea">
+		SELECT 
+			<include refid="deliverServiceAreaColumns"/>
+		FROM scm_deliver_service_area a
+		<include refid="deliverServiceAreaJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_deliver_service_area(
+			id,
+			merchant_id,
+			merchant_name,
+			shop_id,
+			shop_name,
+			deliver_man_id,
+			community_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{merchantName},
+			#{shopId},
+			#{shopName},
+			#{deliverManId},
+			#{communityId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_deliver_service_area SET
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			shop_id = #{shopId},
+			shop_name = #{shopName},
+			deliver_man_id = #{deliverManId},
+			community_id = #{communityId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_deliver_service_area SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 删除配送员的所有配送区域 -->
+    <update id="deleteForMan">
+        UPDATE scm_deliver_service_area SET
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE deliver_man_id = #{deliverManId}
+    </update>
+
+    <!-- uid查询配送区域 -->
+	<select id="findListByUid" resultType="com.haohan.platform.service.sys.modules.xiaodian.entity.delivery.params.ServerAreaResp">
+		SELECT
+            c.name AS "communityName",
+            c.id AS "communityNo",
+            d.name AS "districtName",
+            d.id AS "districtId"
+		FROM scm_deliver_service_area a
+		LEFT JOIN scm_deliver_man_manage b ON a.deliver_man_id = b.id
+        LEFT JOIN scm_community_manage c ON a.community_id = c.id
+        LEFT JOIN scm_district_manage d ON FIND_IN_SET(c.id, d.community_ids)
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            AND b.del_flag = #{DEL_FLAG_NORMAL}
+			AND b.uid = #{uid}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

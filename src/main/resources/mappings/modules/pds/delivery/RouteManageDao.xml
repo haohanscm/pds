@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.delivery.RouteManageDao">
+    
+	<sql id="routeManageColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.line_no AS "lineNo",
+		a.route_name AS "routeName",
+		a.destination AS "destination",
+		a.start AS "start",
+		a.route_planning AS "routePlanning",
+		a.path_point AS "pathPoint",
+		a.road_condition AS "roadCondition",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="routeManageJoins">
+	</sql>
+    
+	<select id="get" resultType="RouteManage">
+		SELECT 
+			<include refid="routeManageColumns"/>
+		FROM scm_lms_route_manage a
+		<include refid="routeManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RouteManage">
+		SELECT 
+			<include refid="routeManageColumns"/>
+		FROM scm_lms_route_manage a
+		<include refid="routeManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="lineNo != null and lineNo != ''">
+				AND a.line_no = #{lineNo}
+			</if>
+			<if test="routeName != null and routeName != ''">
+				AND a.route_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{routeName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{routeName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{routeName},'%')</if>
+			</if>
+			<if test="start != null and start != ''">
+				AND a.start LIKE 
+					<if test="dbName == 'oracle'">'%'||#{start}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{start}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{start},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RouteManage">
+		SELECT 
+			<include refid="routeManageColumns"/>
+		FROM scm_lms_route_manage a
+		<include refid="routeManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_lms_route_manage(
+			tenant_id,
+			id,
+			pm_id,
+			line_no,
+			route_name,
+			destination,
+			start,
+			route_planning,
+			path_point,
+			road_condition,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{lineNo},
+			#{routeName},
+			#{destination},
+			#{start},
+			#{routePlanning},
+			#{pathPoint},
+			#{roadCondition},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_lms_route_manage SET
+			pm_id = #{pmId},
+			line_no = #{lineNo},
+			route_name = #{routeName},
+			destination = #{destination},
+			start = #{start},
+			route_planning = #{routePlanning},
+			path_point = #{pathPoint},
+			road_condition = #{roadCondition},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_lms_route_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="RouteManage">
+        SELECT
+        <include refid="routeManageColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_lms_route_manage a
+        <include refid="routeManageJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="lineNo != null and lineNo != ''">
+                AND a.line_no = #{lineNo}
+            </if>
+            <if test="routeName != null and routeName != ''">
+                AND a.route_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{routeName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{routeName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{routeName},'%')</if>
+            </if>
+            <if test="start != null and start != ''">
+                AND a.start LIKE
+                <if test="dbName == 'oracle'">'%'||#{start}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{start}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{start},'%')</if>
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

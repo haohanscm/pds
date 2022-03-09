@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--quartz定时器配置-->
+    <!--<bean id="planGenerate" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">-->
+    <!--<property name="jobDetail">-->
+    <!--<ref bean="jobtaskForPlan"/>-->
+    <!--</property>-->
+    <!--&lt;!&ndash; cron表达式 从0点开始每1分钟执行一次&ndash;&gt;-->
+    <!--<property name="cronExpression">-->
+    <!--<value>0/30 * * * * ?</value>-->
+    <!--&lt;!&ndash;<value>30 * * * * ?</value>&ndash;&gt;-->
+    <!--</property>-->
+    <!--</bean>-->
+    <!--<bean id="jobtaskForPlan" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">-->
+    <!--<property name="targetObject">-->
+    <!--<ref bean="timingTaskExecutor"/>-->
+    <!--</property>-->
+    <!--&lt;!&ndash; 调用类中的方法 &ndash;&gt;-->
+    <!--<property name="targetMethod">-->
+    <!--<value>runDeliveryPlan</value>-->
+    <!--</property>-->
+    <!--</bean>-->
+
+    <!--配置Solr-->
+    <bean id="builder" class="org.apache.solr.client.solrj.impl.HttpSolrClient.Builder">
+    </bean>
+    <bean id="solrClient" class="org.apache.solr.client.solrj.impl.HttpSolrClient">
+        <constructor-arg name="builder" value="builder" />
+        <property name="baseURL" value="${solr.baseUrl}" />
+    </bean>
+
+    <!-- rocketmq producer配置 -->
+    <bean id="producer" class="com.haohan.platform.service.sys.modules.thirdplatform.rocketmq.producer.RocketMqProducerImpl" init-method="afterPropertiesSet" destroy-method="destroy">
+        <property name="producerGroup" value="pdsOrderProducerGroup"></property>
+        <property name="namesrvAddr" value="${rocketmq.namesrv}"></property>
+        <property name="retryAnotherBrokerWhenNotStoreOK" value="${rocketmq.retryAnotherBrokerWhenNotStoreOK}"></property>
+    </bean>
+
+    <!--<bean id="OrderPayConsumer" class="com.haohan.platform.service.sys.modules.thirdplatform.rocketmq.consumer.impl.OrderPayConsumer">-->
+    <!--<property name="namesrvAddr" value="${rocketmq.namesrv}"/>-->
+    <!--<property name="consumerGroup" value="pay_consumer_group" />-->
+    <!--<property name="topic" value="pay"/>-->
+    <!--&lt;!&ndash; 消费方式：BROADCASTING 广播消费，CLUSTERING 集群消费 &ndash;&gt;-->
+    <!--<property name="messageModel" value="CLUSTERING" />-->
+    <!--&lt;!&ndash; CONCURRENTLY 无序消费  ORDERLY 有序消费 &ndash;&gt;-->
+    <!--<property name="messageListener" value="ORDERLY" />-->
+    <!--&lt;!&ndash; Tag过滤消息 &ndash;&gt;-->
+    <!--<property name="subExpression" value="*" />-->
+    <!--&lt;!&ndash; 消息Entity&ndash;&gt;-->
+    <!--<property name="classTypeName" value="com.haohan.platform.service.sys.modules.thirdplatform.rocketmq.entity.OrderPayMsgEntity"></property>-->
+    <!--</bean>-->
+
+    <!-- rocketmq 打印配置 -->
+    <bean id="printMsgConsumer" class="com.haohan.platform.service.sys.modules.thirdplatform.rocketmq.consumer.impl.PrintMsgConsumer">
+        <property name="namesrvAddr" value="${rocketmq.namesrv}"/>
+        <property name="consumerGroup" value="pds_order_print_consumer_group" />
+        <property name="topic" value="pds_cloud_print"/>
+        <!-- 消费方式：BROADCASTING 广播消费，CLUSTERING 集群消费 -->
+        <property name="messageModel" value="CLUSTERING" />
+        <!-- CONCURRENTLY 无序消费  ORDERLY 有序消费 -->
+        <property name="messageListener" value="ORDERLY" />
+        <!-- Tag过滤消息 -->
+        <property name="subExpression" value="*" />
+        <!-- 消息Entity-->
+        <property name="classTypeName" value="com.haohan.platform.service.sys.modules.thirdplatform.rocketmq.entity.FeiePrintMsgEntity"></property>
+    </bean>
+
+
+</beans>

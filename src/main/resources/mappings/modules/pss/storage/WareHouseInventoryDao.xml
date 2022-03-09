@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.storage.WareHouseInventoryDao">
+    
+	<sql id="wareHouseInventoryColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.goods_code AS "goodsCode",
+		a.warehouse_num AS "warehouseNum",
+		a.goods_name AS "goodsName",
+		a.stock_num AS "stockNum",
+		a.instock_time AS "instockTime",
+		a.last_inventory_time AS "lastInventoryTime",
+		a.attr AS "attr",
+		a.is_confirm AS "isConfirm",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="wareHouseInventoryJoins">
+	</sql>
+    
+	<select id="get" resultType="WareHouseInventory">
+		SELECT 
+			<include refid="wareHouseInventoryColumns"/>
+		FROM scm_pss_warehouse_inventory a
+		<include refid="wareHouseInventoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="WareHouseInventory">
+		SELECT 
+			<include refid="wareHouseInventoryColumns"/>
+		FROM scm_pss_warehouse_inventory a
+		<include refid="wareHouseInventoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="goodsCode != null and goodsCode != ''">
+				AND a.goods_code LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsCode}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsCode}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsCode},'%')</if>
+			</if>
+			<if test="warehouseNum != null and warehouseNum != ''">
+				AND a.warehouse_num LIKE 
+					<if test="dbName == 'oracle'">'%'||#{warehouseNum}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{warehouseNum}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{warehouseNum},'%')</if>
+			</if>
+			<if test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+				AND a.op_time BETWEEN #{beginTime} AND #{endTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="WareHouseInventory">
+		SELECT 
+			<include refid="wareHouseInventoryColumns"/>
+		FROM scm_pss_warehouse_inventory a
+		<include refid="wareHouseInventoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_warehouse_inventory(
+			id,
+			merchant_id,
+			goods_code,
+			warehouse_num,
+			goods_name,
+			stock_num,
+			instock_time,
+			last_inventory_time,
+			attr,
+			is_confirm,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{goodsCode},
+			#{warehouseNum},
+			#{goodsName},
+			#{stockNum},
+			#{instockTime},
+			#{lastInventoryTime},
+			#{attr},
+			#{isConfirm},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_warehouse_inventory SET
+			merchant_id = #{merchantId},
+			goods_code = #{goodsCode},
+			warehouse_num = #{warehouseNum},
+			goods_name = #{goodsName},
+			stock_num = #{stockNum},
+			instock_time = #{instockTime},
+			last_inventory_time = #{lastInventoryTime},
+			attr = #{attr},
+			is_confirm = #{isConfirm},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_warehouse_inventory SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

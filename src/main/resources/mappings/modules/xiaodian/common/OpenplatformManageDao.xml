@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.common.OpenplatformManageDao">
+    
+	<sql id="openplatformManageColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.industry_category AS "industryCategory",
+		a.app_name AS "appName",
+		a.app_type AS "appType",
+		a.app_id AS "appId",
+		a.app_secrect AS "appSecrect",
+		a.reg_email AS "regEmail",
+		a.reg_password AS "regPassword",
+		a.reg_telephone AS "regTelephone",
+		a.reg_user AS "regUser",
+		a.gh_id AS "ghId",
+		a.service_category AS "serviceCategory",
+		a.status AS "status",
+		a.open_time AS "openTime",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="openplatformManageJoins">
+	</sql>
+    
+	<select id="get" resultType="OpenplatformManage">
+		SELECT 
+			<include refid="openplatformManageColumns"/>
+		FROM scm_openplatform_manage a
+		<include refid="openplatformManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OpenplatformManage">
+		SELECT 
+			<include refid="openplatformManageColumns"/>
+		FROM scm_openplatform_manage a
+		<include refid="openplatformManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parentIds}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parentIds}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{parentIds},'%')</if>
+			</if>
+			<if test="appName != null and appName != ''">
+				AND a.app_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{appName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{appName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{appName},'%')</if>
+			</if>
+			<if test="appType != null and appType != ''">
+				AND a.app_type = #{appType}
+			</if>
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="regEmail != null and regEmail != ''">
+				AND a.reg_email = #{regEmail}
+			</if>
+			<if test="regTelephone != null and regTelephone != ''">
+				AND a.reg_telephone = #{regTelephone}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="beginOpenTime != null and endOpenTime != null and beginOpenTime != '' and endOpenTime != ''">
+				AND a.open_time BETWEEN #{beginOpenTime} AND #{endOpenTime}
+			</if>
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findAllList" resultType="OpenplatformManage">
+		SELECT 
+			<include refid="openplatformManageColumns"/>
+		FROM scm_openplatform_manage a
+		<include refid="openplatformManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="OpenplatformManage">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM scm_openplatform_manage a
+		<include refid="openplatformManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_openplatform_manage(
+			id,
+			parent_id,
+			parent_ids,
+			industry_category,
+			app_name,
+			app_type,
+			app_id,
+			app_secrect,
+			reg_email,
+			reg_password,
+			reg_telephone,
+			reg_user,
+			gh_id,
+			service_category,
+			status,
+			open_time,
+			sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{industryCategory},
+			#{appName},
+			#{appType},
+			#{appId},
+			#{appSecrect},
+			#{regEmail},
+			#{regPassword},
+			#{regTelephone},
+			#{regUser},
+			#{ghId},
+			#{serviceCategory},
+			#{status},
+			#{openTime},
+			#{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_openplatform_manage SET
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			industry_category = #{industryCategory},
+			app_name = #{appName},
+			app_type = #{appType},
+			app_id = #{appId},
+			app_secrect = #{appSecrect},
+			reg_email = #{regEmail},
+			reg_password = #{regPassword},
+			reg_telephone = #{regTelephone},
+			reg_user = #{regUser},
+			gh_id = #{ghId},
+			service_category = #{serviceCategory},
+			status = #{status},
+			open_time = #{openTime},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE scm_openplatform_manage SET
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_openplatform_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

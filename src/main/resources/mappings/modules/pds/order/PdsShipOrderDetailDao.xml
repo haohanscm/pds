@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.PdsShipOrderDetailDao">
+    
+	<sql id="pdsShipOrderDetailColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.ship_id AS "shipId",
+		a.trade_id AS "tradeId",
+		a.goods_name AS "goodsName",
+		a.goods_num AS "goodsNum",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="pdsShipOrderDetailJoins">
+	</sql>
+    
+	<select id="get" resultType="PdsShipOrderDetail">
+		SELECT 
+			<include refid="pdsShipOrderDetailColumns"/>
+		FROM scm_pws_ship_order_detail a
+		<include refid="pdsShipOrderDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PdsShipOrderDetail">
+		SELECT 
+			<include refid="pdsShipOrderDetailColumns"/>
+		FROM scm_pws_ship_order_detail a
+		<include refid="pdsShipOrderDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="shipId != null and shipId != ''">
+				AND a.ship_id = #{shipId}
+			</if>
+			<if test="tradeId != null and tradeId != ''">
+				AND a.trade_id = #{tradeId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name = #{goodsName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PdsShipOrderDetail">
+		SELECT 
+			<include refid="pdsShipOrderDetailColumns"/>
+		FROM scm_pws_ship_order_detail a
+		<include refid="pdsShipOrderDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findTruckShipDetailList" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsTradeOrderCommonParamsResp">
+		SELECT
+		a.ship_id AS shipId,
+		t.goods_name AS goodsName,
+		t.goods_model AS goodsModel,
+		t.goods_img AS goodsImg,
+		t.unit AS goodsUnit,
+		a.goods_num AS shipNum,
+		t.buy_price AS buyPrice,
+		t.buy_id AS buyId,
+		ca.name AS goodsCategory,
+		t.trade_id AS tradeId,
+		t.goods_id AS "goodsModelId"
+		FROM scm_pws_ship_order_detail a
+		INNER JOIN scm_pws_ship_order so on so.ship_id = a.ship_id AND so.del_flag = '0'
+		INNER JOIN scm_lms_delivery_flow df on df.delivery_id = so.delivery_id AND df.del_flag = '0'
+		LEFT JOIN scm_trade_order t on t.trade_id = a.trade_id AND t.del_flag = '0'
+		LEFT JOIN scm_cms_goods_category ca on ca.id = t.goods_category AND ca.del_flag = '0'
+		WHERE
+		a.del_flag = '0'
+		<if test="deliveryDate != null and deliveryDate != ''">
+			AND df.delivery_date = DATE (#{deliveryDate})
+		</if>
+		<if test="deliverySeq != null and deliverySeq != ''">
+			AND df.delivery_seq = #{deliverySeq}
+		</if>
+		<if test="driver != null and driver != ''">
+			AND df.driver = #{driver}
+		</if>
+		<if test="buyerId != null and buyerId != ''">
+			AND t.buyer_id = #{buyerId}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countShipOrderAmount" resultType="java.math.BigDecimal">
+		SELECT
+		sum(s1.buyPrice*s1.shipNum)
+		FROM(
+		SELECT
+		t.buy_price AS buyPrice,
+		a.goods_num AS shipNum
+		FROM scm_pws_ship_order_detail a
+		LEFT JOIN scm_pws_ship_order so on so.ship_id = a.ship_id AND so.del_flag = '0'
+		INNER JOIN scm_lms_delivery_flow df on df.delivery_id = so.delivery_id AND df.del_flag = '0'
+		LEFT JOIN scm_trade_order t on t.trade_id = a.trade_id AND t.del_flag = '0'
+		<where>
+			a.del_flag = "0"
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND df.delivery_date = DATE (#{deliveryDate})
+			</if>
+			<if test="deliverySeq != null and deliverySeq != ''">
+				AND df.delivery_seq = #{deliverySeq}
+			</if>
+			<if test="driver != null and driver != ''">
+				AND df.driver = #{driver}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND so.buyer_id = #{buyerId}
+			</if>
+		</where>)s1
+	</select>
+
+	<select id="countDriverShipGoods" resultType="java.lang.Integer">
+		SELECT
+		COUNT(distinct a.id)
+		FROM scm_pws_ship_order_detail a
+		LEFT JOIN scm_pws_ship_order so on so.ship_id = a.ship_id AND so.del_flag = '0'
+		INNER JOIN scm_lms_delivery_flow df on df.delivery_id = so.delivery_id AND df.del_flag = '0'
+		LEFT JOIN scm_trade_order t on t.trade_id = a.trade_id AND t.del_flag = '0'
+		<where>
+			a.del_flag = "0"
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND df.delivery_date = DATE (#{deliveryDate})
+			</if>
+			<if test="deliverySeq != null and deliverySeq != ''">
+				AND df.delivery_seq = #{deliverySeq}
+			</if>
+			<if test="driver != null and driver != ''">
+				AND df.driver = #{driver}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND so.buyer_id = #{buyerId}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pws_ship_order_detail(
+			tenant_id,
+			id,
+			pm_id,
+			ship_id,
+			trade_id,
+			goods_name,
+			goods_num,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{shipId},
+			#{tradeId},
+			#{goodsName},
+			#{goodsNum},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pws_ship_order_detail SET
+            pm_id = #{pmId},
+			ship_id = #{shipId},
+			trade_id = #{tradeId},
+			goods_name = #{goodsName},
+			goods_num = #{goodsNum},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pws_ship_order_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByShipOrderId">
+		UPDATE scm_pws_ship_order_detail SET
+			del_flag = '0'
+		WHERE
+			del_flag = #{DEL_FLAG_NORMAL}
+			AND ship_id = #{shipId}
+	</update>
+
+    <select id="findJoinList" resultType="PdsShipOrderDetail">
+        SELECT
+        <include refid="pdsShipOrderDetailColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_pws_ship_order_detail a
+        <include refid="pdsShipOrderDetailJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="shipId != null and shipId != ''">
+                AND a.ship_id = #{shipId}
+            </if>
+            <if test="tradeId != null and tradeId != ''">
+                AND a.trade_id = #{tradeId}
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND a.goods_name = #{goodsName}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.retail.GoodsModelDao">
+    
+	<sql id="goodsModelColumns">
+		a.id AS "id",
+		a.goods_id AS "goodsId",
+		a.model_price AS "modelPrice",
+		a.model_name AS "modelName",
+		a.model_unit AS "modelUnit",
+		a.model_storage AS "modelStorage",
+		a.model_url AS "modelUrl",
+		a.model_info AS "modelInfo",
+		a.model AS "model",
+		a.items_id AS "itemsId",
+		a.model_code AS "modelCode",
+		a.virtual_price AS "virtualPrice",
+		a.goods_model_sn AS "goodsModelSn",
+		a.model_general_sn AS "modelGeneralSn",
+		a.third_model_sn AS "thirdModelSn",
+		a.cost_price AS "costPrice",
+		a.weight AS "weight",
+		a.volume AS "volume",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsModelJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsModel">
+		SELECT 
+			<include refid="goodsModelColumns"/>
+		FROM scm_cms_goods_model a
+		<include refid="goodsModelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="GoodsModel">
+		SELECT 
+			<include refid="goodsModelColumns"/>
+		FROM scm_cms_goods_model a
+		<include refid="goodsModelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="modelName != null and modelName != ''">
+				AND a.model_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{modelName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{modelName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{modelName},'%')</if>
+			</if>
+			<if test="modelCode != null and modelCode != ''">
+				AND a.model_code = #{modelCode}
+			</if>
+			<if test="goodsModelSn != null and goodsModelSn != ''">
+				AND a.goods_model_sn = #{goodsModelSn}
+			</if>
+			<if test="modelGeneralSn != null and modelGeneralSn != ''">
+				AND a.model_general_sn = #{modelGeneralSn}
+			</if>
+            <if test="thirdModelSn != null and thirdModelSn != ''">
+                AND a.third_model_sn = #{thirdModelSn}
+            </if>
+			<if test="itemsId != null and itemsId != ''">
+				AND a.items_id = #{itemsId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsModel">
+		SELECT 
+			<include refid="goodsModelColumns"/>
+		FROM scm_cms_goods_model a
+		<include refid="goodsModelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_goods_model(
+			tenant_id,
+			id,
+			goods_id,
+			model_price,
+			model_name,
+			model_unit,
+			model_storage,
+			model_url,
+			model_info,
+			model,
+			items_id,
+			model_code,
+		    virtual_price,
+		    goods_model_sn,
+		    model_general_sn,
+		    third_model_sn,
+			cost_price,
+			weight,
+			volume,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{goodsId},
+			#{modelPrice},
+			#{modelName},
+			#{modelUnit},
+			#{modelStorage},
+			#{modelUrl},
+			#{modelInfo},
+			#{model},
+			#{itemsId},
+			#{modelCode},
+            #{virtualPrice},
+            #{goodsModelSn},
+            #{modelGeneralSn},
+            #{thirdModelSn},
+			#{costPrice},
+			#{weight},
+			#{volume},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+    <!-- 值为null时不修改 -->
+	<update id="update">
+		UPDATE scm_cms_goods_model SET
+        <if test="goodsId != null" >
+            goods_id = #{goodsId},
+        </if>
+        <if test="modelPrice != null" >
+            model_price = #{modelPrice},
+        </if>
+        <if test="modelName != null" >
+            model_name = #{modelName},
+        </if>
+        <if test="modelUnit != null" >
+            model_unit = #{modelUnit},
+        </if>
+        <if test="modelStorage != null" >
+            model_storage = #{modelStorage},
+        </if>
+        <if test="modelUrl != null" >
+            model_url = #{modelUrl},
+        </if>
+        <if test="modelInfo != null" >
+            model_info = #{modelInfo},
+        </if>
+        <if test="model != null" >
+            model = #{model},
+        </if>
+        <if test="itemsId != null" >
+            items_id = #{itemsId},
+        </if>
+        <if test="modelCode != null" >
+            model_code = #{modelCode},
+        </if>
+        <if test="virtualPrice != null" >
+            virtual_price = #{virtualPrice},
+        </if>
+        <if test="goodsModelSn != null" >
+            goods_model_sn = #{goodsModelSn},
+        </if>
+        <if test="modelGeneralSn != null" >
+            model_general_sn = #{modelGeneralSn},
+        </if>
+        <if test="thirdModelSn != null" >
+            third_model_sn = #{thirdModelSn},
+        </if>
+        cost_price = #{costPrice},
+        <if test="weight != null" >
+            weight = #{weight},
+        </if>
+        <if test="volume != null" >
+            volume = #{volume},
+        </if>
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+            del_flag = #{DEL_FLAG_NORMAL}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_goods_model SET
+		    goods_model_sn = #{goodsModelSn},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByGoodsId">
+		UPDATE scm_cms_goods_model SET
+		    goods_model_sn = #{goodsModelSn},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE goods_id = #{goodsId}
+	</update>
+
+    <!-- 联查goods表  结果带goodsName shopId goodsCategoryId  -->
+    <select id="fetch" resultType="GoodsModel">
+        SELECT
+        <include refid="goodsModelColumns"/>
+        ,
+        g.shop_id AS "shopId",
+        g.goods_category_id AS "goodsCategoryId",
+        g.goods_name AS "goodsName"
+        FROM scm_cms_goods_model a
+        <include refid="goodsModelJoins"/>
+        LEFT JOIN scm_cms_goods g ON a.goods_id = g.id
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 联查goods表  结果带goodsName shopId goodsCategoryId  -->
+    <select id="fetchWithShop" resultType="GoodsModel">
+        SELECT
+        <include refid="goodsModelColumns"/>
+        ,
+        g.shop_id AS "shopId",
+        g.goods_category_id AS "goodsCategoryId",
+        g.goods_name AS "goodsName"
+        FROM scm_cms_goods_model a
+        <include refid="goodsModelJoins"/>
+        LEFT JOIN scm_cms_goods g ON a.goods_id = g.id
+        WHERE a.id = #{id}
+        AND g.shop_id = #{shopId}
+    </select>
+
+	<!-- 联查goods表  结果带goodsName shopId goodsCategoryId  goodsSn -->
+	<select id="findJoinList" resultType="GoodsModel">
+		SELECT
+		<include refid="goodsModelColumns"/>
+        ,
+        g.shop_id AS "shopId",
+        g.goods_category_id AS "goodsCategoryId",
+        g.goods_sn AS "goodsSn",
+        g.goods_name AS "goodsName"
+		FROM scm_cms_goods_model a
+		<include refid="goodsModelJoins"/>
+        LEFT JOIN scm_cms_goods g ON a.goods_id = g.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            AND g.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="modelName != null and modelName != ''">
+				AND a.model_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{modelName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{modelName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{modelName},'%')</if>
+			</if>
+			<if test="modelCode != null and modelCode != ''">
+				AND a.model_code = #{modelCode}
+			</if>
+			<if test="goodsModelSn != null and goodsModelSn != ''">
+				AND a.goods_model_sn = #{goodsModelSn}
+			</if>
+            <if test="modelGeneralSn != null and modelGeneralSn != ''">
+                AND a.model_general_sn = #{modelGeneralSn}
+            </if>
+            <if test="thirdModelSn != null and thirdModelSn != ''">
+                AND a.third_model_sn = #{thirdModelSn}
+            </if>
+            <if test="shopId != null and shopId != ''">
+                AND g.shop_id = #{shopId}
+            </if>
+            <if test="goodsCategoryId != null and goodsCategoryId != ''">
+                AND FIND_IN_SET( #{goodsCategoryId}, g.goods_category_id ) > 0
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND g.goods_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY g.sort, a.goods_model_sn, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findByGoodsIdWithDel" resultType="GoodsModel">
+        SELECT
+        <include refid="goodsModelColumns"/>
+        FROM scm_cms_goods_model a
+        <where>
+            a.goods_id = #{goodsId}
+        </where>
+        ORDER BY a.del_flag, a.id
+    </select>
+
+</mapper>

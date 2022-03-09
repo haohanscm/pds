@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.MarketplaceDao">
+    
+	<sql id="marketplaceColumns">
+		a.id AS "id",
+		a.marketplace_no AS "marketplaceNo",
+		a.pm_id AS "pmId",
+		a.marketplace_type AS "marketplaceType",
+		a.merchant_id AS "merchantId",
+		a.goods_id AS "goodsId",
+		a.goods_model AS "goodsModel",
+		a.goods_urls AS "goodsUrls",
+		a.goods_memo AS "goodsMemo",
+		a.demand_time AS "demandTime",
+		a.status AS "status",
+		a.pay_type AS "payType",
+		a.delivery_type AS "deliveryType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="marketplaceJoins">
+	</sql>
+    
+	<select id="get" resultType="Marketplace">
+		SELECT 
+			<include refid="marketplaceColumns"/>
+		FROM scm_marketplace a
+		<include refid="marketplaceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Marketplace">
+		SELECT 
+			<include refid="marketplaceColumns"/>
+		FROM scm_marketplace a
+		<include refid="marketplaceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="marketplaceType != null and marketplaceType != ''">
+				AND a.marketplace_type = #{marketplaceType}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="deliveryType != null and deliveryType != ''">
+				AND a.delivery_type = #{deliveryType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Marketplace">
+		SELECT 
+			<include refid="marketplaceColumns"/>
+		FROM scm_marketplace a
+		<include refid="marketplaceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_marketplace(
+			id,
+			marketplace_no,
+			pm_id,
+			marketplace_type,
+			merchant_id,
+			goods_id,
+			goods_model,
+			goods_urls,
+			goods_memo,
+			demand_time,
+			status,
+			pay_type,
+			delivery_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{marketplaceNo},
+			#{pmId},
+			#{marketplaceType},
+			#{merchantId},
+			#{goodsId},
+			#{goodsModel},
+			#{goodsUrls},
+			#{goodsMemo},
+			#{demandTime},
+			#{status},
+			#{payType},
+			#{deliveryType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_marketplace SET
+			marketplace_no = #{marketplaceNo},
+			pm_id = #{pmId},
+			marketplace_type = #{marketplaceType},
+			merchant_id = #{merchantId},
+			goods_id = #{goodsId},
+			goods_model = #{goodsModel},
+			goods_urls = #{goodsUrls},
+			goods_memo = #{goodsMemo},
+			demand_time = #{demandTime},
+			status = #{status},
+			pay_type = #{payType},
+			delivery_type = #{deliveryType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_marketplace SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

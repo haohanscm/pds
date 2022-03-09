@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.MerchantDao">
+
+	<sql id="merchantColumns">
+		a.id AS "id",
+		a.manage_user AS "upassport.id",
+		a.merchant_name AS "merchantName",
+		a.area_id AS "area.id",
+		a.address AS "address",
+		a.contact AS "contact",
+		a.telephone AS "telephone",
+		a.industry AS "industry",
+		a.scale AS "scale",
+		a.biz_desc AS "bizDesc",
+		a.biz_user AS "user.id",
+		a.status AS "status",
+		a.partner_num AS "partnerNum",
+		a.merchant_type AS "merchantType",
+		a.prod_type AS prodType,
+		a.pds_type AS "pdsType",
+		a.is_automatic_order AS "isAutomaticOrder",
+		a.product_line AS "productLine",
+		a.parent_id AS "parentId",
+		a.tenant_id as "tenantId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a4.name AS "area.name",
+		u11.name AS "user.name"
+	</sql>
+
+	<sql id="merchantJoins">
+		LEFT JOIN sys_area a4 ON a4.id = a.area_id
+		LEFT JOIN sys_user u11 ON u11.id = a.biz_user
+	</sql>
+
+	<select id="get" resultType="Merchant">
+		SELECT
+		<include refid="merchantColumns"/>
+		FROM scm_merchant a
+		<include refid="merchantJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="Merchant">
+		SELECT
+		<include refid="merchantColumns"/>
+		FROM scm_merchant a
+		<include refid="merchantJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="upassport != null and upassport.id != null and upassport.id != ''">
+				AND a.manage_user = #{upassport.id}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="area != null and area.id != null and area.id != ''">
+				AND a.area_id = #{area.id}
+			</if>
+			<if test="contact != null and contact != ''">
+				AND a.contact LIKE
+				<if test="dbName == 'oracle'">'%'||#{contact}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{contact}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{contact},'%')</if>
+			</if>
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.biz_user = #{user.id}
+			</if>
+			<if test="status != null ">
+				AND a.status = #{status}
+			</if>
+			<if test="prodType != null and prodType != ''">
+				AND a.prod_type = #{prodType}
+			</if>
+			<if test="pdsType != null and pdsType !='' ">
+				AND a.pds_type = #{pdsType}
+			</if>
+			<if test="partnerNum != null and partnerNum != ''">
+				AND a.partner_num = #{partnerNum}
+			</if>
+			<if test="productLine != null and productLine != ''">
+				AND FIND_IN_SET(#{productLine}, a.product_line)
+			</if>
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id = #{parentId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="Merchant">
+		SELECT
+		<include refid="merchantColumns"/>
+		FROM scm_merchant a
+		<include refid="merchantJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_merchant(
+			id,
+			manage_user,
+			merchant_name,
+			area_id,
+			address,
+			contact,
+			telephone,
+			industry,
+			scale,
+			biz_desc,
+			biz_user,
+			status,
+			partner_num,
+			merchant_type,
+			prod_type,
+			pds_type,
+			is_automatic_order,
+			product_line,
+            parent_id,
+            tenant_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{upassport.id},
+			#{merchantName},
+			#{area.id},
+			#{address},
+			#{contact},
+			#{telephone},
+			#{industry},
+			#{scale},
+			#{bizDesc},
+			#{user.id},
+			#{status},
+			#{partnerNum},
+			#{merchantType},
+			#{prodType},
+			#{pdsType},
+			#{isAutomaticOrder},
+			#{productLine},
+            #{parentId},
+            #{tenantId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE scm_merchant SET
+			manage_user = #{upassport.id},
+			merchant_name = #{merchantName},
+			area_id = #{area.id},
+			address = #{address},
+			contact = #{contact},
+			telephone = #{telephone},
+			industry = #{industry},
+			scale = #{scale},
+			biz_desc = #{bizDesc},
+			biz_user = #{user.id},
+			status = #{status},
+			partner_num = #{partnerNum},
+			merchant_type = #{merchantType},
+			prod_type = #{prodType},
+			pds_type = #{pdsType},
+			is_automatic_order = #{isAutomaticOrder},
+            product_line = #{productLine},
+            parent_id = #{parentId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE scm_merchant SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findJoinList" resultType="Merchant">
+		SELECT
+		<include refid="merchantColumns"/>
+		,
+		b.merchant_name AS "parentName"
+		FROM scm_merchant a
+		<include refid="merchantJoins"/>
+		LEFT JOIN scm_merchant b ON a.parent_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="upassport != null and upassport.id != null and upassport.id != ''">
+				AND a.manage_user = #{upassport.id}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="area != null and area.id != null and area.id != ''">
+				AND a.area_id = #{area.id}
+			</if>
+			<if test="contact != null and contact != ''">
+				AND a.contact LIKE
+				<if test="dbName == 'oracle'">'%'||#{contact}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{contact}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{contact},'%')</if>
+			</if>
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.biz_user = #{user.id}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="prodType != null and prodType != ''">
+				AND a.prod_type = #{prodType}
+			</if>
+			<if test="pdsType != null and pdsType !='' ">
+				AND a.pds_type = #{pdsType}
+			</if>
+			<if test="partnerNum != null and partnerNum != ''">
+				AND a.partner_num = #{partnerNum}
+			</if>
+			<if test="productLine != null and productLine != ''">
+				AND FIND_IN_SET(#{productLine}, a.product_line)
+			</if>
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id = #{parentId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!-- 2已启用的 1平台商家 2采购配送店 -->
+	<select id="findMerchantInfo"
+			resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.reserve.resp.MerchantInfoResp">
+      select
+      m.id as pmId,
+      m.merchant_name as pmName,
+      s.id as shopId
+        from scm_merchant m
+        left join scm_shop s
+          on m.id = s.merchant_id
+            where m.tenant_id = #{tenantId}
+              and m.status = '2'
+              and m.pds_type = '1'
+              and s.shop_level = '2'
+               LIMIT 0,1
+    </select>
+
+</mapper>

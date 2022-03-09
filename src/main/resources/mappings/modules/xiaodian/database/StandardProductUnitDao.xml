@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.database.StandardProductUnitDao">
+    
+	<sql id="standardProductUnitColumns">
+		a.id AS "id",
+		a.goods_name AS "goodsName",
+		a.goods_category_id AS "goodsCategoryId",
+		a.detail_desc AS "detailDesc",
+		a.general_sn AS "generalSn",
+		a.thumb_url AS "thumbUrl",
+		a.industry AS "industry",
+		a.brand AS "brand",
+		a.manufacturer AS "manufacturer",
+		a.photo_group_num AS "photoGroupNum",
+		a.sort AS "sort",
+		a.aggregation_type AS "aggregationType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="standardProductUnitJoins">
+	</sql>
+    
+	<select id="get" resultType="StandardProductUnit">
+		SELECT 
+			<include refid="standardProductUnitColumns"/>
+		FROM scm_cms_standard_product_unit a
+		<include refid="standardProductUnitJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+    <select id="getWith" resultType="StandardProductUnit">
+        SELECT
+        <include refid="standardProductUnitColumns"/>
+        ,
+        c1.name AS "categoryName"
+        FROM scm_cms_standard_product_unit a
+        LEFT JOIN scm_cms_product_category c1 ON a.goods_category_id = c1.id AND c1.del_flag = #{DEL_FLAG_NORMAL}
+        <include refid="standardProductUnitJoins"/>
+        WHERE a.id = #{id}
+    </select>
+	
+	<select id="findList" resultType="StandardProductUnit">
+		SELECT 
+			<include refid="standardProductUnitColumns"/>
+		FROM scm_cms_standard_product_unit a
+		<include refid="standardProductUnitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="goodsCategoryId != null and goodsCategoryId != ''">
+				AND a.goods_category_id = #{goodsCategoryId}
+			</if>
+            <if test="generalSn != null and generalSn != ''">
+                AND a.general_sn LIKE
+                <if test="dbName == 'oracle'">'%'||#{generalSn}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{generalSn}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{generalSn},'%')</if>
+            </if>
+			<if test="brand != null and brand != ''">
+				AND a.brand = #{brand}
+			</if>
+			<if test="industry != null and industry != ''">
+				AND a.industry = #{industry}
+			</if>
+            <if test="aggregationType != null and aggregationType != ''">
+                AND a.aggregation_type = #{aggregationType}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="StandardProductUnit">
+		SELECT 
+			<include refid="standardProductUnitColumns"/>
+		FROM scm_cms_standard_product_unit a
+		<include refid="standardProductUnitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_standard_product_unit(
+			id,
+			goods_name,
+			goods_category_id,
+			detail_desc,
+			general_sn,
+			thumb_url,
+			industry,
+			brand,
+			manufacturer,
+			photo_group_num,
+			sort,
+			aggregation_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{goodsName},
+			#{goodsCategoryId},
+			#{detailDesc},
+			#{generalSn},
+			#{thumbUrl},
+			#{industry},
+			#{brand},
+			#{manufacturer},
+			#{photoGroupNum},
+			#{sort},
+			#{aggregationType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_standard_product_unit SET 	
+			goods_name = #{goodsName},
+			goods_category_id = #{goodsCategoryId},
+			detail_desc = #{detailDesc},
+			general_sn = #{generalSn},
+			thumb_url = #{thumbUrl},
+			industry = #{industry},
+			brand = #{brand},
+			manufacturer = #{manufacturer},
+			photo_group_num = #{photoGroupNum},
+			sort = #{sort},
+			aggregation_type = #{aggregationType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_standard_product_unit SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 查询结果 带 分类名称categoryName -->
+	<select id="findJoinList" resultType="StandardProductUnit">
+		SELECT
+		<include refid="standardProductUnitColumns"/>
+		,
+		c1.name AS "categoryName"
+		FROM scm_cms_standard_product_unit a
+        LEFT JOIN scm_cms_product_category c1 ON a.goods_category_id = c1.id AND c1.del_flag = #{DEL_FLAG_NORMAL}
+		<include refid="standardProductUnitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="goodsCategoryId != null and goodsCategoryId != ''">
+				AND a.goods_category_id = #{goodsCategoryId}
+			</if>
+			<if test="generalSn != null and generalSn != ''">
+				AND a.general_sn LIKE
+                <if test="dbName == 'oracle'">'%'||#{generalSn}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{generalSn}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{generalSn},'%')</if>
+			</if>
+			<if test="brand != null and brand != ''">
+				AND a.brand = #{brand}
+			</if>
+			<if test="industry != null and industry != ''">
+				AND a.industry = #{industry}
+			</if>
+            <if test="aggregationType != null and aggregationType != ''">
+                AND a.aggregation_type = #{aggregationType}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findListByIds" resultType="StandardProductUnit">
+        SELECT
+        <include refid="standardProductUnitColumns"/>
+        FROM scm_cms_standard_product_unit a
+        <include refid="standardProductUnitJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND FIND_IN_SET(a.id, #{id})
+        </where>
+    </select>
+
+</mapper>

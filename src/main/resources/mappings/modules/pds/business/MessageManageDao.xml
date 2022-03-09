@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.business.MessageManageDao">
+    
+	<sql id="messageManageColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.message_no AS "messageNo",
+		a.message_type AS "messageType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="messageManageJoins">
+	</sql>
+    
+	<select id="get" resultType="MessageManage">
+		SELECT 
+			<include refid="messageManageColumns"/>
+		FROM scm_message_manage a
+		<include refid="messageManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MessageManage">
+		SELECT 
+			<include refid="messageManageColumns"/>
+		FROM scm_message_manage a
+		<include refid="messageManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="messageNo != null and messageNo != ''">
+				AND a.message_no = #{messageNo}
+			</if>
+			<if test="messageType != null and messageType != ''">
+				AND a.message_type = #{messageType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MessageManage">
+		SELECT 
+			<include refid="messageManageColumns"/>
+		FROM scm_message_manage a
+		<include refid="messageManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_message_manage(
+			id,
+			pm_id,
+			message_no,
+			message_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{pmId},
+			#{messageNo},
+			#{messageType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_message_manage SET
+			pm_id = #{pmId},
+			message_no = #{messageNo},
+			message_type = #{messageType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_message_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

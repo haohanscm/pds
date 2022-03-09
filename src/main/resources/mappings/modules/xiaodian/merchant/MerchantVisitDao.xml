@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.MerchantVisitDao">
+    
+	<sql id="merchantVisitColumns">
+		a.id AS "id",
+		a.merchant_res_id AS "merchantDatabase.id",
+		a.visit_address AS "visitAddress",
+		a.contact AS "contact",
+		a.phone_number AS "phoneNumber",
+		a.visit_time AS "visitTime",
+		a.visit_content AS "visitContent",
+		a.visit_step AS "visitStep",
+		a.visit_pic AS "visitPic",
+		a.biz_user AS "user.id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u10.name AS "user.name",
+		m.reg_name AS "merchantDatabase.regName"
+	</sql>
+	
+	<sql id="merchantVisitJoins">
+		LEFT JOIN sys_user u10   ON u10.id = a.biz_user
+		LEFT JOIN  scm_mms_merchant_database m ON m.id = a.merchant_res_id
+	</sql>
+    
+	<select id="get" resultType="MerchantVisit">
+		SELECT 
+			<include refid="merchantVisitColumns"/>
+		FROM scm_mms_merchant_visit a
+		<include refid="merchantVisitJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MerchantVisit">
+		SELECT 
+			<include refid="merchantVisitColumns"/>
+		FROM scm_mms_merchant_visit a
+		<include refid="merchantVisitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="contact != null and contact != ''">
+				AND a.contact LIKE 
+					<if test="dbName == 'oracle'">'%'||#{contact}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{contact}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{contact},'%')</if>
+			</if>
+			<if test="beginVisitTime != null and endVisitTime != null and beginVisitTime != '' and endVisitTime != ''">
+				AND a.visit_time BETWEEN #{beginVisitTime} AND #{endVisitTime}
+			</if>
+			<if test="visitStep != null and visitStep != ''">
+				AND a.visit_step = #{visitStep}
+			</if>
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.biz_user = #{user.id}
+			</if>
+			<if test="merchantDatabase != null and merchantDatabase.regName != null and merchantDatabase.regName != ''">
+				AND m.reg_name LIKE
+					<if test="dbName == 'oracle'">'%'||#{merchantDatabase.regName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{merchantDatabase.regName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{merchantDatabase.regName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.visit_time DESC ,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MerchantVisit">
+		SELECT 
+			<include refid="merchantVisitColumns"/>
+		FROM scm_mms_merchant_visit a
+		<include refid="merchantVisitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.visit_time DESC ,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_mms_merchant_visit(
+			id,
+			merchant_res_id,
+			visit_address,
+			contact,
+			phone_number,
+			visit_time,
+			visit_content,
+			visit_step,
+			visit_pic,
+			biz_user,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantDatabase.id},
+			#{visitAddress},
+			#{contact},
+			#{phoneNumber},
+			#{visitTime},
+			#{visitContent},
+			#{visitStep},
+			#{visitPic},
+			#{user.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_mms_merchant_visit SET
+			merchant_res_id = #{merchantDatabase.id},
+			visit_address = #{visitAddress},
+			contact = #{contact},
+			phone_number = #{phoneNumber},
+			visit_time = #{visitTime},
+			visit_content = #{visitContent},
+			visit_step = #{visitStep},
+			visit_pic = #{visitPic},
+			biz_user = #{user.id},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_mms_merchant_visit SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

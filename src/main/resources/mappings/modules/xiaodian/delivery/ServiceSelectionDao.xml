@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.ServiceSelectionDao">
+    
+	<sql id="serviceSelectionColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.goods_id AS "goodsId",
+		a.service_name AS "serviceName",
+		a.service_detail AS "serviceDetail",
+		a.service_price AS "servicePrice",
+		a.service_num AS "serviceNum",
+		a.service_schedule AS "serviceSchedule",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="serviceSelectionJoins">
+	</sql>
+    
+	<select id="get" resultType="ServiceSelection">
+		SELECT 
+			<include refid="serviceSelectionColumns"/>
+		FROM scm_cms_service_selection a
+		<include refid="serviceSelectionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ServiceSelection">
+		SELECT 
+			<include refid="serviceSelectionColumns"/>
+		FROM scm_cms_service_selection a
+		<include refid="serviceSelectionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="serviceName != null and serviceName != ''">
+				AND a.service_name = #{serviceName}
+			</if>
+			<if test="serviceSchedule != null and serviceSchedule != ''">
+				AND a.service_schedule = #{serviceSchedule}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ServiceSelection">
+		SELECT 
+			<include refid="serviceSelectionColumns"/>
+		FROM scm_cms_service_selection a
+		<include refid="serviceSelectionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_service_selection(
+			id,
+			merchant_id,
+			goods_id,
+			service_name,
+			service_detail,
+			service_price,
+			service_num,
+			service_schedule,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{goodsId},
+			#{serviceName},
+			#{serviceDetail},
+			#{servicePrice},
+			#{serviceNum},
+			#{serviceSchedule},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_service_selection SET
+			merchant_id = #{merchantId},
+			goods_id = #{goodsId},
+			service_name = #{serviceName},
+			service_detail = #{serviceDetail},
+			service_price = #{servicePrice},
+			service_num = #{serviceNum},
+			service_schedule = #{serviceSchedule},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_service_selection SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByGoodsId">
+		UPDATE scm_cms_service_selection SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE goods_id = #{goodsId}
+	</update>
+
+</mapper>

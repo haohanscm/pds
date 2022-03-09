@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.common.PhotoGroupManageDao">
+    
+	<sql id="photoGroupManageColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.group_num AS "groupNum",
+		a.group_name AS "groupName",
+		a.categroy_tag AS "categroyTag",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="photoGroupManageJoins">
+	</sql>
+    
+	<select id="get" resultType="PhotoGroupManage">
+		SELECT 
+			<include refid="photoGroupManageColumns"/>
+		FROM scm_photo_group_manage a
+		<include refid="photoGroupManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PhotoGroupManage">
+		SELECT 
+			<include refid="photoGroupManageColumns"/>
+		FROM scm_photo_group_manage a
+		<include refid="photoGroupManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="groupNum != null and groupNum != ''">
+				AND a.group_num = #{groupNum}
+			</if>
+			<if test="groupName != null and groupName != ''">
+				AND a.group_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{groupName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{groupName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{groupName},'%')</if>
+			</if>
+			<if test="categroyTag != null and categroyTag != ''">
+				AND a.categroy_tag LIKE 
+					<if test="dbName == 'oracle'">'%'||#{categroyTag}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{categroyTag}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{categroyTag},'%')</if>
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PhotoGroupManage">
+		SELECT 
+			<include refid="photoGroupManageColumns"/>
+		FROM scm_photo_group_manage a
+		<include refid="photoGroupManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_photo_group_manage(
+			id,
+			merchant_id,
+			group_num,
+			group_name,
+			categroy_tag,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{groupNum},
+			#{groupName},
+			#{categroyTag},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_photo_group_manage SET
+			merchant_id = #{merchantId},
+			group_num = #{groupNum},
+			group_name = #{groupName},
+			categroy_tag = #{categroyTag},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_photo_group_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

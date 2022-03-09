@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.database.ProductCategoryDao">
+    
+	<sql id="productCategoryColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.category_desc AS "categoryDesc",
+		a.aggregation_type AS "aggregationType",
+		a.general_category_sn AS "generalCategorySn",
+		a.logo AS "logo",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="productCategoryJoins">
+	</sql>
+    
+	<select id="get" resultType="ProductCategory">
+		SELECT 
+			<include refid="productCategoryColumns"/>
+		FROM scm_cms_product_category a
+		<include refid="productCategoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+    <select id="getWith" resultType="ProductCategory">
+        SELECT
+        <include refid="productCategoryColumns"/>
+        ,( SELECT count( g.id ) FROM scm_cms_standard_product_unit g WHERE g.del_flag = #{DEL_FLAG_NORMAL} AND a.id = g.goods_category_id ) AS "goodsCount"
+        FROM scm_cms_product_category a
+        <include refid="productCategoryJoins"/>
+        WHERE a.id = #{id}
+    </select>
+	
+	<select id="findList" resultType="ProductCategory">
+		SELECT 
+			<include refid="productCategoryColumns"/>
+        <!-- 需要查询分类下的商品数量 -->
+        <if test='goodsCount == "-1" '>
+            ,( SELECT count( g.id ) FROM scm_cms_standard_product_unit g WHERE g.del_flag = #{DEL_FLAG_NORMAL} AND a.id = g.goods_category_id ) AS "goodsCount"
+        </if>
+		FROM scm_cms_product_category a
+		<include refid="productCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+					<if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+					<if test="dbName == 'mysql'">concat('%,',#{parentIds},',%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+            <if test="aggregationType != null and aggregationType != ''">
+                AND a.aggregation_type = #{aggregationType}
+            </if>
+            <if test="generalCategorySn != null and generalCategorySn != ''">
+                AND a.general_category_sn = #{generalCategorySn}
+            </if>
+		</where>
+		ORDER BY a.sort + 0 ASC, a.update_date DESC
+	</select>
+	
+	<select id="findAllList" resultType="ProductCategory">
+		SELECT 
+			<include refid="productCategoryColumns"/>
+		FROM scm_cms_product_category a
+		<include refid="productCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort + 0 ASC, a.update_date DESC
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="ProductCategory">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM scm_cms_product_category a
+		<include refid="productCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort + 0 ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_product_category(
+			id,
+			parent_id,
+			parent_ids,
+			name,
+			sort,
+			category_desc,
+			aggregation_type,
+			general_category_sn,
+			logo,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{sort},
+			#{categoryDesc},
+			#{aggregationType},
+			#{generalCategorySn},
+			#{logo},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_product_category SET
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			sort = #{sort},
+			category_desc = #{categoryDesc},
+			aggregation_type = #{aggregationType},
+			general_category_sn = #{generalCategorySn},
+			logo = #{logo},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE scm_cms_product_category SET
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_product_category SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <update id="deleteWithChildren">
+        UPDATE scm_cms_product_category SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id} OR parent_ids LIKE
+        <if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+        <if test="dbName == 'mssql'">'%,'+#{id}+',%'</if>
+        <if test="dbName == 'mysql'">concat('%,',#{id},',%')</if>
+    </update>
+
+	<!-- 结果 带父分类名称 parent.name  -->
+	<select id="findJoinList" resultType="ProductCategory">
+		SELECT
+		<include refid="productCategoryColumns"/>
+		,
+		b.name AS "parent.name"
+		FROM scm_cms_product_category a
+		<include refid="productCategoryJoins"/>
+		LEFT JOIN scm_cms_product_category b ON b.id = a.parent_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{parentIds}||',%'</if>
+				<if test="dbName == 'mssql'">'%,'+#{parentIds}+',%'</if>
+				<if test="dbName == 'mysql'">concat('%,',#{parentIds},',%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+            <if test="aggregationType != null and aggregationType != ''">
+                AND a.aggregation_type = #{aggregationType}
+            </if>
+            <if test="generalCategorySn != null and generalCategorySn != ''">
+                AND a.general_category_sn = #{generalCategorySn}
+            </if>
+		</where>
+		ORDER BY a.sort + 0 ASC, a.update_date DESC
+	</select>
+
+    <!-- 查询ids中分类及其所有父级分类  结果中一级分类排在前 -->
+	<select id="findListByIdsWithParent" resultType="ProductCategory">
+		SELECT
+        <include refid="productCategoryColumns"/>
+		FROM (
+            SELECT
+            DISTINCT n.id
+            FROM scm_cms_product_category m
+            LEFT JOIN scm_cms_product_category n ON FIND_IN_SET(n.id ,m.parent_ids)
+            <where>
+                m.del_flag = #{DEL_FLAG_NORMAL}
+                AND ISNULL(n.id) = 0
+                <if test="id != null and id != ''">
+                    AND FIND_IN_SET(m.id ,#{id})
+                </if>
+            </where>
+        ) x
+		LEFT JOIN scm_cms_product_category a ON a.id = x.id
+        UNION
+        SELECT
+        <include refid="productCategoryColumns"/>
+        FROM scm_cms_product_category a
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="id != null and id != ''">
+                AND FIND_IN_SET(a.id ,#{id})
+            </if>
+        </where>
+        ORDER BY "parent.id"
+	</select>
+
+    <select id="findEmptySnList" resultType="ProductCategory">
+        SELECT
+        <include refid="productCategoryColumns"/>
+        FROM scm_cms_product_category a
+        WHERE
+        a.del_flag = '0'
+        AND (a.general_category_sn Is NULL OR a.general_category_sn = '')
+        ORDER BY a.sort + 0, a.update_date DESC
+    </select>
+
+    <!-- 查询分类 在公共库和 店铺零售的对应关系 零售分类id存入tempId
+         一级分类排在前
+         按generalCategorySn 和 名称匹配
+         按generalCategorySn 匹配的排在前  -->
+    <select id="findRelation" resultType="ProductCategory">
+        SELECT
+        <include refid="productCategoryColumns"/>
+        ,
+        gc.id AS "tempId"
+        FROM
+        scm_cms_product_category a
+        LEFT JOIN scm_cms_goods_category gc ON ( a.general_category_sn = gc.general_category_sn OR a.name = gc.name )
+        WHERE
+        a.del_flag = '0'
+        AND gc.del_flag = '0'
+        AND	gc.shop_id = #{shopId}
+        <if test="parentId != null and parentId != '' ">
+        	AND gc.parent_id = #{parentId}
+        </if>
+        <if test="excludeParentId != null and excludeParentId != '' ">
+        	AND gc.parent_id != #{excludeParentId}
+        </if>
+        ORDER BY gc.parent_id, gc.general_category_sn DESC
+    </select>
+
+</mapper>

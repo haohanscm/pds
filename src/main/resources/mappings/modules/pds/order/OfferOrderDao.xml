@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.OfferOrderDao">
+	<sql id="offerOrderColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.offer_uid AS "offerUid",
+		a.offer_order_id AS "offerOrderId",
+		a.ask_order_id AS "askOrderId",
+		a.offer_type AS "offerType",
+		a.goods_id AS "goodsId",
+		a.goods_name AS "goodsName",
+		a.buy_num AS "buyNum",
+		a.supplier_id AS "supplierId",
+		a.supplier_name AS "supplierName",
+		a.supply_num AS "supplyNum",
+		a.supply_price AS "supplyPrice",
+		a.supply_img AS "supplyImg",
+		a.supply_desc AS "supplyDesc",
+		a.status AS "status",
+		a.ship_status AS "shipStatus",
+		a.ask_price_time AS "askPriceTime",
+		a.offer_price_time AS "offerPriceTime",
+		a.min_sale_num AS "minSaleNum",
+		a.deal_time	AS "dealTime",
+		a.deal_price AS "dealPrice",
+		a.prepare_date AS "prepareDate",
+		a.buy_seq AS "buySeq",
+		a.other_amount AS "otherAmount",
+		a.total_amount AS "totalAmount",
+		a.goods_model_id AS "goodsModelId",
+        a.goods_img AS "goodsImg",
+        a.unit AS "unit",
+        a.model_name AS "modelName",
+        a.receive_type AS "receiveType",
+        a.goods_category_id AS "goodsCategoryId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="admOfferRespColumns">
+		a.offer_order_id AS "offerOrderId",
+		a.buy_num AS "buyNum",
+		a.supplier_name AS "supplierName",
+		a.supply_price AS "supplyPrice",
+		a.status AS "status",
+		a.ship_status AS "shipStatus",
+		a.deal_time	AS "dealTime",
+		a.prepare_date AS "prepareDate",
+		a.buy_seq AS "buySeq",
+		s.goods_name AS "goodsName",
+		s.goods_model AS "goodsModel",
+		s.unit AS "goodsUnit",
+		ca.name AS "goodsCategory"
+	</sql>
+
+	<sql id="supGoodsListColumns">
+		s.goods_id AS "goodsId",
+		s.goods_name AS "goodsName",
+		s.goods_img AS "goodsImg",
+		s.goods_model AS "goodsModel",
+		s.unit AS "unit",
+		s.market_price AS "marketPrice",
+		s.goods_img AS "goodsImg",
+		a.buy_num AS "buyNum",
+		a.deal_price AS "dealPrice",
+		a.ship_status AS "shipStatus",
+		a.offer_order_id AS "offerOrderId",
+		a.deal_time AS "dealTime",
+		a.status AS "status"
+	</sql>
+	
+	<sql id="offerOrderJoins">
+	</sql>
+	<sql id="summaryOrderJoins">
+		LEFT JOIN scm_ops_summary_order s ON s.summary_order_id = a.ask_order_id AND s.del_flag = '0'
+	</sql>
+	<sql id="supplierJoin">
+		LEFT JOIN scm_sms_supplier r ON r.id = a.supplier_id AND r.del_flag = '0'
+	</sql>
+	<sql id="goodsModelJoin">
+		LEFT JOIN scm_cms_goods_model m ON m.id = s.goods_id AND m.del_flag = '0'
+	</sql>
+	<sql id="goodsJoin">
+		LEFT JOIN scm_cms_goods g ON g.id = m.goods_id AND g.del_flag = '0'
+	</sql>
+	<sql id="goodsCategoryJoin">
+		LEFT JOIN scm_cms_goods_category c ON c.id = g.goods_category_id AND c.del_flag = '0'
+	</sql>
+	<sql id="goodsCategorySumJoin">
+		LEFT JOIN scm_cms_goods_category ca on ca.id = s.goods_category_id AND ca.del_flag = '0'
+	</sql>
+
+	<select id="get" resultType="OfferOrder">
+		SELECT 
+			<include refid="offerOrderColumns"/>
+		FROM scm_sms_offer_order a
+		<include refid="offerOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OfferOrder">
+		SELECT 
+			<include refid="offerOrderColumns"/>
+		FROM scm_sms_offer_order a
+		<include refid="offerOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="offerUid != null and offerUid != ''">
+				AND a.offer_uid = #{offerUid}
+			</if>
+			<if test="offerOrderId != null and offerOrderId != ''">
+				AND a.offer_order_id = #{offerOrderId}
+			</if>
+			<if test="askOrderId != null and askOrderId != ''">
+				AND a.ask_order_id = #{askOrderId}
+			</if>
+			<if test="offerType != null and offerType != ''">
+				AND a.offer_type = #{offerType}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="shipStatus != null and shipStatus != ''">
+				AND a.ship_status = #{shipStatus}
+			</if>
+			<if test="prepareDate != null and prepareDate != ''">
+				AND a.prepare_date = #{prepareDate}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name = #{goodsName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.offer_order_id DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAdmRespPage" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiOfferOrderResp">
+		SELECT
+		<include refid="admOfferRespColumns"/>
+		FROM scm_sms_offer_order a
+		<include refid="summaryOrderJoins"/>
+		<include refid="goodsCategorySumJoin"/>
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="shipStatus != null and shipStatus != ''">
+				AND a.ship_status = #{shipStatus}
+			</if>
+			<if test="prepareDate != null and prepareDate != ''">
+				AND a.prepare_date = #{prepareDate}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY goodsName
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findSupList" resultType="com.haohan.platform.service.sys.modules.pds.entity.resp.PdsSupListParams">
+		SELECT
+		DISTINCT a.supplier_id AS supplierId,
+		r.supplier_name AS supplierName,
+		r.contact AS contact,
+		r.telephone AS telephone,
+		r.address AS supLocation
+		FROM scm_sms_offer_order a
+		<include refid="summaryOrderJoins"/>
+		<include refid="supplierJoin"/>
+		<where>
+			a.del_flag = "0"
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND s.delivery_time = #{deliveryDate}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND s.buy_seq = #{buySeq}
+			</if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+			<if test="shipStatus != null and shipStatus != ''">
+				AND a.ship_status = #{shipStatus}
+			</if>
+			<if test="excludeShipStatus != null and excludeShipStatus != ''">
+				AND a.ship_status != #{excludeShipStatus}
+			</if>
+			<if test="shipStatusArry != null and shipStatusArry.length > 0">
+				AND a.ship_status in
+				<foreach  item="item" index="index" collection="shipStatusArry" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="findSupGoodsList" resultType="com.haohan.platform.service.sys.modules.pds.entity.resp.PdsGoodsListParams">
+		SELECT
+		<include refid="supGoodsListColumns"/>
+		FROM scm_sms_offer_order a
+		<include refid="summaryOrderJoins"/>
+		<where>
+			a.del_flag = "0"
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND s.delivery_time = #{deliveryDate}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND s.buy_seq = #{buySeq}
+			</if>
+			<if test="shipStatus != null and shipStatus != ''">
+				AND a.ship_status = #{shipStatus}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+	</select>
+
+	<select id="countCategoryNum" resultType="java.lang.Integer">
+		SELECT
+		COUNT(DISTINCT c.id)
+		FROM scm_sms_offer_order a
+		<include refid="summaryOrderJoins"/>
+		<include refid="goodsModelJoin"/>
+		<include refid="goodsJoin"/>
+		<include refid="goodsCategoryJoin"/>
+		<where>
+			a.del_flag = "0"
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND s.delivery_time = #{deliveryDate}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND s.buy_seq = #{buySeq}
+			</if>
+			<if test="shipStatus != null and shipStatus != ''">
+				AND a.ship_status in
+				<foreach  item="item" index="index" collection="shipStatus" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+		</where>
+	</select>
+
+	<select id="countGoodsNum" resultType="java.lang.Integer">
+		SELECT
+		COUNT(DISTINCT g.id)
+		FROM scm_sms_offer_order a
+		<include refid="summaryOrderJoins"/>
+		<include refid="goodsModelJoin"/>
+		<include refid="goodsJoin"/>
+		<where>
+			a.del_flag = "0"
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND s.delivery_time = #{deliveryDate}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND s.buy_seq = #{buySeq}
+			</if>
+			<if test="shipStatus != null and shipStatus != ''">
+				AND a.ship_status in
+				<foreach  item="item" index="index" collection="shipStatus" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+		</where>
+	</select>
+
+	<select id="countSupplyAvgPrice" resultType="java.math.BigDecimal">
+		SELECT
+		AVG(a.supply_price)
+		FROM scm_sms_offer_order a
+		<where>
+			a.del_flag = "0"
+			AND a.ask_order_id = #{summaryOrderId}
+		</where>
+	</select>
+
+	<select id="findAllList" resultType="OfferOrder">
+		SELECT 
+			<include refid="offerOrderColumns"/>
+		FROM scm_sms_offer_order a
+		<include refid="offerOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_sms_offer_order(
+			tenant_id,
+			id,
+			pm_id,
+			offer_uid,
+			offer_order_id,
+			ask_order_id,
+			offer_type,
+			goods_id,
+			goods_name,
+			buy_num,
+			supplier_id,
+			supplier_name,
+			supply_num,
+			supply_price,
+			supply_img,
+			supply_desc,
+			status,
+			ask_price_time,
+			offer_price_time,
+			min_sale_num,
+			deal_time,
+			deal_price,
+			ship_status,
+			prepare_date,
+			buy_seq,
+			other_amount,
+			total_amount,
+			goods_model_id,
+            goods_img,
+            unit,
+            model_name,
+            receive_type,
+            goods_category_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{offerUid},
+			#{offerOrderId},
+			#{askOrderId},
+			#{offerType},
+			#{goodsId},
+			#{goodsName},
+			#{buyNum},
+			#{supplierId},
+			#{supplierName},
+			#{supplyNum},
+			#{supplyPrice},
+			#{supplyImg},
+			#{supplyDesc},
+			#{status},
+			#{askPriceTime},
+			#{offerPriceTime},
+			#{minSaleNum},
+			#{dealTime},
+			#{dealPrice},
+			#{shipStatus},
+			#{prepareDate},
+			#{buySeq},
+			#{otherAmount},
+			#{totalAmount},
+			#{goodsModelId},
+            #{goodsImg},
+            #{unit},
+            #{modelName},
+            #{receiveType},
+            #{goodsCategoryId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_sms_offer_order SET
+            pm_id = #{pmId},
+			<if test="offerUid != null and offerUid != ''">offer_uid = #{offerUid},</if>
+			<if test="offerOrderId != null and offerOrderId != ''">offer_order_id = #{offerOrderId},</if>
+			<if test="askOrderId != null and askOrderId != ''">ask_order_id = #{askOrderId},</if>
+			<if test="offerType != null and offerType != ''">offer_type = #{offerType},</if>
+			<if test="goodsId != null and goodsId != ''">goods_id = #{goodsId},</if>
+			<if test="goodsName != null and goodsName != ''">goods_name = #{goodsName},</if>
+			<if test="buyNum != null">buy_num = #{buyNum},</if>
+			<if test="supplierId != null and supplierId != ''">supplier_id = #{supplierId},</if>
+			<if test="supplierName != null and supplierName != ''">supplier_name = #{supplierName},</if>
+			<if test="supplyNum != null">supply_num = #{supplyNum},</if>
+			<if test="supplyPrice != null">supply_price = #{supplyPrice},</if>
+			<if test="supplyImg != null and supplyImg != ''">supply_img = #{supplyImg},</if>
+			<if test="supplyDesc != null and supplyDesc != ''">supply_desc = #{supplyDesc},</if>
+			<if test="status != null and status != ''">status = #{status},</if>
+			<if test="askPriceTime != null">ask_price_time = #{askPriceTime},</if>
+			<if test="offerPriceTime != null">offer_price_time = #{offerPriceTime},</if>
+			<if test="minSaleNum != null">min_sale_num = #{minSaleNum},</if>
+			<if test="dealTime != null">deal_time = #{dealTime},</if>
+			<if test="dealPrice != null">deal_price = #{dealPrice},</if>
+			<if test="shipStatus != null">ship_status = #{shipStatus},</if>
+			<if test="prepareDate != null">prepare_date = #{prepareDate},</if>
+			<if test="buySeq != null and buySeq != ''">buy_seq = #{buySeq},</if>
+			<if test="otherAmount != null">other_amount = #{otherAmount},</if>
+			<if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="goodsModelId != null and goodsModelId != ''">goods_model_id = #{goodsModelId},</if>
+            <if test="goodsImg != null and goodsImg != ''">goods_img = #{goodsImg},</if>
+            <if test="unit != null and unit != ''">unit = #{unit},</if>
+            <if test="modelName != null and modelName != ''">model_name = #{modelName},</if>
+            <if test="receiveType != null and receiveType != ''">receive_type = #{receiveType},</if>
+            <if test="goodsCategoryId != null and goodsCategoryId != ''">goods_category_id = #{goodsCategoryId},</if>
+			<if test="remarks != null and remarks != ''">remarks = #{remarks},</if>
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByDateSeqPmId">
+		UPDATE scm_sms_offer_order SET
+		del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			del_flag = #{DEL_FLAG_NORMAL}
+			AND prepare_date = #{prepareDate}
+			AND pm_id = #{pmId}
+			AND buy_seq = #{buySeq}
+		</where>
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_sms_offer_order SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="OfferOrder">
+        SELECT
+        <include refid="offerOrderColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_sms_offer_order a
+        <include refid="offerOrderJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="offerUid != null and offerUid != ''">
+                AND a.offer_uid = #{offerUid}
+            </if>
+            <if test="offerOrderId != null and offerOrderId != ''">
+                AND a.offer_order_id = #{offerOrderId}
+            </if>
+            <if test="askOrderId != null and askOrderId != ''">
+                AND a.ask_order_id = #{askOrderId}
+            </if>
+            <if test="offerType != null and offerType != ''">
+                AND a.offer_type = #{offerType}
+            </if>
+            <if test="supplierId != null and supplierId != ''">
+                AND a.supplier_id = #{supplierId}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="shipStatus != null and shipStatus != ''">
+                AND a.ship_status = #{shipStatus}
+            </if>
+            <if test="prepareDate != null and prepareDate != ''">
+                AND DATE(a.prepare_date) = DATE(#{prepareDate})
+            </if>
+            <if test="buySeq != null and buySeq != ''">
+                AND a.buy_seq = #{buySeq}
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND a.goods_name = #{goodsName}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.offer_order_id DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

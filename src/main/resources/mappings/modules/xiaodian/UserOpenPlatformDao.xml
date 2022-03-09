@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.UserOpenPlatformDao">
+    
+	<sql id="userOpenPlatformColumns">
+		a.id AS "id",
+		a.uid AS "uid",
+		a.open_id AS "openId",
+		a.union_id AS "unionId",
+		a.app_id AS "appId",
+		a.app_type AS "appType",
+		a.nick_name AS "nickName",
+		a.album_url AS "albumUrl",
+		a.sex AS "sex",
+		a.personal_info AS "personalInfo",
+		a.flush_token AS "flushToken",
+		a.access_token AS "accessToken",
+		a.update_time AS "updateTime",
+		a.create_time AS "createTime",
+		a.memo AS "memo",
+		a.province AS "province",
+		a.city AS "city",
+		a.district AS "district",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.status AS "status"
+	</sql>
+
+    <sql id="userOpenPlatformJoinColumns">
+        ,
+		b.app_name AS "appName",
+		b.qrcode AS "qrcode"
+    </sql>
+
+	<sql id="userOpenPlatformJoins">
+        LEFT JOIN scm_auth_app b on a.app_id = b.app_id and b.del_flag = #{DEL_FLAG_NORMAL}
+	</sql>
+    
+	<select id="get" resultType="UserOpenPlatform">
+		SELECT 
+			<include refid="userOpenPlatformColumns"/>
+            <include refid="userOpenPlatformJoinColumns"/>
+		FROM scm_user_open_platform a
+		<include refid="userOpenPlatformJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+    <sql id="userOpenPlatformWhereCondition">
+        a.del_flag = #{DEL_FLAG_NORMAL}
+        <if test="uid != null and uid != ''">
+            AND a.uid = #{uid}
+        </if>
+        <if test="openId != null and openId != ''">
+            AND a.open_id = #{openId}
+        </if>
+        <if test="unionId != null and unionId != ''">
+            AND a.union_id = #{unionId}
+        </if>
+        <if test="appType != null and appType != ''">
+            AND a.app_type = #{appType}
+        </if>
+        <if test="appId != null and appId != ''">
+            AND a.app_id = #{appId}
+        </if>
+        <if test="accessToken != null and accessToken != ''">
+            AND a.access_token = #{accessToken}
+        </if>
+        <if test="status != null and status != ''">
+            AND a.status = #{status}
+        </if>
+        <if test="nickName != null and nickName != ''">
+            AND a.nick_name LIKE
+            <if test="dbName == 'oracle'">'%'||#{nickName}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{nickName}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{nickName},'%')</if>
+        </if>
+        <if test="beginCreateTime != null and endCreateTime != null and beginCreateTime != '' and endCreateTime != ''">
+            AND a.create_time BETWEEN #{beginCreateTime} AND #{endCreateTime}
+        </if>
+        <if test="beginUpdateDate != null and endUpdateDate != null and beginUpdateDate != '' and endUpdateDate != ''">
+            AND a.update_date BETWEEN #{beginUpdateDate} AND #{endUpdateDate}
+        </if>
+    </sql>
+
+	<select id="findList" resultType="UserOpenPlatform">
+		SELECT
+			<include refid="userOpenPlatformColumns"/>
+            <include refid="userOpenPlatformJoinColumns"/>
+		FROM scm_user_open_platform a
+		<include refid="userOpenPlatformJoins"/>
+		<where>
+            <include refid="userOpenPlatformWhereCondition"/>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+
+	<select id="findAllList" resultType="UserOpenPlatform">
+		SELECT
+			<include refid="userOpenPlatformColumns"/>
+            <include refid="userOpenPlatformJoinColumns"/>
+		FROM scm_user_open_platform a
+		<include refid="userOpenPlatformJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countUserNum" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM scm_u_passport a
+		<where>
+			a.del_flag = '0'
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="startTime != null and endTime != null and startTime != '' and endTime != ''">
+				AND a.create_date BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_user_open_platform(
+			id,
+			uid,
+			open_id,
+			union_id,
+			app_id,
+			app_type,
+			nick_name,
+			album_url,
+			sex,
+			personal_info,
+			flush_token,
+			access_token,
+			update_time,
+			create_time,
+			memo,
+			province,
+			city,
+			district,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			status
+		) VALUES (
+			#{id},
+			#{uid},
+			#{openId},
+			#{unionId},
+			#{appId},
+			#{appType},
+			#{nickName},
+			#{albumUrl},
+			#{sex},
+			#{personalInfo},
+			#{flushToken},
+			#{accessToken},
+			#{updateTime},
+			#{createTime},
+			#{memo},
+			#{province},
+			#{city},
+			#{district},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{status}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_user_open_platform SET
+			uid = #{uid},
+			open_id = #{openId},
+			union_id = #{unionId},
+			app_id = #{appId},
+			app_type = #{appType},
+			nick_name = #{nickName},
+			album_url = #{albumUrl},
+			sex = #{sex},
+			personal_info = #{personalInfo},
+			flush_token = #{flushToken},
+			access_token = #{accessToken},
+			update_time = #{updateTime},
+			create_time = #{createTime},
+			memo = #{memo},
+			province = #{province},
+			city = #{city},
+			district = #{district},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_user_open_platform SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findListByMerchantShop" resultType="UserOpenPlatform">
+		SELECT
+		<include refid="userOpenPlatformColumns"/>
+        <include refid="userOpenPlatformJoinColumns"/>
+		FROM scm_user_open_platform a
+		<include refid="userOpenPlatformJoins"/>
+        LEFT JOIN scm_merchant_app_manage m ON a.app_id = m.app_id
+		<where>
+            <include refid="userOpenPlatformWhereCondition"/>
+            <if test="merchantId != null and merchantId != ''">
+                AND m.merchant_id = #{merchantId}
+            </if>
+            <if test="shopId != null and shopId != ''">
+                AND m.ext LIKE
+                <if test="dbName == 'oracle'">'%'||#{shopId}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shopId}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shopId},'%')</if>
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findByWechatPublic" resultType="UserOpenPlatform">
+        SELECT
+        <include refid="userOpenPlatformColumns"/>
+        <include refid="userOpenPlatformJoinColumns"/>
+        FROM scm_u_passport p
+        LEFT JOIN scm_user_open_platform a ON p.union_id = a.union_id
+        <include refid="userOpenPlatformJoins"/>
+        <where>
+            p.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="uid != null and uid != ''">
+                AND p.id = #{uid}
+            </if>
+            <if test="appId != null and appId != ''">
+                AND a.app_id = #{appId}
+            </if>
+        </where>
+    </select>
+
+    <select id="findListByPmId" resultType="UserOpenPlatform">
+        SELECT
+        <include refid="userOpenPlatformColumns"/>
+        <include refid="userOpenPlatformJoinColumns"/>
+        FROM scm_user_open_platform a
+        <include refid="userOpenPlatformJoins"/>
+        LEFT JOIN scm_merchant_app_manage m ON a.app_id = m.app_id AND m.del_flag = '0'
+        LEFT JOIN scm_merchant xm ON m.merchant_id = xm.id
+        <where>
+            <include refid="userOpenPlatformWhereCondition"/>
+            AND (xm.parent_id = #{pmId} OR xm.id = #{pmId})
+            <if test="merchantId != null and merchantId != ''">
+                AND m.merchant_id = #{merchantId}
+            </if>
+            <if test="shopId != null and shopId != ''">
+                AND m.ext LIKE
+                <if test="dbName == 'oracle'">'%'||#{shopId}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shopId}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shopId},'%')</if>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.cost.SupplierPaymentDao">
+    
+	<sql id="supplierPaymentColumns">
+		a.id AS "id",
+		a.ask_order_id AS "askOrderId",
+		a.supplier_id AS "supplierId",
+		a.pm_id AS "pmId",
+		a.supply_date AS "supplyDate",
+		a.goods_num AS "goodsNum",
+		a.supplier_payment AS "supplierPayment",
+		a.after_sale_payment AS "afterSalePayment",
+		a.status AS "status",
+		a.supplier_payment_id AS "supplierPaymentId",
+		a.service_id AS "serviceId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="supplierPaymentJoins">
+	</sql>
+    
+	<select id="get" resultType="SupplierPayment">
+		SELECT 
+			<include refid="supplierPaymentColumns"/>
+		FROM scm_sms_supplier_payment a
+		<include refid="supplierPaymentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SupplierPayment">
+		SELECT 
+			<include refid="supplierPaymentColumns"/>
+		FROM scm_sms_supplier_payment a
+		<include refid="supplierPaymentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="askOrderId != null and askOrderId != ''">
+				AND a.ask_order_id = #{askOrderId}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="beginSupplyDate != null and endSupplyDate != null and beginSupplyDate != '' and endSupplyDate != ''">
+                AND DATE(a.supply_date) BETWEEN DATE(#{beginSupplyDate}) AND DATE(#{endSupplyDate})
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+            </if>
+			<if test="supplyDate != null and supplyDate != ''">
+                AND DATE(a.supply_date) = DATE(#{supplyDate})
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+            <if test="supplierPaymentId != null and supplierPaymentId != ''">
+                AND a.supplier_payment_id = #{supplierPaymentId}
+            </if>
+            <if test="serviceId != null and serviceId != ''">
+                AND FIND_IN_SET(#{serviceId}, a.service_id)
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.supplier_payment_id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SupplierPayment">
+		SELECT 
+			<include refid="supplierPaymentColumns"/>
+		FROM scm_sms_supplier_payment a
+		<include refid="supplierPaymentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_sms_supplier_payment(
+			tenant_id,
+			id,
+			ask_order_id,
+			supplier_id,
+			pm_id,
+			supply_date,
+			goods_num,
+			supplier_payment,
+			after_sale_payment,
+			status,
+			service_id,
+			supplier_payment_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{askOrderId},
+			#{supplierId},
+			#{pmId},
+			#{supplyDate},
+			#{goodsNum},
+			#{supplierPayment},
+			#{afterSalePayment},
+			#{status},
+			#{serviceId},
+			#{supplierPaymentId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_sms_supplier_payment SET
+			ask_order_id = #{askOrderId},
+			supplier_id = #{supplierId},
+			pm_id = #{pmId},
+			supply_date = #{supplyDate},
+			goods_num = #{goodsNum},
+			supplier_payment = #{supplierPayment},
+			after_sale_payment = #{afterSalePayment},
+			status = #{status},
+			service_id = #{serviceId},
+			supplier_payment_id = #{supplierPaymentId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_sms_supplier_payment SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <update id="updateStatusBatch">
+		UPDATE scm_sms_supplier_payment SET
+			status = #{finalStatus},
+			update_date = NOW()
+		WHERE del_flag = #{DEL_FLAG_NORMAL}
+		AND status = #{status}
+        AND pm_id = #{pmId}
+        AND FIND_IN_SET(supplier_payment_id, #{supplierPaymentId})
+	</update>
+
+    <!-- supplierName/merchantId/merchantName -->
+    <select id="findJoinList" resultType="SupplierPayment">
+        SELECT
+        <include refid="supplierPaymentColumns"/>
+        ,
+        b.supplier_name AS "supplierName",
+        b.merchant_id AS "merchantId",
+        b.merchant_name AS "merchantName" ,
+        m.merchant_name AS "pmName"
+        FROM scm_sms_supplier_payment a
+        LEFT JOIN scm_sms_supplier b ON a.supplier_id = b.id
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="askOrderId != null and askOrderId != ''">
+                AND a.ask_order_id = #{askOrderId}
+            </if>
+            <if test="supplierId != null and supplierId != ''">
+                AND a.supplier_id = #{supplierId}
+            </if>
+            <if test="beginSupplyDate != null and endSupplyDate != null and beginSupplyDate != '' and endSupplyDate != ''">
+                AND DATE(a.supply_date) BETWEEN DATE(#{beginSupplyDate}) AND DATE(#{endSupplyDate})
+            </if>
+            <if test="supplyDate != null and supplyDate != ''">
+                AND DATE(a.supply_date) = DATE(#{supplyDate})
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="supplierPaymentId != null and supplierPaymentId != ''">
+                AND a.supplier_payment_id = #{supplierPaymentId}
+            </if>
+            <if test="serviceId != null and serviceId != ''">
+                AND FIND_IN_SET(#{serviceId}, a.service_id)
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND b.merchant_id = #{merchantId}
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND b.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.supplier_payment_id DESC, a.supply_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

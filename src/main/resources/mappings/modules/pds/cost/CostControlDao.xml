@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.cost.CostControlDao">
+    
+	<sql id="costControlColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.cost_id AS "costId",
+		a.cost_name AS "costName",
+		a.cost_type AS "costType",
+		a.count_unit AS "countUnit",
+		a.control_limit AS "controlLimit",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="costControlJoins">
+	</sql>
+    
+	<select id="get" resultType="CostControl">
+		SELECT 
+			<include refid="costControlColumns"/>
+		FROM scm_cost_control a
+		<include refid="costControlJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CostControl">
+		SELECT 
+			<include refid="costControlColumns"/>
+		FROM scm_cost_control a
+		<include refid="costControlJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="costId != null and costId != ''">
+				AND a.cost_id = #{costId}
+			</if>
+			<if test="costName != null and costName != ''">
+				AND a.cost_name = #{costName}
+			</if>
+			<if test="costType != null and costType != ''">
+				AND a.cost_type = #{costType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CostControl">
+		SELECT 
+			<include refid="costControlColumns"/>
+		FROM scm_cost_control a
+		<include refid="costControlJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cost_control(
+			tenant_id,
+			id,
+			pm_id,
+			cost_id,
+			cost_name,
+			cost_type,
+			count_unit,
+			control_limit,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{costId},
+			#{costName},
+			#{costType},
+			#{countUnit},
+			#{controlLimit},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cost_control SET
+			pm_id = #{pmId},
+			cost_id = #{costId},
+			cost_name = #{costName},
+			cost_type = #{costType},
+			count_unit = #{countUnit},
+			control_limit = #{controlLimit},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cost_control SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.info.SupplierDao">
+    
+	<sql id="supplierColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.user_id AS "uid",
+		a.supplier_name AS "supplierName",
+		a.short_name AS "shortName",
+		a.contact AS "contact",
+		a.telephone AS "telephone",
+		a.wechat_id AS "wechatId",
+		a.operator AS "operator",
+		a.address AS "address",
+		a.tags AS "tags",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="supplierJoins">
+	</sql>
+    
+	<select id="get" resultType="Supplier">
+		SELECT 
+			<include refid="supplierColumns"/>
+		FROM scm_sms_supplier a
+		<include refid="supplierJoins"/>
+		WHERE
+			a.del_flag = '0'
+			AND a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Supplier">
+		SELECT 
+			<include refid="supplierColumns"/>
+		FROM scm_sms_supplier a
+		<include refid="supplierJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="supplierName != null and supplierName != ''">
+				AND a.supplier_name LIKE
+					<if test="dbName == 'oracle'">'%'||#{supplierName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{supplierName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{supplierName},'%')</if>
+			</if>
+			<if test="shortName != null and shortName != ''">
+				AND a.short_name LIKE
+					<if test="dbName == 'oracle'">'%'||#{shortName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{shortName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{shortName},'%')</if>
+			</if>
+			<if test="telephone != null and telephone != ''">
+				AND a.telephone LIKE 
+					<if test="dbName == 'oracle'">'%'||#{telephone}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{telephone}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{telephone},'%')</if>
+			</if>
+			<if test="operator != null and operator != ''">
+				AND a.operator = #{operator}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Supplier">
+		SELECT 
+			<include refid="supplierColumns"/>
+		FROM scm_sms_supplier a
+		<include refid="supplierJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_sms_supplier(
+			id,
+			merchant_id,
+			user_id,
+			supplier_name,
+			short_name,
+			contact,
+			telephone,
+			wechat_id,
+			operator,
+			address,
+			tags,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{uid},
+			#{supplierName},
+			#{shortName},
+			#{contact},
+			#{telephone},
+			#{wechatId},
+			#{operator},
+			#{address},
+			#{tags},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_sms_supplier SET
+			merchant_id = #{merchantId},
+			user_id = #{uid},
+			supplier_name = #{supplierName},
+			short_name = #{shortName},
+			contact = #{contact},
+			telephone = #{telephone},
+			wechat_id = #{wechatId},
+			tags = #{tags},
+			operator = #{operator},
+			address = #{address},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_sms_supplier SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

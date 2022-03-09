@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.operation.PdsTradeProcessDao">
+    
+	<sql id="pdsTradeProcessColumns">
+		a.id AS "id",
+		a.process_sn AS "processSn",
+		a.pm_id AS "pmId",
+		a.buy_seq AS "buySeq",
+		a.delivery_time AS "deliveryTime",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="pdsTradeProcessJoins">
+	</sql>
+    
+	<select id="get" resultType="PdsTradeProcess">
+		SELECT 
+			<include refid="pdsTradeProcessColumns"/>
+		FROM scm_trade_process a
+		<include refid="pdsTradeProcessJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PdsTradeProcess">
+		SELECT 
+			<include refid="pdsTradeProcessColumns"/>
+		FROM scm_trade_process a
+		<include refid="pdsTradeProcessJoins"/>
+        <if test="buyId != null and buyId != ''">
+            LEFT JOIN scm_ops_buy_order b ON a.delivery_time = b.delivery_time AND a.buy_seq = b.buy_seq
+        </if>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="processSn != null and processSn != ''">
+				AND a.process_sn = #{processSn}
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = #{deliveryTime}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="buyId != null and buyId != ''">
+				AND b.buy_id = #{buyId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PdsTradeProcess">
+		SELECT 
+			<include refid="pdsTradeProcessColumns"/>
+		FROM scm_trade_process a
+		<include refid="pdsTradeProcessJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_trade_process(
+			id,
+			process_sn,
+			pm_id,
+			buy_seq,
+			delivery_time,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{processSn},
+			#{pmId},
+			#{buySeq},
+			#{deliveryTime},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_trade_process SET
+			process_sn = #{processSn},
+			pm_id = #{pmId},
+			buy_seq = #{buySeq},
+			delivery_time = #{deliveryTime},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_trade_process SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

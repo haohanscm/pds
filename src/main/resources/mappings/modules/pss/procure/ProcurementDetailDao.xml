@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.procure.ProcurementDetailDao">
+    
+	<sql id="procurementDetailColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.procure_num AS "procureNum",
+		a.goods_name AS "goodsName",
+		a.goods_model_id AS "goodsModelId",
+		a.price AS "price",
+		a.goods_num AS "goodsNum",
+		a.model_name AS "modelName",
+		a.sum_amount AS "sumAmount",
+		a.unit AS "unit",
+		a.categrory AS "categrory",
+		a.stock_status AS "stockStatus",
+		a.offer_order_id AS "offerOrderId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="procurementDetailJoins">
+	</sql>
+    
+	<select id="get" resultType="ProcurementDetail">
+		SELECT 
+			<include refid="procurementDetailColumns"/>
+		FROM scm_pss_procurement_detail a
+		<include refid="procurementDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProcurementDetail">
+		SELECT 
+			<include refid="procurementDetailColumns"/>
+		FROM scm_pss_procurement_detail a
+		<include refid="procurementDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="procureNum != null and procureNum != ''">
+				AND a.procure_num = #{procureNum}
+			</if>
+			<if test="goodsModelId != null and goodsModelId != ''">
+				AND a.goods_model_id = #{goodsModelId}
+			</if>
+			<if test="stockStatus != null and stockStatus != ''">
+				AND a.stock_status = #{stockStatus}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProcurementDetail">
+		SELECT 
+			<include refid="procurementDetailColumns"/>
+		FROM scm_pss_procurement_detail a
+		<include refid="procurementDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countTotalGoodsNum" resultType="java.lang.Integer">
+		SELECT
+			sum (a.goods_num)
+		FROM scm_pss_procurement_detail a
+		<where>
+			a.del_flag = '0'
+			<if test="procureNum != null and procureNum != ''">
+				a.procure_num = #{procureNum}
+			</if>
+		</where>
+	</select>
+
+	<select id="countSumAmount" resultType="java.math.BigDecimal">
+		SELECT
+		sum (a.goods_num*a.price)
+		FROM scm_pss_procurement_detail a
+		<where>
+			a.del_flag = '0'
+			<if test="procureNum != null and procureNum != ''">
+				a.procure_num = #{procureNum}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_procurement_detail(
+			id,
+			merchant_id,
+			procure_num,
+			goods_name,
+			goods_model_id,
+			price,
+			goods_num,
+			model_name,
+			sum_amount,
+			unit,
+			categrory,
+			stock_status,
+			offer_order_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{procureNum},
+			#{goodsName},
+			#{goodsModelId},
+			#{price},
+			#{goodsNum},
+			#{modelName},
+			#{sumAmount},
+			#{unit},
+			#{categrory},
+			#{stockStatus},
+			#{offerOrderId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_procurement_detail SET
+			merchant_id = #{merchantId},
+			procure_num = #{procureNum},
+			goods_name = #{goodsName},
+			goods_model_id = #{goodsModelId},
+			price = #{price},
+			goods_num = #{goodsNum},
+			model_name = #{modelName},
+			sum_amount = #{sumAmount},
+			unit = #{unit},
+			categrory = #{categrory},
+			stock_status = #{stockStatus},
+			offer_order_id = #{offerOrderId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateSelective">
+		<if test="id != null">
+			UPDATE scm_pss_procurement_detail
+			<set>
+				<if test="merchantId != null and merchantId != ''">
+					merchant_id = #{merchantId},
+				</if>
+				<if test="procureNum != null and procureNum != ''">
+					procure_num = #{procureNum},
+				</if>
+				<if test="goodsName != null and goodsName != ''">
+					goods_name = #{goodsName},
+				</if>
+				<if test="goodsModelId != null and goodsModelId != ''">
+					goods_model_id = #{goodsModelId},
+				</if>
+				<if test="price != null and price != ''">
+					price = #{price},
+				</if>
+				<if test="goodsNum != null and goodsNum != ''">
+					goods_num = #{goodsNum},
+				</if>
+				<if test="modelName != null and modelName != ''">
+					model_name = #{modelName},
+				</if>
+				<if test="sumAmount != null and sumAmount != ''">
+					sum_amount = #{sumAmount},
+				</if>
+				<if test="unit != null and unit != ''">
+					unit = #{unit},
+				</if>
+				<if test="categrory != null and categrory != ''">
+					categrory = #{categrory},
+				</if>
+				<if test="stockStatus != null and stockStatus != ''">
+					stock_status = #{stockStatus},
+				</if>
+				<if test="updateDate != null and updateDate != ''">
+					update_date = #{updateDate},
+				</if>
+				<if test="remarks != null and remarks != ''">
+					remarks = #{remarks},
+				</if>
+			</set>
+			WHERE id = #{id};
+		</if>
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_procurement_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

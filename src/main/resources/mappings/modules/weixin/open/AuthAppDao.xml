@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.weixin.open.dao.AuthAppDao">
+    
+	<sql id="authAppColumns">
+		a.id AS "id",
+		a.app_id AS "appId",
+		a.auth_appId AS "authAppId",
+		a.app_secret AS "appSecret",
+		a.access_token AS "accessToken",
+		a.flush_token AS "flushToken",
+		a.auth_code AS "authCode",
+		a.app_name AS "appName",
+		a.app_icon AS "appIcon",
+		a.service_type AS "serviceType",
+		a.verify_type AS "verifyType",
+		a.original_appid AS "originalAppid",
+		a.principal_name AS "principalName",
+		a.weixin_id AS "weixinId",
+		a.qrcode AS "qrcode",
+		a.expiresin AS "expiresin",
+		a.auth_time AS "authTime",
+		a.auth_info AS "authInfo",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		b.app_name AS "authAppName"
+	</sql>
+	
+	<sql id="authAppJoins">
+        LEFT JOIN scm_open_platform_config b on a.auth_appId = b.app_id and b.del_flag = #{DEL_FLAG_NORMAL}
+	</sql>
+    
+	<select id="get" resultType="AuthApp">
+		SELECT 
+			<include refid="authAppColumns"/>
+		FROM scm_auth_app a
+		<include refid="authAppJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AuthApp">
+		SELECT 
+			<include refid="authAppColumns"/>
+		FROM scm_auth_app a
+		<include refid="authAppJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="authAppId != null and authAppId != ''">
+				AND a.auth_appId = #{authAppId}
+			</if>
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="originalAppid != null and originalAppid != ''">
+				AND a.original_appid = #{originalAppid}
+			</if>
+			<if test="serviceType != null and serviceType != ''">
+				AND a.service_type = #{serviceType}
+			</if>
+			<if test="appName != null and appName != ''">
+				AND a.app_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{appName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{appName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{appName},'%')</if>
+			</if>
+			<if test="principalName != null and principalName != ''">
+				AND a.principal_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{principalName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{principalName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{principalName},'%')</if>
+			</if>
+			<if test="weixinId != null and weixinId != ''">
+				AND a.weixin_id LIKE 
+					<if test="dbName == 'oracle'">'%'||#{weixinId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{weixinId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{weixinId},'%')</if>
+			</if>
+			<if test="beginAuthTime != null and endAuthTime != null and beginAuthTime != '' and endAuthTime != ''">
+				AND a.auth_time BETWEEN #{beginAuthTime} AND #{endAuthTime}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AuthApp">
+		SELECT 
+			<include refid="authAppColumns"/>
+		FROM scm_auth_app a
+		<include refid="authAppJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_auth_app(
+			id,
+			app_id,
+			auth_appId,
+			app_secret,
+			access_token,
+			flush_token,
+			auth_code,
+			app_name,
+			app_icon,
+			service_type,
+			verify_type,
+			original_appid,
+			principal_name,
+			weixin_id,
+			qrcode,
+			expiresin,
+			auth_time,
+			auth_info,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			tenant_id
+		) VALUES (
+			#{id},
+			#{appId},
+			#{authAppId},
+			#{appSecret},
+			#{accessToken},
+			#{flushToken},
+			#{authCode},
+			#{appName},
+			#{appIcon},
+			#{serviceType},
+			#{verifyType},
+			#{originalAppid},
+			#{principalName},
+			#{weixinId},
+			#{qrcode},
+			#{expiresin},
+			#{authTime},
+			#{authInfo},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{tenantId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_auth_app SET
+            app_id = #{appId},
+            auth_appId = #{authAppId},
+            <if test="appSecret != null and appSecret != ''">
+                app_secret=#{appSecret},
+            </if>
+            <if test="accessToken != null and accessToken != ''">
+                access_token = #{accessToken},
+            </if>
+            <if test="flushToken != null and flushToken != ''">
+                flush_token = #{flushToken},
+            </if>
+            auth_code = #{authCode},
+            app_name = #{appName},
+            app_icon = #{appIcon},
+            service_type = #{serviceType},
+			verify_type = #{verifyType},
+			original_appid = #{originalAppid},
+			principal_name = #{principalName},
+			weixin_id = #{weixinId},
+			qrcode = #{qrcode},
+			expiresin = #{expiresin},
+			auth_time = #{authTime},
+			auth_info = #{authInfo},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_auth_app SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

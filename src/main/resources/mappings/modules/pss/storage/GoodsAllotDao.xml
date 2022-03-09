@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.storage.GoodsAllotDao">
+    
+	<sql id="goodsAllotColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.allot_num AS "allotNum",
+		a.num AS "num",
+		a.total_amount AS "totalAmount",
+		a.allotout_type AS "allotoutType",
+		a.allotout_id AS "allotoutId",
+		w1.name AS "allotoutName",
+		a.allotin_id AS "allotinId",
+		w2.name AS "allotinName",
+		a.allotin_type AS "allotinType",
+		a.oprate_node AS "oprateNode",
+		a.operator AS "operator",
+		a.audit_status AS "auditStatus",
+		a.order_status AS "orderStatus",
+		a.audit_man AS "auditMan",
+		a.biz_man AS "bizMan",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsAllotJoins">
+		LEFT JOIN scm_pss_warehouse w1 ON w1.id = a.allotout_id AND w1.del_flag = '0'
+		LEFT JOIN scm_pss_warehouse w2 ON w2.id = a.allotin_id AND w2.del_flag = '0'
+	</sql>
+    
+	<select id="get" resultType="GoodsAllot">
+		SELECT 
+			<include refid="goodsAllotColumns"/>
+		FROM scm_pss_goods_allot a
+		<include refid="goodsAllotJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsAllot">
+		SELECT 
+			<include refid="goodsAllotColumns"/>
+		FROM scm_pss_goods_allot a
+		<include refid="goodsAllotJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="allotNum != null and allotNum != ''">
+				AND a.allot_num LIKE 
+					<if test="dbName == 'oracle'">'%'||#{allotNum}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{allotNum}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{allotNum},'%')</if>
+			</if>
+			<if test="allotoutType != null and allotoutType != ''">
+				AND a.allotout_type = #{allotoutType}
+			</if>
+			<if test="allotoutId != null and allotoutId != ''">
+				AND a.allotout_id = #{allotoutId}
+			</if>
+			<if test="allotinId != null and allotinId != ''">
+				AND a.allotin_id = #{allotinId}
+			</if>
+			<if test="allotinType != null and allotinType != ''">
+				AND a.allotin_type = #{allotinType}
+			</if>
+			<if test="operator != null and operator != ''">
+				AND a.operator = #{operator}
+			</if>
+			<if test="auditStatus != null and auditStatus != ''">
+				AND a.audit_status = #{auditStatus}
+			</if>
+			<if test="orderStatus != null and orderStatus != ''">
+				AND a.order_status = #{orderStatus}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsAllot">
+		SELECT 
+			<include refid="goodsAllotColumns"/>
+		FROM scm_pss_goods_allot a
+		<include refid="goodsAllotJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_goods_allot(
+			id,
+			merchant_id,
+			allot_num,
+			num,
+			total_amount,
+			allotout_type,
+			allotout_id,
+			allotin_id,
+			allotin_type,
+			oprate_node,
+			operator,
+			audit_status,
+			order_status,
+			audit_man,
+			biz_man,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{allotNum},
+			#{num},
+			#{totalAmount},
+			#{allotoutType},
+			#{allotoutId},
+			#{allotinId},
+			#{allotinType},
+			#{oprateNode},
+			#{operator},
+			#{auditStatus},
+			#{orderStatus},
+			#{auditMan},
+			#{bizMan},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_goods_allot SET
+			merchant_id = #{merchantId},
+			allot_num = #{allotNum},
+			num = #{num},
+			total_amount = #{totalAmount},
+			allotout_type = #{allotoutType},
+			allotout_id = #{allotoutId},
+			allotin_id = #{allotinId},
+			allotin_type = #{allotinType},
+			oprate_node = #{oprateNode},
+			operator = #{operator},
+			audit_status = #{auditStatus},
+			order_status = #{orderStatus},
+			audit_man = #{auditMan},
+			biz_man = #{bizMan},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_goods_allot SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

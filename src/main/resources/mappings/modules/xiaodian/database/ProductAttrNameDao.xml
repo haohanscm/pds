@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.database.ProductAttrNameDao">
+    
+	<sql id="productAttrNameColumns">
+		a.id AS "id",
+		a.attr_name AS "attrName",
+		a.spu_id AS "spuId",
+		a.create_by AS "createBy.id",
+		a.sort AS "sort",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="productAttrNameJoins">
+	</sql>
+    
+	<select id="get" resultType="ProductAttrName">
+		SELECT 
+			<include refid="productAttrNameColumns"/>
+		FROM scm_cms_product_attr_name a
+		<include refid="productAttrNameJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProductAttrName">
+		SELECT 
+			<include refid="productAttrNameColumns"/>
+		FROM scm_cms_product_attr_name a
+		<include refid="productAttrNameJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="attrName != null and attrName != ''">
+				AND a.attr_name = #{attrName}
+			</if>
+			<!-- 传入spuId时查询结果带未绑定spuId的属性名 -->
+			<if test="spuId != null and spuId != ''">
+				AND (a.spu_id = #{spuId} OR isnull(a.spu_id) OR a.spu_id = '')
+			</if>
+			<!-- 只查询未绑定spuId的属性名 -->
+			<if test="spuId == null or spuId == ''">
+				AND (isnull(a.spu_id) OR a.spu_id = '')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductAttrName">
+		SELECT 
+			<include refid="productAttrNameColumns"/>
+		FROM scm_cms_product_attr_name a
+		<include refid="productAttrNameJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_product_attr_name(
+			id,
+			attr_name,
+			spu_id,
+			create_by,
+			sort,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{attrName},
+			#{spuId},
+			#{createBy.id},
+			#{sort},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_product_attr_name SET
+			attr_name = #{attrName},
+			spu_id = #{spuId},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_product_attr_name SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据规格名ids 查询  参数存入id -->
+	<select id="findByNameIds" resultType="ProductAttrName">
+		SELECT
+		<include refid="productAttrNameColumns"/>
+		FROM scm_cms_product_attr_name a
+		<include refid="productAttrNameJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            AND FIND_IN_SET(a.id, #{id})
+		</where>
+		ORDER BY a.sort, a.update_date DESC
+	</select>
+	
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.pay.OrderQueryDao">
+    
+	<sql id="orderQueryColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.partner_id AS "partnerId",
+		a.request_id AS "requestId",
+		a.order_id AS "orderId",
+		a.trans_type AS "transType",
+		a.resp_code AS "respCode",
+		a.resp_msg AS "respMsg",
+		a.order_time AS "orderTime",
+		a.pay_amount AS "payAmount",
+		a.pay_time AS "payTime",
+		a.third_ord_no AS "thirdOrdNo",
+		a.pay_result AS "payResult",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="orderQueryJoins">
+	</sql>
+    
+	<select id="get" resultType="OrderQuery">
+		SELECT 
+			<include refid="orderQueryColumns"/>
+		FROM scm_order_query a
+		<include refid="orderQueryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderQuery">
+		SELECT 
+			<include refid="orderQueryColumns"/>
+		FROM scm_order_query a
+		<include refid="orderQueryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="requestId != null and requestId != ''">
+				AND a.request_id = #{requestId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="transType != null and transType != ''">
+				AND a.trans_type = #{transType}
+			</if>
+			<if test="beginOrderTime != null and endOrderTime != null and beginOrderTime != '' and endOrderTime != ''">
+				AND a.order_time BETWEEN #{beginOrderTime} AND #{endOrderTime}
+			</if>
+			<if test="payResult != null and payResult != ''">
+				AND a.pay_result = #{payResult}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderQuery">
+		SELECT 
+			<include refid="orderQueryColumns"/>
+		FROM scm_order_query a
+		<include refid="orderQueryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_order_query(
+			id,
+			merchant_id,
+			partner_id,
+			request_id,
+			order_id,
+			trans_type,
+			resp_code,
+			resp_msg,
+			order_time,
+			pay_amount,
+			pay_time,
+			third_ord_no,
+			pay_result,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{partnerId},
+			#{requestId},
+			#{orderId},
+			#{transType},
+			#{respCode},
+			#{respMsg},
+			#{orderTime},
+			#{payAmount},
+			#{payTime},
+			#{thirdOrdNo},
+			#{payResult},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_order_query SET
+		    merchant_id = #{merchantId},
+			partner_id = #{partnerId},
+			request_id = #{requestId},
+			order_id = #{orderId},
+			trans_type = #{transType},
+			resp_code = #{respCode},
+			resp_msg = #{respMsg},
+			order_time = #{orderTime},
+			pay_amount = #{payAmount},
+			pay_time = #{payTime},
+			third_ord_no = #{thirdOrdNo},
+			pay_result = #{payResult},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_order_query SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

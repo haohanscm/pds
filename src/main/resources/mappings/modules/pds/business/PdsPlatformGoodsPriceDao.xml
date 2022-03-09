@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.business.PdsPlatformGoodsPriceDao">
+
+    <sql id="pdsPlatformGoodsPriceColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.merchant_id AS "merchantId",
+		a.buyer_id AS "buyerId",
+		a.category_id AS "categoryId",
+		a.goods_id AS "goodsId",
+		a.model_id AS "modelId",
+		a.category_name AS "categoryName",
+		a.goods_name AS "goodsName",
+		a.model_name AS "modelName",
+		a.unit AS "unit",
+		a.price AS "price",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+
+    <sql id="pdsPlatformGoodsPriceJoins">
+    </sql>
+
+    <select id="get" resultType="PdsPlatformGoodsPrice">
+        SELECT
+        <include refid="pdsPlatformGoodsPriceColumns"/>
+        FROM scm_platform_goods_price a
+        <include refid="pdsPlatformGoodsPriceJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="fetch" resultType="PdsPlatformGoodsPrice">
+        SELECT
+        <include refid="pdsPlatformGoodsPriceColumns"/>
+        FROM scm_platform_goods_price a
+        <include refid="pdsPlatformGoodsPriceJoins"/>
+        WHERE a.id = #{id}
+        <if test="pmId != null and pmId != ''">
+            AND a.pm_id = #{pmId}
+        </if>
+        <if test="merchantId != null and merchantId != ''">
+            AND a.merchant_id = #{merchantId}
+        </if>
+        <if test="buyerId != null and buyerId != ''">
+            AND a.buyer_id = #{buyerId}
+        </if>
+    </select>
+
+    <sql id="pdsPlatformGoodsPriceCondition">
+        a.del_flag = #{DEL_FLAG_NORMAL}
+        <if test="pmId != null and pmId != ''">
+            AND a.pm_id = #{pmId}
+        </if>
+        <if test="merchantId != null and merchantId != ''">
+            AND a.merchant_id = #{merchantId}
+        </if>
+        <if test="buyerId != null and buyerId != ''">
+            AND a.buyer_id = #{buyerId}
+        </if>
+        <if test="categoryId != null and categoryId != ''">
+            AND a.category_id = #{categoryId}
+        </if>
+        <if test="goodsId != null and goodsId != ''">
+            AND a.goods_id = #{goodsId}
+        </if>
+        <if test="modelId != null and modelId != ''">
+            AND a.model_id = #{modelId}
+        </if>
+        <if test="categoryName != null and categoryName != ''">
+            AND a.category_name LIKE
+            <if test="dbName == 'oracle'">'%'||#{categoryName}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{categoryName}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{categoryName},'%')</if>
+        </if>
+        <if test="goodsName != null and goodsName != ''">
+            AND a.goods_name LIKE
+            <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+        </if>
+        <if test="modelName != null and modelName != ''">
+            AND a.model_name LIKE
+            <if test="dbName == 'oracle'">'%'||#{modelName}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{modelName}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{modelName},'%')</if>
+        </if>
+        <if test="beginStartDate != null and endEndDate != null and beginStartDate != '' and endEndDate != ''">
+            AND #{beginStartDate} &lt;= a.start_date AND a.end_date &lt;= #{endEndDate}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND a.start_date = DATE(#{startDate})
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND a.end_date = DATE(#{endDate})
+        </if>
+        <if test="status != null and status != ''">
+            AND a.status = #{status}
+        </if>
+        <if test="queryDate != null and queryDate != ''">
+            AND  DATE(#{queryDate}) BETWEEN a.start_date AND a.end_date
+        </if>
+    </sql>
+
+    <select id="findList" resultType="PdsPlatformGoodsPrice">
+        SELECT
+        <include refid="pdsPlatformGoodsPriceColumns"/>
+        FROM scm_platform_goods_price a
+        <include refid="pdsPlatformGoodsPriceJoins"/>
+        <where>
+            <include refid="pdsPlatformGoodsPriceCondition"/>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="PdsPlatformGoodsPrice">
+        SELECT
+        <include refid="pdsPlatformGoodsPriceColumns"/>
+        FROM scm_platform_goods_price a
+        <include refid="pdsPlatformGoodsPriceJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <sql id="columns">
+        tenant_id,
+        id,
+        pm_id,
+        merchant_id,
+        buyer_id,
+        category_id,
+        goods_id,
+        model_id,
+        category_name,
+        goods_name,
+        model_name,
+        unit,
+        price,
+        start_date,
+        end_date,
+        status,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        remarks,
+        del_flag
+    </sql>
+
+    <insert id="insert">
+		INSERT INTO scm_platform_goods_price(
+			<include refid="columns"/>
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{merchantId},
+			#{buyerId},
+			#{categoryId},
+			#{goodsId},
+			#{modelId},
+			#{categoryName},
+			#{goodsName},
+			#{modelName},
+			#{unit},
+			#{price},
+			#{startDate},
+			#{endDate},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+    <insert id="initBuyerGoods">
+        INSERT INTO scm_platform_goods_price (
+            <include refid="columns"/>
+        ) SELECT
+        #{tenantId},
+        UUID() AS id,
+        #{pmId} AS pm_id,
+        #{merchantId} AS merchant_id,
+        #{buyerId} AS buyer_id,
+        c.id AS category_id,
+        g.id AS goods_id,
+        m.id AS model_id,
+        c.name AS category_name,
+        g.goods_name AS goods_name,
+        m.model_name AS model_name,
+        m.model_unit AS unit,
+        CONVERT ( m.model_price * #{rate}, DECIMAL ( 10, 2 ) ) AS price,
+        #{startDate} AS start_date,
+        #{endDate} AS end_date,
+        #{status} AS status,
+        #{createBy.id} AS create_by,
+        #{createDate} AS create_date,
+        #{updateBy.id} AS update_by,
+        #{updateDate} AS update_date,
+        #{remarks} AS remarks,
+        #{delFlag} AS del_flag
+        FROM
+            scm_cms_goods g
+            LEFT JOIN scm_cms_goods_model m ON g.id = m.goods_id
+            LEFT JOIN scm_cms_goods_category c ON substring_index(g.goods_category_id, ',', 1) = c.id AND c.del_flag = #{DEL_FLAG_NORMAL}
+        WHERE
+            g.del_flag = #{DEL_FLAG_NORMAL}
+            AND m.del_flag = #{DEL_FLAG_NORMAL}
+            AND g.merchant_id = #{pmId}
+            AND g.shop_id = #{shopId}
+            AND g.goods_category_id IS NOT NULL
+            <!-- 商品状态 上架商品 -->
+            AND g.is_marketable = #{status}
+	</insert>
+
+    <insert id="copyToNewBuyerMerchant">
+        INSERT INTO scm_platform_goods_price (
+            <include refid="columns"/>
+        )SELECT
+        #{tenantId},
+        UUID() AS id,
+        #{pmId} AS pm_id,
+        #{newMerchantId} AS merchant_id,
+        #{buyerId} AS buyer_id,
+        a.category_id,
+        a.goods_id,
+        a.model_id,
+        a.category_name,
+        a.goods_name,
+        a.model_name,
+        a.unit,
+        a.price * #{rate} AS price,
+        a.start_date,
+        a.end_date,
+        a.status,
+        #{createBy.id} AS create_by,
+        #{createDate} AS create_date,
+        #{updateBy.id} AS update_by,
+        #{updateDate} AS update_date,
+        #{remarks} AS remarks,
+        #{delFlag} AS del_flag
+        FROM scm_platform_goods_price a
+        <where>
+            a.del_flag = '0'
+            AND a.pm_id = #{pmId}
+            AND a.merchant_id = #{merchantId}
+            <if test="queryDate != null and queryDate != ''">
+                AND DATE(#{queryDate}) BETWEEN a.start_date AND a.end_date
+            </if>
+        </where>
+
+
+    </insert>
+
+    <update id="update">
+		UPDATE scm_platform_goods_price SET
+			pm_id = #{pmId},
+			merchant_id = #{merchantId},
+			buyer_id = #{buyerId},
+			category_id = #{categoryId},
+			goods_id = #{goodsId},
+			model_id = #{modelId},
+			category_name = #{categoryName},
+			goods_name = #{goodsName},
+			model_name = #{modelName},
+			unit = #{unit},
+			price = #{price},
+			start_date = #{startDate},
+			end_date = #{endDate},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+    <update id="updateGoodsPrice">
+		UPDATE scm_platform_goods_price SET
+			price = #{price},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE scm_platform_goods_price SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <update id="deleteBatch">
+		UPDATE scm_platform_goods_price SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE del_flag = #{DEL_FLAG_NORMAL}
+		AND pm_id = #{pmId}
+        <if test="id != null and id != ''">
+            AND id = #{id}
+        </if>
+        <if test="merchantId != null and merchantId != ''">
+            AND merchant_id = #{merchantId}
+        </if>
+        <if test="goodsId != null and goodsId != ''">
+            AND goods_id = #{goodsId}
+        </if>
+		<if test="queryDate != null and queryDate != ''">
+            AND DATE(#{queryDate}) BETWEEN start_date AND end_date
+        </if>
+    </update>
+
+    <select id="findJoinList" resultType="PdsPlatformGoodsPrice">
+        SELECT
+        <include refid="pdsPlatformGoodsPriceColumns"/>
+        ,
+        m.merchant_name AS "pmName",
+        b.merchant_name AS "merchantName"
+        FROM scm_platform_goods_price a
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        LEFT JOIN scm_merchant b ON b.id = a.merchant_id
+        <include refid="pdsPlatformGoodsPriceJoins"/>
+        <where>
+            <include refid="pdsPlatformGoodsPriceCondition"/>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="fetchGoodsPrice" resultType="PdsPlatformGoodsPrice">
+        SELECT
+        <include refid="pdsPlatformGoodsPriceColumns"/>
+        FROM scm_platform_goods_price a
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.pm_id = #{pmId}
+            AND a.model_id = #{modelId}
+            AND DATE(#{queryDate}) BETWEEN a.start_date AND a.end_date
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <!--<if test="buyerId != null and buyerId != ''">-->
+                <!--AND a.buyer_id = #{buyerId}-->
+            <!--</if>-->
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 返回唯一的时间段内的记录 -->
+    <!--<select id="fetchPeriodList" resultType="PdsPlatformGoodsPrice">-->
+        <!--SELECT-->
+        <!--<include refid="pdsPlatformGoodsPriceColumns"/>-->
+        <!--FROM-->
+        <!--(-->
+            <!--SELECT-->
+                <!--MIN( DATEDIFF( g.end_date, g.start_date ) ) AS "dateDiff",-->
+                <!--g.start_date,-->
+                <!--g.end_date-->
+            <!--FROM scm_platform_goods_price g-->
+            <!--<where>-->
+                <!--g.del_flag = #{DEL_FLAG_NORMAL}-->
+                <!--<if test="startDate != null and startDate != ''">-->
+                    <!--AND g.start_date &lt;= DATE (#{startDate})-->
+                    <!--AND g.end_date &gt;= DATE (#{startDate})-->
+                <!--</if>-->
+                <!--<if test="endDate != null and endDate != ''">-->
+                    <!--AND g.start_date &lt;= DATE (#{endDate})-->
+                    <!--AND g.end_date &gt;= DATE (#{endDate})-->
+                <!--</if>-->
+            <!--</where>-->
+            <!--GROUP BY-->
+            <!--start_date,-->
+            <!--end_date-->
+            <!--ORDER BY-->
+            <!--dateDiff-->
+            <!--LIMIT 1-->
+        <!--) x-->
+        <!--LEFT JOIN scm_platform_goods_price a ON x.start_date = a.start_date AND x.end_date = a.end_date-->
+        <!--<where>-->
+            <!--a.del_flag = #{DEL_FLAG_NORMAL}-->
+            <!--<if test="pmId != null and pmId != ''">-->
+                <!--AND a.pm_id = #{pmId}-->
+            <!--</if>-->
+            <!--<if test="merchantId != null and merchantId != ''">-->
+                <!--AND a.merchant_id = #{merchantId}-->
+            <!--</if>-->
+            <!--<if test="buyerId != null and buyerId != ''">-->
+                <!--AND a.buyer_id = #{buyerId}-->
+            <!--</if>-->
+            <!--<if test="categoryId != null and categoryId != ''">-->
+                <!--AND a.category_id = #{categoryId}-->
+            <!--</if>-->
+            <!--<if test="goodsId != null and goodsId != ''">-->
+                <!--AND a.goods_id = #{goodsId}-->
+            <!--</if>-->
+            <!--<if test="modelId != null and modelId != ''">-->
+                <!--AND a.model_id = #{modelId}-->
+            <!--</if>-->
+            <!--<if test="categoryName != null and categoryName != ''">-->
+                <!--AND a.category_name LIKE-->
+                <!--<if test="dbName == 'oracle'">'%'||#{categoryName}||'%'</if>-->
+                <!--<if test="dbName == 'mssql'">'%'+#{categoryName}+'%'</if>-->
+                <!--<if test="dbName == 'mysql'">concat('%',#{categoryName},'%')</if>-->
+            <!--</if>-->
+            <!--<if test="goodsName != null and goodsName != ''">-->
+                <!--AND a.goods_name LIKE-->
+                <!--<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>-->
+                <!--<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>-->
+                <!--<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>-->
+            <!--</if>-->
+            <!--<if test="modelName != null and modelName != ''">-->
+                <!--AND a.model_name LIKE-->
+                <!--<if test="dbName == 'oracle'">'%'||#{modelName}||'%'</if>-->
+                <!--<if test="dbName == 'mssql'">'%'+#{modelName}+'%'</if>-->
+                <!--<if test="dbName == 'mysql'">concat('%',#{modelName},'%')</if>-->
+            <!--</if>-->
+            <!--<if test="status != null and status != ''">-->
+                <!--AND a.status = #{status}-->
+            <!--</if>-->
+        <!--</where>-->
+        <!--<choose>-->
+            <!--<when test="page !=null and page.orderBy != null and page.orderBy != ''">-->
+                <!--ORDER BY ${page.orderBy}-->
+            <!--</when>-->
+            <!--<otherwise>-->
+                <!--ORDER BY a.update_date DESC-->
+            <!--</otherwise>-->
+        <!--</choose>-->
+    <!--</select>-->
+
+    <select id="findGoodsModelList" resultType="GoodsModel">
+        SELECT
+        m.id AS "id",
+        m.goods_id AS "goodsId",
+        m.model_price AS "modelPrice",
+        m.model_name AS "modelName",
+        m.model_unit AS "modelUnit",
+        m.model_storage AS "modelStorage",
+        m.model_url AS "modelUrl",
+        m.model_info AS "modelInfo",
+        m.model AS "model",
+        m.items_id AS "itemsId",
+        m.model_code AS "modelCode",
+        m.virtual_price AS "virtualPrice",
+        m.goods_model_sn AS "goodsModelSn",
+        m.cost_price AS "costPrice",
+        m.weight AS "weight",
+        m.volume AS "volume",
+        m.create_by AS "createBy.id",
+        m.create_date AS "createDate",
+        m.update_by AS "updateBy.id",
+        m.update_date AS "updateDate",
+        m.remarks AS "remarks",
+        m.del_flag AS "delFlag",
+        <if test="modelId != null and modelId != ''">
+            g.goods_name AS "goodsName",
+        </if>
+        ifnull(a.price, m.model_price) AS "purchasePrice"
+        FROM scm_cms_goods_model m
+        <if test="modelId != null and modelId != ''">
+            LEFT JOIN scm_cms_goods g ON m.goods_id = g.id
+        </if>
+        LEFT JOIN scm_platform_goods_price a ON m.id = a.model_id AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.pm_id = #{pmId}
+            AND DATE(#{queryDate}) BETWEEN a.start_date AND a.end_date
+            <!--<if test="buyerId != null and buyerId != ''">-->
+                <!--AND a.buyer_id = #{buyerId}-->
+            <!--</if>-->
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        <where>
+            m.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="goodsId != null and goodsId != ''">
+            AND m.goods_id = #{goodsId}
+            </if>
+            <if test="modelId != null and modelId != ''">
+                AND m.id = #{modelId}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY m.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findGoodsListByDateJoin" resultType="PdsPlatformGoodsPrice">
+      SELECT
+        c.name AS "categoryName",
+        c.id AS "categoryId",
+        m.id AS "modelId",
+        m.model_price AS "marketPrice",
+        a.id AS "id",
+        a.price AS "price",
+        g.goods_name AS "goodsName",
+        m.model_name AS "modelName",
+        m.model_unit AS "unit",
+        m.goods_model_sn AS "goodsModelSn",
+        g.goods_status AS "status",
+        a.start_date AS "startDate",
+        a.end_date AS "endDate"
+        FROM scm_platform_goods_price a
+        INNER JOIN scm_cms_goods_model m on m.id = a.model_id AND m.del_flag = '0'
+        INNER JOIN scm_cms_goods g on g.id = a.goods_id AND g.del_flag = '0'
+        INNER JOIN scm_cms_goods_category c on c.id = a.category_id
+		WHERE
+		    a.del_flag = '0'
+            AND a.pm_id = #{pmId}
+            AND a.merchant_id = #{merchantId}
+            AND DATE(#{queryDate}) BETWEEN a.start_date AND a.end_date
+    </select>
+
+    <select id="countRangePrice" resultType="java.lang.Integer">
+      SELECT
+        count(1)
+        FROM scm_platform_goods_price a
+		WHERE
+		    a.del_flag = '0'
+            AND a.pm_id = #{pmId}
+            AND a.merchant_id = #{merchantId}
+            AND  NOT (DATE(#{startDate}) &gt; a.end_date OR DATE(#{endDate}) &lt; a.start_date)
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+    </select>
+
+</mapper>

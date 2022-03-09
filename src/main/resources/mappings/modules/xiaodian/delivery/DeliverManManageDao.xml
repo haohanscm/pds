@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.DeliverManManageDao">
+    
+	<sql id="deliverManManageColumns">
+		a.id AS "id",
+		a.real_name AS "realName",
+		a.mobile AS "mobile",
+		a.nick_name AS "nickName",
+		a.avatar AS "avatar",
+		a.photo AS "photo",
+		a.merchant_id AS "merchantId",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.level AS "level",
+		a.total_delivery_times AS "totalDeliveryTimes",
+		a.status AS "status",
+		a.join_date AS "joinDate",
+		a.uid AS "uid",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="deliverManManageJoins">
+	</sql>
+    
+	<select id="get" resultType="DeliverManManage">
+		SELECT 
+			<include refid="deliverManManageColumns"/>
+		FROM scm_deliver_man_manage a
+		<include refid="deliverManManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DeliverManManage">
+		SELECT 
+			<include refid="deliverManManageColumns"/>
+		FROM scm_deliver_man_manage a
+		<include refid="deliverManManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="realName != null and realName != ''">
+				AND a.real_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{realName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{realName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{realName},'%')</if>
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile LIKE
+				<if test="dbName == 'oracle'">'%'||#{mobile}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{mobile}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{mobile},'%')</if>
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="shopName != null and shopName != ''">
+				AND a.shop_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+			</if>
+			<if test="uid != null and uid!= ''">
+				AND a.uid = #{uid}
+			</if>
+			<if test="level != null and level != ''">
+				AND a.level = #{level}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DeliverManManage">
+		SELECT 
+			<include refid="deliverManManageColumns"/>
+		FROM scm_deliver_man_manage a
+		<include refid="deliverManManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_deliver_man_manage(
+			id,
+			real_name,
+			mobile,
+			nick_name,
+			avatar,
+			photo,
+			merchant_id,
+			shop_id,
+			shop_name,
+			level,
+			total_delivery_times,
+			status,
+			join_date,
+			uid,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{realName},
+			#{mobile},
+			#{nickName},
+			#{avatar},
+			#{photo},
+			#{merchantId},
+			#{shopId},
+			#{shopName},
+			#{level},
+			#{totalDeliveryTimes},
+			#{status},
+			#{joinDate},
+			#{uid},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_deliver_man_manage SET
+			real_name = #{realName},
+			mobile = #{mobile},
+			nick_name = #{nickName},
+			avatar = #{avatar},
+			photo = #{photo},
+			merchant_id = #{merchantId},
+			shop_id = #{shopId},
+			shop_name = #{shopName},
+			level = #{level},
+			total_delivery_times = #{totalDeliveryTimes},
+			status = #{status},
+			join_date = #{joinDate},
+			uid = #{uid},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_deliver_man_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.weixin.open.dao.AppOnlineManageDao">
+    
+	<sql id="appOnlineManageColumns">
+		a.id AS "id",
+		a.app_id AS "appId",
+		a.app_name AS "appName",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.step_name AS "stepName",
+		a.step_no AS "stepNo",
+		a.req_params AS "reqParams",
+		a.resp_params AS "respParams",
+		a.status AS "status",
+		a.channel AS "channel",
+		a.op_type AS "opType",
+		a.req_method AS "reqMethod",
+		a.req_url AS "reqUrl",
+		a.req_time AS "reqTime",
+		a.resp_time AS "respTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="appOnlineManageJoins">
+	</sql>
+    
+	<select id="get" resultType="AppOnlineManage">
+		SELECT 
+			<include refid="appOnlineManageColumns"/>
+		FROM scm_app_online_manage a
+		<include refid="appOnlineManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AppOnlineManage">
+		SELECT 
+			<include refid="appOnlineManageColumns"/>
+		FROM scm_app_online_manage a
+		<include refid="appOnlineManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="appName != null and appName != ''">
+				AND a.app_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{appName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{appName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{appName},'%')</if>
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="stepNo != null and stepNo != ''">
+				AND a.step_no = #{stepNo}
+			</if>
+			<if test="channel != null and channel != ''">
+				AND a.channel = #{channel}
+			</if>
+			<if test="opType != null and opType != ''">
+				AND a.op_type = #{opType}
+			</if>
+			<if test="beginReqTime != null and endReqTime != null and beginReqTime != '' and endReqTime != ''">
+				AND a.req_time BETWEEN #{beginReqTime} AND #{endReqTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AppOnlineManage">
+		SELECT 
+			<include refid="appOnlineManageColumns"/>
+		FROM scm_app_online_manage a
+		<include refid="appOnlineManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_app_online_manage(
+			id,
+			app_id,
+			app_name,
+			merchant_id,
+			merchant_name,
+			step_name,
+			step_no,
+			req_params,
+			resp_params,
+			status,
+			channel,
+			op_type,
+			req_method,
+			req_url,
+			req_time,
+			resp_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{appId},
+			#{appName},
+			#{merchantId},
+			#{merchantName},
+			#{stepName},
+			#{stepNo},
+			#{reqParams},
+			#{respParams},
+			#{status},
+			#{channel},
+			#{opType},
+			#{reqMethod},
+			#{reqUrl},
+			#{reqTime},
+			#{respTime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_app_online_manage SET
+			app_id = #{appId},
+			app_name = #{appName},
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			step_name = #{stepName},
+			step_no = #{stepNo},
+			req_params = #{reqParams},
+			resp_params = #{respParams},
+			status = #{status},
+			channel = #{channel},
+			op_type = #{opType},
+			req_method = #{reqMethod},
+			req_url = #{reqUrl},
+			req_time = #{reqTime},
+			resp_time = #{respTime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_app_online_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

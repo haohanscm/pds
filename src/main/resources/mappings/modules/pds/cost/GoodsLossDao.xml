@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.cost.GoodsLossDao">
+    
+	<sql id="goodsLossColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.goods_id AS "goodsId",
+		a.goods_model_id AS "goodsModel",
+		a.loss_rate AS "lossPercent",
+-- 		a.loss_limit AS "lossLimit",
+-- 		a.loss_explain AS "lossExplain",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsLossJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsLoss">
+		SELECT 
+			<include refid="goodsLossColumns"/>
+		FROM scm_pws_goods_loss_rate a
+		<include refid="goodsLossJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsLoss">
+		SELECT 
+			<include refid="goodsLossColumns"/>
+		FROM scm_pws_goods_loss_rate a
+		<include refid="goodsLossJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="goodsModel != null and goodsModel != ''">
+				AND a.goods_model = #{goodsModel}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsLoss">
+		SELECT 
+			<include refid="goodsLossColumns"/>
+		FROM scm_pws_goods_loss_rate a
+		<include refid="goodsLossJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pws_goods_loss_rate(
+			tenant_id,
+			id,
+			pm_id,
+			goods_id,
+			goods_model,
+			loss_percent,
+			loss_limit,
+			loss_explain,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{goodsId},
+			#{goodsModel},
+			#{lossPercent},
+			#{lossLimit},
+			#{lossExplain},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pws_goods_loss_rate SET
+			pm_id = #{pmId},
+			goods_id = #{goodsId},
+			goods_model = #{goodsModel},
+			loss_percent = #{lossPercent},
+			loss_limit = #{lossLimit},
+			loss_explain = #{lossExplain},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pws_goods_loss_rate SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="GoodsLoss">
+        SELECT
+        <include refid="goodsLossColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_pws_goods_loss_rate a
+        <include refid="goodsLossJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="goodsModel != null and goodsModel != ''">
+                AND a.goods_model = #{goodsModel}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

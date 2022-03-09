@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.terminal.TerminalManageDao">
+    
+	<sql id="terminalManageColumns">
+		a.id AS "id",
+		a.terminal_no AS "terminalNo",
+		a.terminal_type AS "terminalType",
+		a.name AS "name",
+		a.alias AS "alias",
+		a.sn_code AS "snCode",
+		a.producer AS "producer",
+		a.imei_code AS "imeiCode",
+		a.purchase_time AS "purchaseTime",
+		a.sell_time AS "sellTime",
+		a.merchant_id AS "merchantId",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.status AS "status",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="terminalManageJoins">
+	</sql>
+    
+	<select id="get" resultType="TerminalManage">
+		SELECT 
+			<include refid="terminalManageColumns"/>
+		FROM scm_terminal_manage a
+		<include refid="terminalManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="terminalManage">
+		SELECT 
+			<include refid="terminalManageColumns"/>
+		FROM scm_terminal_manage a
+		<include refid="terminalManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="terminalNo != null and terminalNo != ''">
+				AND a.terminal_no = #{terminalNo}
+			</if>
+			<if test="terminalType != null and terminalType != ''">
+				AND a.terminal_type = #{terminalType}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="alias != null and alias != ''">
+				AND a.alias LIKE 
+					<if test="dbName == 'oracle'">'%'||#{alias}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{alias}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{alias},'%')</if>
+			</if>
+			<if test="snCode != null and snCode != ''">
+				AND a.sn_code = #{snCode}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="terminalManage">
+		SELECT 
+			<include refid="terminalManageColumns"/>
+		FROM scm_terminal_manage a
+		<include refid="terminalManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_terminal_manage(
+			id,
+			terminal_type,
+			name,
+			alias,
+			sn_code,
+			producer,
+			imei_code,
+			purchase_time,
+			sell_time,
+			merchant_id,
+			shop_id,
+			shop_name,
+			status,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{terminalType},
+			#{name},
+			#{alias},
+			#{snCode},
+			#{producer},
+			#{imeiCode},
+			#{purchaseTime},
+			#{sellTime},
+			#{merchantId},
+			#{shopId},
+			#{shopName},
+			#{status},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_terminal_manage SET
+			terminal_type = #{terminalType},
+			name = #{name},
+			alias = #{alias},
+			sn_code = #{snCode},
+			producer = #{producer},
+			imei_code = #{imeiCode},
+			purchase_time = #{purchaseTime},
+			sell_time = #{sellTime},
+			merchant_id = #{merchantId},
+			shop_id = #{shopId},
+			shop_name = #{shopName},
+			status = #{status},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_terminal_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.DeliveryRulesDao">
+    
+	<sql id="deliveryRulesColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.goods_id AS "goodsId",
+		a.delivery_type AS "deliveryType",
+		a.delivery_plan_type AS "deliveryPlanType",
+		a.delivery_schedule AS "deliverySchedule",
+		a.arrive_type AS "arriveType",
+		a.delivery_num AS "deliveryNum",
+		a.min_num AS "minNum",
+		a.rules_desc AS "rulesDesc",
+		a.specific_date AS "specificDate",
+		a.start_day_num AS "startDayNum",
+		a.delivery_total_num AS "deliveryTotalNum",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="deliveryRulesJoins">
+	</sql>
+    
+	<select id="get" resultType="DeliveryRules">
+		SELECT 
+			<include refid="deliveryRulesColumns"/>
+		FROM scm_cms_delivery_rules a
+		<include refid="deliveryRulesJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DeliveryRules">
+		SELECT 
+			<include refid="deliveryRulesColumns"/>
+		FROM scm_cms_delivery_rules a
+		<include refid="deliveryRulesJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="deliverySchedule != null and deliverySchedule != ''">
+				AND a.delivery_schedule = #{deliverySchedule}
+			</if>
+			<if test="arriveType != null and arriveType != ''">
+				AND a.arrive_type = #{arriveType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DeliveryRules">
+		SELECT 
+			<include refid="deliveryRulesColumns"/>
+		FROM scm_cms_delivery_rules a
+		<include refid="deliveryRulesJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_delivery_rules(
+			id,
+			merchant_id,
+			goods_id,
+			delivery_type,
+			delivery_plan_type,
+			delivery_schedule,
+			arrive_type,
+			delivery_num,
+			min_num,
+			rules_desc,
+			specific_date,
+			start_day_num,
+			delivery_total_num,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{goodsId},
+			#{deliveryType},
+			#{deliveryPlanType},
+			#{deliverySchedule},
+			#{arriveType},
+			#{deliveryNum},
+			#{minNum},
+			#{rulesDesc},
+			#{specificDate},
+			#{startDayNum},
+			#{deliveryTotalNum},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_delivery_rules SET
+			merchant_id = #{merchantId},
+			goods_id = #{goodsId},
+			delivery_type = #{deliveryType},
+			delivery_plan_type = #{deliveryPlanType},
+			delivery_schedule = #{deliverySchedule},
+			arrive_type = #{arriveType},
+			delivery_num = #{deliveryNum},
+			min_num = #{minNum},
+			rules_desc = #{rulesDesc},
+			specific_date = #{specificDate},
+			start_day_num = #{startDayNum},
+			delivery_total_num = #{deliveryTotalNum},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_delivery_rules SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByGoodsId">
+		UPDATE scm_cms_delivery_rules SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE goods_id = #{goodsId}
+	</update>
+
+</mapper>

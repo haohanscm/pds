@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.business.GoodsCollectionsDao">
+	<resultMap id="buyerCollectGoodsResultMap" type="com.haohan.platform.service.sys.modules.pds.api.entity.resp.buyer.PdsApiCollectGoodsResp">
+		<result column="goodsId" property="id"/>
+		<result column="goodsName" property="goodsName"/>
+		<result column="goodsSn" property="goodsSn"/>
+		<result column="thumbUrl" property="thumbUrl"/>
+		<result column="categoryId" property="categoryId"/>
+		<result column="categoryName" property="categoryName"/>
+		<result column="buyTimes" property="buyTimes"/>
+		<result column="collectId" property="collectId"/>
+		<collection property="goodsModelList" ofType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.buyer.PdsTopNGoodsModelResp">
+			<result column="modelId" property="id"/>
+			<result column="modelName" property="modelName"/>
+			<result column="modelPrice" property="modelPrice"/>
+			<result column="pmPrice" property="purchasePrice"/>
+			<result column="modelUnit" property="modelUnit"/>
+			<result column="modelUrl" property="modelUrl"/>
+			<result column="virtualPrice" property="virtualPrice"/>
+		</collection>
+	</resultMap>
+
+	<sql id="goodsCollectionsColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.uid AS "uid",
+		a.goods_id AS "goodsId",
+		a.model_id AS "modelId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="buyerGoodsCollectionCulumns">
+		x.collectId AS collectId,
+		g.id AS goodsId,
+		g.goods_name AS goodsName,
+		g.goods_sn AS "goodsSn",
+		g.thumb_url AS thumbUrl,
+		c.id AS categoryId,
+		c.name AS categoryName,
+		m.id AS modelId,
+		m.model_name AS modelName,
+		m.model_price AS modelPrice,
+		m.model_unit AS modelUnit,
+		m.model_url AS modelUrl,
+		m.virtual_price AS virtualPrice,
+	    IFNULL(p.price,m.model_price) AS pmPrice
+	</sql>
+	
+	<sql id="goodsCollectionsJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsCollections">
+		SELECT 
+			<include refid="goodsCollectionsColumns"/>
+		FROM scm_cms_goods_collections a
+		<include refid="goodsCollectionsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsCollections">
+		SELECT 
+			<include refid="goodsCollectionsColumns"/>
+		FROM scm_cms_goods_collections a
+		<include refid="goodsCollectionsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="uid != null and uid != ''">
+				AND a.uid = #{uid}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="modelId != null and modelId != ''">
+				AND a.model_id = #{modelId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsCollections">
+		SELECT 
+			<include refid="goodsCollectionsColumns"/>
+		FROM scm_cms_goods_collections a
+		<include refid="goodsCollectionsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectCollectPage" resultMap="buyerCollectGoodsResultMap">
+		SELECT
+			<include refid="buyerGoodsCollectionCulumns"/>
+		FROM (
+			SELECT
+				a.id AS collectId,
+				a.pm_id AS pmId,
+				a.uid AS uid,
+				a.goods_id AS goodsId,
+-- 				a.model_id AS modelId,
+				a.update_date AS updateDate
+			FROM scm_cms_goods_collections a
+			<where>
+				a.del_flag = '0'
+				<if test="pmId != null and pmId != ''">
+					AND a.pm_id = #{pmId}
+				</if>
+				<if test="uid != null and uid != ''">
+					AND a.uid = #{uid}
+				</if>
+			</where>
+			<if test="pageStart != null and pageStart >= 0 and pageSize != null">
+				limit #{pageStart},#{pageSize}
+			</if>
+		) x
+		INNER JOIN scm_cms_goods g on g.id = x.goodsId
+            AND g.del_flag = '0'
+        <if test="queryStatus != null and queryStatus != ''">
+            AND g.is_marketable = #{queryStatus}
+        </if>
+        LEFT JOIN scm_cms_goods_model m on m.goods_id = g.id AND m.del_flag = '0'
+		INNER JOIN scm_cms_goods_category c on c.id = g.goods_category_id AND c.del_flag = '0'
+		LEFT JOIN scm_platform_goods_price p on p.model_id = m.id
+            AND p.pm_id = #{pmId}
+			AND p.merchant_id = #{buyerMerchantId}
+            AND p.status = '1'
+            AND p.del_flag = '0'
+			AND (CURDATE() BETWEEN p.start_date AND p.end_date)
+		order by x.updateDate desc
+	</select>
+
+	<select id="countPageRows" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM scm_cms_goods_collections a
+        LEFT JOIN scm_cms_goods g on g.id = a.goods_id
+		<where>
+			a.del_flag = '0'
+            AND g.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="uid != null and uid != ''">
+				AND a.uid = #{uid}
+			</if>
+            <if test="queryStatus != null and queryStatus != ''">
+                AND g.is_marketable = #{queryStatus}
+            </if>
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_goods_collections(
+			tenant_id,
+			id,
+			pm_id,
+			uid,
+			goods_id,
+			model_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{uid},
+			#{goodsId},
+			#{modelId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_goods_collections SET
+			pm_id = #{pmId},
+			uid = #{uid},
+			goods_id = #{goodsId},
+			model_id = #{modelId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_goods_collections SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

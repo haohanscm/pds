@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.business.BusinessProcessDao">
+    
+	<sql id="businessProcessColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.trade_id AS "tradeId",
+		a.process_stage AS "processStage",
+		a.images AS "images",
+		a.process_desc AS "processDesc",
+		a.operator AS "operator",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="businessProcessJoins">
+	</sql>
+    
+	<select id="get" resultType="BusinessProcess">
+		SELECT 
+			<include refid="businessProcessColumns"/>
+		FROM scm_business_process a
+		<include refid="businessProcessJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="BusinessProcess">
+		SELECT 
+			<include refid="businessProcessColumns"/>
+		FROM scm_business_process a
+		<include refid="businessProcessJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="tradeId != null and tradeId != ''">
+				AND a.trade_id = #{tradeId}
+			</if>
+			<if test="processStage != null and processStage != ''">
+				AND a.process_stage = #{processStage}
+			</if>
+			<if test="operator != null and operator != ''">
+				AND a.operator = #{operator}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="BusinessProcess">
+		SELECT 
+			<include refid="businessProcessColumns"/>
+		FROM scm_business_process a
+		<include refid="businessProcessJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_business_process(
+			id,
+			pm_id,
+			trade_id,
+			process_stage,
+			images,
+			process_desc,
+			operator,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{pmId},
+			#{tradeId},
+			#{processStage},
+			#{images},
+			#{processDesc},
+			#{operator},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_business_process SET
+			pm_id = #{pmId},
+			trade_id = #{tradeId},
+			process_stage = #{processStage},
+			images = #{images},
+			process_desc = #{processDesc},
+			operator = #{operator},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_business_process SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

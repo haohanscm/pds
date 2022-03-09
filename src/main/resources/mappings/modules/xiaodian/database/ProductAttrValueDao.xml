@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.database.ProductAttrValueDao">
+    
+	<sql id="productAttrValueColumns">
+		a.id AS "id",
+		a.attr_value AS "attrValue",
+		a.attr_name_id AS "attrNameId",
+		a.spu_id AS "spuId",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="productAttrValueJoins">
+	</sql>
+    
+	<select id="get" resultType="ProductAttrValue">
+		SELECT 
+			<include refid="productAttrValueColumns"/>
+		FROM scm_cms_product_attr_value a
+		<include refid="productAttrValueJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProductAttrValue">
+		SELECT 
+			<include refid="productAttrValueColumns"/>
+		FROM scm_cms_product_attr_value a
+		<include refid="productAttrValueJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="attrValue != null and attrValue != ''">
+				AND a.attr_value = #{attrValue}
+			</if>
+			<if test="attrNameId != null and attrNameId != ''">
+				AND a.attr_name_id = #{attrNameId}
+			</if>
+			<!-- 传入spuId时查询结果带未绑定spuId的属性值 -->
+			<if test="spuId != null and spuId != ''">
+				AND (a.spu_id = #{spuId} OR isnull(a.spu_id) OR a.spu_id = '')
+			</if>
+			<!-- 只查询未绑定spuId的属性值 -->
+			<if test="spuId == null or spuId == ''">
+				AND (isnull(a.spu_id) OR a.spu_id = '')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductAttrValue">
+		SELECT 
+			<include refid="productAttrValueColumns"/>
+		FROM scm_cms_product_attr_value a
+		<include refid="productAttrValueJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_product_attr_value(
+			id,
+			attr_value,
+			attr_name_id,
+			spu_id,
+			sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{attrValue},
+			#{attrNameId},
+			#{spuId},
+			#{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_product_attr_value SET
+			attr_value = #{attrValue},
+			attr_name_id = #{attrNameId},
+			spu_id = #{spuId},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_product_attr_value SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 带属性名 -->
+	<select id="findJoinList" resultType="ProductAttrValue">
+		SELECT
+		<include refid="productAttrValueColumns"/>
+		,
+		n.attr_name AS "attrName"
+		FROM scm_cms_product_attr_value a
+		<include refid="productAttrValueJoins"/>
+		LEFT JOIN scm_cms_product_attr_name n ON n.id = a.attr_name_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="attrValue != null and attrValue != ''">
+				AND a.attr_value = #{attrValue}
+			</if>
+			<if test="attrNameId != null and attrNameId != ''">
+				AND FIND_IN_SET(a.attr_name_id, #{attrNameId})
+			</if>
+			<!-- 传入spuId时查询结果带未绑定spuId的属性值 -->
+			<if test="spuId != null and spuId != ''">
+				AND (a.spu_id = #{spuId} OR isnull(a.spu_id) OR a.spu_id = '')
+			</if>
+			<!-- 只查询未绑定spuId的属性值 -->
+            <if test="spuId == null or spuId == ''">
+				AND (isnull(a.spu_id) OR a.spu_id = '')
+			</if>
+            <if test="attrName != null and attrName != ''">
+                AND n.attr_name = #{attrName}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY n.sort, a.sort, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <!-- 根据规格值ids 查询 结果带属性名 参数存入id -->
+    <select id="findByValueIds" resultType="ProductAttrValue">
+        SELECT
+        <include refid="productAttrValueColumns"/>
+        ,
+        n.attr_name AS "attrName"
+        FROM scm_cms_product_attr_value a
+        <include refid="productAttrValueJoins"/>
+        LEFT JOIN scm_cms_product_attr_name n ON n.id = a.attr_name_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND FIND_IN_SET(a.id, #{id})
+        </where>
+        ORDER BY n.sort, a.sort, a.update_date DESC
+    </select>
+
+	<!-- 获取 属性名:属性值 的对应关系  可根据规格值ids 查询-->
+	<select id="fetchNameValue" resultType="java.lang.String">
+		SELECT
+        CONCAT_WS( ':', n.attr_name, a.attr_value ) AS "info"
+		FROM scm_cms_product_attr_value a
+		LEFT JOIN scm_cms_product_attr_name n ON n.id = a.attr_name_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="id != null and id != ''">
+                AND FIND_IN_SET(a.id, #{id})
+            </if>
+		</where>
+		ORDER BY n.sort, a.sort, a.update_date DESC
+	</select>
+
+</mapper>

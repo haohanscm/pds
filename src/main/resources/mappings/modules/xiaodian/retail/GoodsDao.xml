@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.retail.GoodsDao">
+    
+	<sql id="goodsColumns">
+		a.id AS "id",
+		a.shop_id AS "shopId",
+		a.merchant_id AS "merchantId",
+		a.goods_category_id AS "goodsCategoryId",
+		a.goods_sn AS "goodsSn",
+		a.goods_name AS "goodsName",
+		a.detail_desc AS "detailDesc",
+		a.simple_desc AS "simpleDesc",
+		a.brand_id AS "brandId",
+		a.sale_rule AS "saleRule",
+		a.photo_group_num AS "photoGroupNum",
+		a.thumb_url AS "thumbUrl",
+		a.is_marketable AS "isMarketable",
+		a.storage AS "storage",
+		a.service_selection AS "serviceSelection",
+		a.delivery_rule AS "deliveryRule",
+		a.goods_gift AS "goodsGift",
+		a.goods_model AS "goodsModel",
+		a.goods_status AS "goodsStatus",
+		a.goods_from AS "goodsFrom",
+		a.sort AS "sort",
+		a.goods_type AS "goodsType",
+		a.scan_code AS "scanCode",
+		a.third_goods_sn AS "thirdGoodsSn",
+		a.general_sn AS "generalSn",
+		a.salec_flag as "salecFlag",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsJoins">
+	</sql>
+    
+	<select id="get" resultType="Goods">
+		SELECT 
+			<include refid="goodsColumns"/>
+		FROM scm_cms_goods a
+		<include refid="goodsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+    <!-- goods表 查询条件 -->
+    <sql id="goodsWhereCondition">
+        a.del_flag = #{DEL_FLAG_NORMAL}
+        <if test="shopId != null and shopId != ''">
+            AND a.shop_id = #{shopId}
+        </if>
+        <if test="merchantId != null and merchantId != ''">
+            AND a.merchant_id = #{merchantId}
+        </if>
+        <if test="goodsSn != null and goodsSn != ''">
+            AND FIND_IN_SET(a.goods_sn, #{goodsSn}) > 0
+        </if>
+        <if test="goodsName != null and goodsName != ''">
+            AND (a.goods_name LIKE
+            <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+                OR a.simple_desc LIKE
+                <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+                )
+        </if>
+        <if test="serviceSelection != null and serviceSelection != ''">
+            AND a.service_selection = #{serviceSelection}
+        </if>
+        <if test="deliveryRule != null and deliveryRule != ''">
+            AND a.delivery_rule = #{deliveryRule}
+        </if>
+        <if test="goodsGift != null and goodsGift != ''">
+            AND a.goods_gift = #{goodsGift}
+        </if>
+        <if test="goodsStatus != null and goodsStatus != ''">
+            AND a.goods_status = #{goodsStatus}
+        </if>
+        <if test="goodsFrom != null and goodsFrom != ''">
+            AND a.goods_from = #{goodsFrom}
+        </if>
+        <if test="goodsModel != null and goodsModel != ''">
+            AND a.goods_model = #{goodsModel}
+        </if>
+        <if test="goodsType != null and goodsType != ''">
+            AND a.goods_type = #{goodsType}
+        </if>
+        <if test="scanCode != null and scanCode != ''">
+            AND a.scan_code = #{scanCode}
+        </if>
+        <if test="thirdGoodsSn != null and thirdGoodsSn != ''">
+            AND FIND_IN_SET(a.third_goods_sn, #{thirdGoodsSn})
+        </if>
+        <if test="isMarketable != null ">
+            AND a.is_marketable = #{isMarketable}
+        </if>
+        <if test="generalSn != null and generalSn != ''">
+            AND a.general_sn = #{generalSn}
+        </if>
+    </sql>
+	
+	<select id="findList" resultType="Goods">
+		SELECT 
+			<include refid="goodsColumns"/>
+		FROM scm_cms_goods a
+		<include refid="goodsJoins"/>
+		<where>
+            <include refid="goodsWhereCondition"/>
+            <if test="goodsCategoryId != null and goodsCategoryId != ''">
+                AND FIND_IN_SET( #{goodsCategoryId}, a.goods_category_id ) > 0
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.shop_id, a.sort + 0, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Goods">
+		SELECT 
+			<include refid="goodsColumns"/>
+		FROM scm_cms_goods a
+		<include refid="goodsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+            <otherwise>
+                ORDER BY a.shop_id, a.sort + 0, a.update_date DESC
+            </otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_goods(
+			tenant_id,
+			id,
+			shop_id,
+			merchant_id,
+			goods_category_id,
+			goods_sn,
+			goods_name,
+			detail_desc,
+			simple_desc,
+			brand_id,
+			sale_rule,
+			photo_group_num,
+			thumb_url,
+			is_marketable,
+			storage,
+			service_selection,
+			delivery_rule,
+			goods_gift,
+			goods_model,
+			goods_status,
+			goods_from,
+			sort,
+            goods_type,
+            scan_code,
+            third_goods_sn,
+            general_sn,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{shopId},
+			#{merchantId},
+			#{goodsCategoryId},
+			#{goodsSn},
+			#{goodsName},
+			#{detailDesc},
+			#{simpleDesc},
+			#{brandId},
+			#{saleRule},
+			#{photoGroupNum},
+			#{thumbUrl},
+			#{isMarketable},
+			#{storage},
+			#{serviceSelection},
+			#{deliveryRule},          
+			#{goodsGift},
+			#{goodsModel},
+			#{goodsStatus},
+			#{goodsFrom},
+			#{sort},
+            #{goodsType},
+			#{scanCode},
+			#{thirdGoodsSn},
+			#{generalSn},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+	<!-- 若属性的值为null 则不更新属性值  -->
+	<update id="update">
+		UPDATE scm_cms_goods SET
+		<if test="shopId != null ">
+			shop_id = #{shopId},
+		</if>
+		<if test="merchantId != null ">
+			merchant_id = #{merchantId},
+		</if>
+		<if test="goodsCategoryId != null ">
+			goods_category_id = #{goodsCategoryId},
+		</if>
+		<if test="goodsSn != null and goodsSn != '' ">
+			goods_sn = #{goodsSn},
+		</if>
+		<if test="goodsName != null ">
+			goods_name = #{goodsName},
+		</if>
+		<if test="detailDesc != null ">
+			detail_desc = #{detailDesc},
+		</if>
+		<if test="simpleDesc != null ">
+			simple_desc = #{simpleDesc},
+		</if>
+		<if test="brandId != null ">
+			brand_id = #{brandId},
+		</if>
+		<if test="saleRule != null ">
+			sale_rule = #{saleRule},
+		</if>
+		<if test="photoGroupNum != null ">
+			photo_group_num = #{photoGroupNum},
+		</if>
+		<if test="thumbUrl != null ">
+			thumb_url = #{thumbUrl},
+		</if>
+		<if test="isMarketable != null ">
+			is_marketable = #{isMarketable},
+		</if>
+		<if test="storage != null ">
+			storage = #{storage},
+		</if>
+		<if test="serviceSelection != null ">
+			service_selection = #{serviceSelection},
+		</if>
+		<if test="deliveryRule != null ">
+			delivery_rule = #{deliveryRule},
+		</if>
+		<if test="goodsGift != null ">
+			goods_gift = #{goodsGift},
+		</if>
+		<if test="goodsModel != null ">
+			goods_model = #{goodsModel},
+		</if>
+		<if test="goodsStatus != null ">
+			goods_status = #{goodsStatus},
+		</if>
+		<if test="goodsFrom != null ">
+			goods_from = #{goodsFrom},
+		</if>
+		<if test="sort != null ">
+			sort = #{sort},
+		</if>
+		<if test="scanCode != null ">
+            scan_code = #{scanCode},
+		</if>
+		<if test="thirdGoodsSn != null ">
+            third_goods_sn = #{thirdGoodsSn},
+		</if>
+		<if test="goodsType != null ">
+            goods_type = #{goodsType},
+		</if>
+		<if test="generalSn != null ">
+			general_sn = #{generalSn},
+		</if>
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_goods SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据商品分类id 删除对应分类及子分类拥有的商品 -->
+	<update id="deleteForCategory">
+		UPDATE scm_cms_goods SET
+		del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			id IN(
+				SELECT
+				y.only_id
+				FROM
+				(SELECT
+					DISTINCT(a.id) as only_id
+					FROM
+					scm_cms_goods a,
+					( SELECT c.id FROM scm_cms_goods_category c WHERE c.parent_ids LIKE
+					<if test="dbName == 'oracle'">'%,'||#{goodsCategoryId}||',%'</if>
+					<if test="dbName == 'mssql'">'%,'+#{goodsCategoryId}+',%'</if>
+					<if test="dbName == 'mysql'">concat('%,',#{goodsCategoryId},',%')</if>
+					OR c.id = #{goodsCategoryId} ) x
+					WHERE
+					FIND_IN_SET( x.id, a.goods_category_id ) > 0) y
+			)
+		</where>
+	</update>
+
+    <select id="findJoinList" resultType="Goods">
+        SELECT
+        <include refid="goodsColumns"/>,
+        s.name AS "shopName",
+        m.merchant_name AS "merchantName",
+		( SELECT group_concat( c1.name ) FROM scm_cms_goods_category c1 WHERE c1.del_flag = #{DEL_FLAG_NORMAL} AND FIND_IN_SET( c1.id, a.goods_category_id ) > 0) AS "categoryName",
+        ( SELECT group_concat( c1.category_sn ) FROM scm_cms_goods_category c1 WHERE c1.del_flag = #{DEL_FLAG_NORMAL} AND FIND_IN_SET( c1.id, a.goods_category_id ) > 0) AS "categorySn",
+        s.code AS "jisuappId",
+		s.is_update_jisu AS "updateJisu",
+        p.market_price AS "marketPrice",
+        p.unit AS "unit"
+        FROM scm_cms_goods a
+        LEFT JOIN scm_shop s ON a.shop_id = s.id
+        LEFT JOIN scm_merchant m ON s.merchant_id = m.id
+		LEFT JOIN scm_cms_goods_price_rule p ON a.id = p.goods_id
+        <where>
+            <include refid="goodsWhereCondition"/>
+            <if test="goodsCategoryId != null and goodsCategoryId != ''">
+                AND FIND_IN_SET( #{goodsCategoryId}, a.goods_category_id ) > 0
+            </if>
+            AND s.del_flag = #{DEL_FLAG_NORMAL}
+            AND m.del_flag = #{DEL_FLAG_NORMAL}
+            AND p.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="shopName != null and shopName != ''">
+                AND s.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND m.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.shop_id, a.sort + 0, a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 修改库存数量 -->
+	<update id="modifyStorage">
+		UPDATE scm_cms_goods SET
+			storage = #{storage}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 查询 分类名称 -->
+	<select id="getExt" resultType="Goods">
+		SELECT
+		<include refid="goodsColumns"/>
+			,
+			( SELECT group_concat( c1.name ) FROM scm_cms_goods_category c1 WHERE FIND_IN_SET( c1.id, a.goods_category_id ) > 0 ) AS "categoryName",
+            ( SELECT group_concat( c1.category_sn ) FROM scm_cms_goods_category c1 WHERE FIND_IN_SET( c1.id, a.goods_category_id ) > 0 ) AS "categorySn"
+		FROM scm_cms_goods a
+		<include refid="goodsJoins"/>
+		WHERE a.id = #{id}
+		OR a.goods_sn = #{goodsSn}
+	</select>
+
+	<!-- 根据merchantId 和 多个商品sn 批量删除商品 -->
+	<update id="deleteByGoodsSn">
+		UPDATE scm_cms_goods SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE FIND_IN_SET( goods_sn ,#{goodsSn})
+		<if test="merchantId != null and merchantId != ''">
+			AND merchant_id = #{merchantId}
+		</if>
+	</update>
+
+    <!-- 用于查询goodsSn 目前的生成数字 -->
+	<select id="findGoodsSnList" resultType="Goods">
+		SELECT
+        a.goods_sn AS "goodsSn"
+		FROM scm_cms_goods a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.goods_sn LIKE
+            <if test="dbName == 'oracle'">'%'||#{goodsSn}||'%'</if>
+            <if test="dbName == 'mssql'">'%'+#{goodsSn}+'%'</if>
+            <if test="dbName == 'mysql'">concat('%',#{goodsSn},'%')</if>
+		</where>
+        ORDER BY a.goods_sn DESC
+	</select>
+
+    <!--  查询商品基础信息和modelList 自定义分页  带采购商采购价/采购员收藏状态-->
+    <resultMap id="baseWithModelResultMap" type="com.haohan.platform.service.sys.modules.xiaodian.entity.retail.GoodsInfoExt">
+        <id column="id" property="id"/>
+        <result column="shopId" property="shopId"/>
+        <result column="merchantId" property="merchantId"/>
+        <result column="goodsCategoryId" property="goodsCategoryId"/>
+        <result column="goodsSn" property="goodsSn"/>
+        <result column="goodsName" property="goodsName"/>
+        <result column="detailDesc" property="detailDesc"/>
+        <result column="simpleDesc" property="simpleDesc"/>
+        <result column="brandId" property="brandId"/>
+        <result column="saleRule" property="saleRule"/>
+        <result column="photoGroupNum" property="photoGroupNum"/>
+        <result column="thumbUrl" property="thumbUrl"/>
+        <result column="isMarketable" property="isMarketable"/>
+        <result column="storage" property="storage"/>
+        <result column="serviceSelection" property="serviceSelection"/>
+        <result column="deliveryRule" property="deliveryRule"/>
+        <result column="goodsGift" property="goodsGift"/>
+        <result column="goodsModel" property="goodsModel"/>
+        <result column="remarks" property="remarks"/>
+        <result column="goodsStatus" property="goodsStatus"/>
+        <result column="goodsFrom" property="goodsFrom"/>
+        <result column="categorySn" property="categorySn"/>
+        <result column="sort" property="sort"/>
+        <result column="goodsType" property="goodsType"/>
+        <result column="scanCode" property="scanCode"/>
+        <result column="thirdGoodsSn" property="thirdGoodsSn"/>
+        <result column="generalSn" property="generalSn"/>
+        <result column="salecFlag" property="salecFlag"/>
+
+        <result column="marketPrice" property="marketPrice"/>
+        <result column="vipPrice" property="vipPrice"/>
+        <result column="virtualPrice" property="virtualPrice"/>
+        <result column="unit" property="unit"/>
+        <result column="collectionStatus" property="collectionStatus"/>
+        
+        <collection property="goodsModelList"  ofType="com.haohan.platform.service.sys.modules.xiaodian.entity.retail.GoodsModel" >
+            <id column="modelId" property="id"/>
+            <result column="goodsId" property="goodsId"/>
+            <result column="modelPrice" property="modelPrice"/>
+            <result column="modelName" property="modelName"/>
+            <result column="modelUnit" property="modelUnit"/>
+            <result column="modelStorage" property="modelStorage"/>
+            <result column="modelUrl" property="modelUrl"/>
+            <result column="modelInfo" property="modelInfo"/>
+            <result column="model" property="model"/>
+            <result column="itemsId" property="itemsId"/>
+            <result column="modelCode" property="modelCode"/>
+            <result column="virtualPrice" property="virtualPrice"/>
+            <result column="goodsModelSn" property="goodsModelSn"/>
+            <result column="costPrice" property="costPrice"/>
+            <result column="weight" property="weight"/>
+            <result column="volume" property="volume"/>
+            <result column="modelGeneralSn" property="modelGeneralSn"/>
+            <result column="thirdModelSn" property="thirdModelSn"/>
+            <result column="purchasePrice" property="purchasePrice"/>
+        </collection>
+    </resultMap>
+
+    <sql id="goodsModelColumns">
+        m.id AS "modelId",
+		m.goods_id AS "goodsId",
+		m.model_price AS "modelPrice",
+		m.model_name AS "modelName",
+		m.model_unit AS "modelUnit",
+		m.model_storage AS "modelStorage",
+		m.model_url AS "modelUrl",
+		m.model_info AS "modelInfo",
+		m.model AS "model",
+		m.items_id AS "itemsId",
+		m.model_code AS "modelCode",
+		m.virtual_price AS "virtualPrice",
+		m.goods_model_sn AS "goodsModelSn",
+		m.cost_price AS "costPrice",
+		m.weight AS "weight",
+		m.volume AS "volume",
+		m.model_general_sn AS "modelGeneralSn",
+		m.third_model_sn AS "thirdModelSn"
+    </sql>
+
+    <sql id="goodsPriceRuleColumns">
+        p.market_price AS "marketPrice",
+		p.vip_price AS "vipPrice",
+		p.virtual_price AS "virtualPrice",
+        p.unit AS "unit"
+    </sql>
+
+    <sql id="baseWithModelExtColumns">
+        x.id,
+		x.shopId,
+		x.merchantId,
+		x.goodsCategoryId,
+		x.goodsSn,
+		x.goodsName,
+		x.detailDesc,
+		x.simpleDesc,
+		x.brandId,
+		x.saleRule,
+		x.photoGroupNum,
+		x.thumbUrl,
+		x.isMarketable,
+		x.storage,
+		x.serviceSelection,
+		x.deliveryRule,
+		x.goodsGift,
+		x.goodsModel,
+		x.goodsStatus,
+		x.goodsFrom,
+		x.sort,
+		x.goodsType,
+		x.scanCode,
+		x.thirdGoodsSn,
+		x.generalSn,
+		x.remarks,
+		x.salecFlag,
+        <include refid="goodsPriceRuleColumns"/>
+        ,
+        <include refid="goodsModelColumns"/>
+	</sql>
+
+    <select id="findGoodsCount" resultType="java.lang.Integer">
+        SELECT
+        count(a.id)
+        FROM scm_cms_goods a
+        <if test="goodsCategoryId != null and goodsCategoryId != ''">
+            LEFT JOIN scm_cms_goods_category c ON a.goods_category_id = c.id
+        </if>
+        <where>
+            <include refid="goodsWhereCondition"/>
+            <if test="goodsCategoryId != null and goodsCategoryId != ''">
+                AND (a.goods_category_id = #{goodsCategoryId}
+                    OR c.parent_ids LIKE concat('%,',#{goodsCategoryId},',%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="findWithModelPds" resultMap="baseWithModelResultMap">
+        SELECT
+        <include refid="baseWithModelExtColumns"/>
+        <if test="buyerUid != null and buyerUid != ''">
+            ,IF(gc.id IS NULL, '0', '1') AS "collectionStatus"
+        </if>
+        <if test="buyerMerchantId != null and buyerMerchantId != ''">
+            ,IFNULL(gp.price, m.model_price) AS "purchasePrice"
+        </if>
+        FROM (
+            SELECT
+            <include refid="goodsColumns"/>
+            FROM scm_cms_goods a
+            <if test="goodsCategoryId != null and goodsCategoryId != ''">
+                LEFT JOIN scm_cms_goods_category c ON a.goods_category_id = c.id
+            </if>
+            <where>
+                <include refid="goodsWhereCondition"/>
+                <if test="goodsCategoryId != null and goodsCategoryId != ''">
+                    AND (a.goods_category_id = #{goodsCategoryId}
+                        OR c.parent_ids LIKE concat('%,',#{goodsCategoryId},',%'))
+                </if>
+            </where>
+            ORDER BY a.shop_id, a.sort + 0, a.update_date DESC
+            <if test="pageStart != null and pageStart >= 0 and pageSize != null">
+                limit #{pageStart}, #{pageSize}
+            </if>
+        ) x
+        LEFT JOIN scm_cms_goods_price_rule p ON x.id = p.goods_id
+        <if test="buyerUid != null and buyerUid != ''">
+            LEFT JOIN scm_cms_goods_collections gc ON gc.goods_id = x.id
+                AND gc.uid = #{buyerUid}
+                AND gc.del_flag = #{DEL_FLAG_NORMAL}
+        </if>
+        LEFT JOIN scm_cms_goods_model m ON x.id = m.goods_id
+        <!-- 配送日期的采购商采购价 -->
+        <if test="buyerMerchantId != null and buyerMerchantId != ''">
+            LEFT JOIN scm_platform_goods_price gp ON gp.model_id = m.id
+                AND gp.pm_id = #{merchantId}
+                AND gp.merchant_id = #{buyerMerchantId}
+                AND gp.status = '1'
+                AND gp.del_flag = #{DEL_FLAG_NORMAL}
+                AND (DATE(#{deliveryDate}) BETWEEN gp.start_date AND gp.end_date)
+        </if>
+        <where>
+            p.del_flag = #{DEL_FLAG_NORMAL}
+            AND m.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        ORDER BY x.sort + 0, x.goodsName
+    </select>
+
+
+    <!--  查询商品基础信息 关联 scm_cms_goods_price_rule  scm_cms_goods_model  scm_cms_goods_model_total -->
+    <resultMap id="baseResultMap" type="com.haohan.platform.service.sys.modules.xiaodian.entity.retail.GoodsInfoExt">
+        <id column="id" property="id"/>
+        <result column="shopId" property="shopId"/>
+        <result column="merchantId" property="merchantId"/>
+        <result column="goodsCategoryId" property="goodsCategoryId"/>
+        <result column="goodsSn" property="goodsSn"/>
+        <result column="goodsName" property="goodsName"/>
+        <result column="detailDesc" property="detailDesc"/>
+        <result column="simpleDesc" property="simpleDesc"/>
+        <result column="brandId" property="brandId"/>
+        <result column="saleRule" property="saleRule"/>
+        <result column="photoGroupNum" property="photoGroupNum"/>
+        <result column="thumbUrl" property="thumbUrl"/>
+        <result column="isMarketable" property="isMarketable"/>
+        <result column="storage" property="storage"/>
+        <result column="serviceSelection" property="serviceSelection"/>
+        <result column="deliveryRule" property="deliveryRule"/>
+        <result column="goodsGift" property="goodsGift"/>
+        <result column="goodsModel" property="goodsModel"/>
+        <result column="remarks" property="remarks"/>
+        <result column="goodsStatus" property="goodsStatus"/>
+        <result column="goodsFrom" property="goodsFrom"/>
+        <result column="categorySn" property="categorySn"/>
+        <result column="sort" property="sort"/>
+        <result column="goodsType" property="goodsType"/>
+        <result column="scanCode" property="scanCode"/>
+        <result column="thirdGoodsSn" property="thirdGoodsSn"/>
+        <result column="generalSn" property="generalSn"/>
+
+        <result column="marketPrice" property="marketPrice"/>
+        <result column="vipPrice" property="vipPrice"/>
+        <result column="virtualPrice" property="virtualPrice"/>
+        <result column="unit" property="unit"/>
+
+        <collection property="infoList" ofType="com.haohan.platform.service.sys.modules.xiaodian.entity.retail.GoodsModelTotal" >
+            <id column="totalId" property="id"/>
+            <result column="totalGoodsId" property="goodsId"/>
+            <result column="totalModelName" property="modelName"/>
+            <result column="totalModelId" property="modelId"/>
+            <result column="totalSubModelId" property="subModelId"/>
+            <result column="totalSubModelName" property="subModelName"/>
+        </collection>
+
+        <collection property="goodsModelList"  ofType="com.haohan.platform.service.sys.modules.xiaodian.entity.retail.GoodsModel" >
+            <id column="modelId" property="id"/>
+            <result column="goodsId" property="goodsId"/>
+            <result column="modelPrice" property="modelPrice"/>
+            <result column="modelName" property="modelName"/>
+            <result column="modelUnit" property="modelUnit"/>
+            <result column="modelStorage" property="modelStorage"/>
+            <result column="modelUrl" property="modelUrl"/>
+            <result column="modelInfo" property="modelInfo"/>
+            <result column="model" property="model"/>
+            <result column="itemsId" property="itemsId"/>
+            <result column="modelCode" property="modelCode"/>
+            <result column="virtualPrice" property="virtualPrice"/>
+            <result column="goodsModelSn" property="goodsModelSn"/>
+            <result column="costPrice" property="costPrice"/>
+            <result column="weight" property="weight"/>
+            <result column="volume" property="volume"/>
+            <result column="modelGeneralSn" property="modelGeneralSn"/>
+            <result column="thirdModelSn" property="thirdModelSn"/>
+        </collection>
+    </resultMap>
+
+    <sql id="goodsModelTotalColumns">
+        mt.id AS "totalId",
+        mt.goods_id AS "totalGoodsId",
+        mt.model_name AS "totalModelName",
+        mt.model_id AS "totalModelId",
+        mt.sub_model_id AS "totalSubModelId",
+        mt.sub_model_name AS "totalSubModelName"
+	</sql>
+
+    <select id="findListWithBase" resultMap="baseResultMap">
+        SELECT
+        <include refid="goodsColumns"/>
+        ,
+        <include refid="goodsPriceRuleColumns"/>
+        ,
+        <include refid="goodsModelColumns"/>
+        ,
+        <include refid="goodsModelTotalColumns"/>
+        FROM scm_cms_goods a
+        LEFT JOIN scm_cms_goods_price_rule p ON a.id = p.goods_id
+        LEFT JOIN scm_cms_goods_model m ON m.goods_id = a.id
+        LEFT JOIN scm_cms_goods_model_total mt ON mt.goods_id = a.id AND mt.del_flag = #{DEL_FLAG_NORMAL}
+        <where>
+            <include refid="goodsWhereCondition"/>
+            <if test="goodsCategoryId != null and goodsCategoryId != ''">
+                AND FIND_IN_SET( #{goodsCategoryId}, a.goods_category_id ) > 0
+            </if>
+            AND p.del_flag = #{DEL_FLAG_NORMAL}
+            AND m.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        ORDER BY a.shop_id, a.sort + 0, a.update_date DESC
+    </select>
+
+
+
+</mapper>

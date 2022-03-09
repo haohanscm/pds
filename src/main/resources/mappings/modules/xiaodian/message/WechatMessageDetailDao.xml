@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.message.WechatMessageDetailDao">
+    
+	<sql id="wechatMessageDetailColumns">
+		a.id AS "id",
+		a.msg_template_id AS "msgTemplate.id",
+		a.field_name AS "fieldName",
+		a.field_value AS "fieldValue",
+		a.fileld_code AS "fileldCode",
+		a.field_color AS "fieldColor",
+		a.is_bold AS "isBold",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="wechatMessageDetailJoins">
+		LEFT JOIN scm_ms_wechat_message_template b ON b.id = a.msg_template_id
+	</sql>
+    
+	<select id="get" resultType="WechatMessageDetail">
+		SELECT 
+			<include refid="wechatMessageDetailColumns"/>
+		FROM scm_ms_wechat_message_detail a
+		<include refid="wechatMessageDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="WechatMessageDetail">
+		SELECT 
+			<include refid="wechatMessageDetailColumns"/>
+		FROM scm_ms_wechat_message_detail a
+		<include refid="wechatMessageDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="msgTemplate != null and msgTemplate.id != ''">
+				AND a.msg_template_id = #{msgTemplate.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="WechatMessageDetail">
+		SELECT 
+			<include refid="wechatMessageDetailColumns"/>
+		FROM scm_ms_wechat_message_detail a
+		<include refid="wechatMessageDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_ms_wechat_message_detail(
+			id,
+			msg_template_id,
+			field_name,
+			field_value,
+			fileld_code,
+			field_color,
+			is_bold,
+			sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{msgTemplate.id},
+			#{fieldName},
+			#{fieldValue},
+			#{fileldCode},
+			#{fieldColor},
+			#{isBold},
+			#{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_ms_wechat_message_detail SET
+			msg_template_id = #{msgTemplate.id},
+			field_name = #{fieldName},
+			field_value = #{fieldValue},
+			fileld_code = #{fileldCode},
+			field_color = #{fieldColor},
+			is_bold = #{isBold},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_ms_wechat_message_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE msg_template_id = #{msgTemplate.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+</mapper>

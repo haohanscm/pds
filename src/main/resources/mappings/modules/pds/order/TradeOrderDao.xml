@@ -1,0 +1,874 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.TradeOrderDao">
+    <resultMap id="buyerGoodsTopNResultMap" type="com.haohan.platform.service.sys.modules.pds.api.entity.resp.buyer.PdsTopNGoodsResp">
+		<result column="goodsId" property="id"/>
+		<result column="goodsName" property="goodsName"/>
+		<result column="goodsSn" property="goodsSn"/>
+		<result column="thumbUrl" property="thumbUrl"/>
+		<result column="categoryId" property="categoryId"/>
+		<result column="categoryName" property="categoryName"/>
+		<result column="buyTimes" property="buyTimes"/>
+		<collection property="goodsModelList" ofType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.buyer.PdsTopNGoodsModelResp">
+			<result column="modelId" property="id"/>
+			<result column="modelName" property="modelName"/>
+			<result column="modelPrice" property="modelPrice"/>
+			<result column="pmPrice" property="purchasePrice"/>
+			<result column="modelUnit" property="modelUnit"/>
+			<result column="modelUrl" property="modelUrl"/>
+			<result column="virtualPrice" property="virtualPrice"/>
+		</collection>
+	</resultMap>
+
+	<sql id="tradeOrderColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.trade_id AS "tradeId",
+		a.summary_buy_id AS "summaryBuyId",
+		a.buy_id AS "buyId",
+		a.offer_type AS "offerType",
+		a.offer_id AS "offerId",
+		a.buyer_id AS "buyerId",
+		a.supplier_id AS "supplierId",
+		a.buy_seq AS "buySeq",
+		a.goods_id AS "goodsId",
+		a.goods_name AS "goodsName",
+		a.goods_img AS "goodsImg",
+		a.goods_model AS "goodsModel",
+		a.unit AS "unit",
+		a.buy_num AS "buyNum",
+		a.buy_time AS "buyTime",
+		a.buy_node AS "buyNode",
+		a.market_price AS "marketPrice",
+		a.supply_price AS "supplyPrice",
+		a.buy_price AS "buyPrice",
+		a.deal_time AS "dealTime",
+		a.contact AS "contact",
+		a.contact_phone AS "contactPhone",
+		a.delivery_time AS "deliveryTime",
+		a.delivery_address AS "deliveryAddress",
+		a.supplier_status AS "supplierStatus",
+		a.trans_status AS "transStatus",
+		a.buyer_status AS "buyerStatus",
+		a.op_status AS "opStatus",
+		a.sort_out_num AS "sortOutNum",
+		a.delivery_status AS "deliveryStatus",
+		a.buy_operator AS "buyOperator",
+		a.delivery_type AS "deliveryType",
+		a.goods_category AS "goodsCategory",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		b1.buyer_name AS "buyerName",
+		s1.supplier_name AS "supplierName"
+	</sql>
+
+	<sql id="simpleTradeOrderColumns">
+		a.goods_id AS goodsId,
+		a.goods_name AS goodsName,
+		a.trade_id AS tradeId,
+		a.goods_model AS goodsModel,
+		a.unit AS goodsUnit,
+		a.buy_id AS buyId,
+		a.sort_out_num AS sortOutNum,
+		a.buy_price AS buyPrice,
+		ca.name AS goodsCategory
+	</sql>
+
+	<sql id="selfOrderBuyerColumns">
+		DISTINCT a.buyer_id AS buyerId,
+		b1.buyer_name AS buyerName,
+		b1.address AS address,
+		b1.contact AS contact,
+		b1.telephone AS telephone
+	</sql>
+
+	<sql id="buyerGoodsTopNColumns">
+		a1.id AS goodsId,
+		a1.goods_name AS goodsName,
+		a1.goods_sn AS "goodsSn",
+		a1.thumb_url AS thumbUrl,
+		c1.id AS categoryId,
+		c1.name AS categoryName,
+		m1.id AS modelId,
+		m1.model_name AS modelName,
+		m1.model_price AS modelPrice,
+		m1.model_unit AS modelUnit,
+		m1.model_url AS modelUrl,
+		m1.virtual_price AS virtualPrice,
+	    IFNULL(p1.price,m1.model_price) AS pmPrice,
+		x.times AS buyTimes
+	</sql>
+	
+	<sql id="tradeOrderJoins">
+		LEFT JOIN scm_buyer b1 on b1.id = a.buyer_id AND b1.del_flag = '0'
+	</sql>
+	<sql id="pdsSupplierJoin">
+		LEFT JOIN scm_sms_supplier s1 on s1.id = a.supplier_id AND b1.del_flag = '0'
+	</sql>
+	<sql id="pdsTruckBuyerJoins">
+		LEFT JOIN scm_distribution d on d.trade_id = a.trade_id AND d.del_flag = '0'
+		LEFT JOIN scm_lms_delivery_flow df on df.delivery_id = d.delivery_id AND df.del_flag = '0'
+		LEFT JOIN scm_buyer b on b.id = a.buyer_id AND b.del_flag = '0'
+	</sql>
+	<sql id="truckDistributeOrderJoins">
+		LEFT JOIN scm_trade_order t on t.trade_id = a.trade_id AND t.del_flag = '0'
+		LEFT JOIN scm_lms_delivery_flow df on df.delivery_id = a.delivery_id AND df.del_flag = '0'
+		LEFT JOIN scm_cms_goods_category ca on ca.id = t.goods_category AND ca.del_flag = '0'
+	</sql>
+	<sql id="goodsCategoryJoin">
+		LEFT JOIN scm_cms_goods_category ca on ca.id = a.goods_category AND ca.del_flag = '0'
+	</sql>
+
+	<select id="get" resultType="TradeOrder">
+		SELECT 
+			<include refid="tradeOrderColumns"/>
+		FROM scm_trade_order a
+		<include refid="tradeOrderJoins"/>
+		<include refid="pdsSupplierJoin"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TradeOrder">
+		SELECT 
+			<include refid="tradeOrderColumns"/>
+		FROM scm_trade_order a
+		<include refid="tradeOrderJoins"/>
+		<include refid="pdsSupplierJoin"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="tradeId != null and tradeId != ''">
+				AND a.trade_id = #{tradeId}
+			</if>
+			<if test="summaryBuyId != null and summaryBuyId != ''">
+				AND a.summary_buy_id = #{summaryBuyId}
+			</if>
+			<if test="buyId != null and buyId != ''">
+				AND a.buy_id = #{buyId}
+			</if>
+			<if test="offerType != null and offerType != ''">
+				AND a.offer_type = #{offerType}
+			</if>
+			<if test="offerId != null and offerId != ''">
+				AND a.offer_id = #{offerId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="beginBuyTime != null and endBuyTime != null and beginBuyTime != '' and endBuyTime != ''">
+				AND a.buy_time BETWEEN #{beginBuyTime} AND #{endBuyTime}
+			</if>
+			<if test="supplierStatus != null and supplierStatus != ''">
+				AND a.supplier_status = #{supplierStatus}
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+			<if test="buyerStatus != null and buyerStatus != ''">
+				AND a.buyer_status = #{buyerStatus}
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="deliveryStatus != null and deliveryStatus != ''">
+				AND a.delivery_status = #{deliveryStatus}
+			</if>
+			<if test="buyOperator != null and buyOperator != ''">
+				AND a.buy_operator = #{buyOperator}
+			</if>
+			<if test="deliveryType != null and deliveryType != ''">
+				AND a.delivery_type = #{deliveryType}
+			</if>
+			<if test="opStatusArry != null and opStatusArry.length > 0">
+				AND a.op_status in
+				<foreach  item="item" index="index" collection="opStatusArry" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.trade_id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TradeOrder">
+		SELECT 
+			<include refid="tradeOrderColumns"/>
+		FROM scm_trade_order a
+		<include refid="tradeOrderJoins"/>
+		<include refid="pdsSupplierJoin"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findSimpleTradeOrderList" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsTradeOrderCommonParamsResp">
+		SELECT
+		<include refid="simpleTradeOrderColumns"/>
+		FROM scm_trade_order a
+		<include refid="goodsCategoryJoin"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+			<if test="buyId != null and buyId != ''">
+				AND a.buy_id = #{buyId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="deliveryType != null and deliveryType != ''">
+				AND a.delivery_type = #{deliveryType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBuyerIdList" resultType="java.lang.String">
+		SELECT
+		DISTINCT a.buyer_id
+		FROM scm_trade_order a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+			<if test="deliveryType != null and deliveryType != ''">
+				AND a.delivery_type = #{deliveryType}
+			</if>
+		</where>
+	</select>
+
+	<!--获取自提单信息-->
+	<select id="findSelfOrderInfoList" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiDeliveryBuyerResp">
+		SELECT
+		<include refid="selfOrderBuyerColumns"/>
+		FROM scm_trade_order a
+		<include refid="tradeOrderJoins"/>
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND b1.id = #{buyerId}
+			</if>
+			<if test="buyId != null and buyId != ''">
+				AND a.buy_id = #{buyId}
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+			<if test="deliveryType != null and deliveryType != ''">
+				AND a.delivery_type = #{deliveryType}
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectBuyerGoodsTopN" resultMap="buyerGoodsTopNResultMap">
+		SELECT
+		<include refid="buyerGoodsTopNColumns"/>
+		FROM scm_cms_goods a1
+		INNER JOIN(
+			SELECT
+				g.id AS goodsId,
+				count(g.id) AS times
+			FROM scm_trade_order a
+			INNER JOIN scm_cms_goods_model m on m.id = a.goods_id AND m.del_flag = '0'
+			INNER JOIN scm_cms_goods g on g.id = m.goods_id
+                AND g.del_flag = '0'
+            <if test="queryStatus != null and queryStatus != ''">
+                AND g.is_marketable = #{queryStatus}
+            </if>
+			WHERE
+			a.pm_id = #{pmId}
+			AND a.buyer_id = #{buyerId}
+			group by g.id
+			order by times desc
+			limit 0,#{limitNum}
+		) x on x.goodsId = a1.id
+		LEFT JOIN scm_cms_goods_model m1 on m1.goods_id = a1.id AND m1.del_flag = '0'
+		LEFT JOIN scm_cms_goods_category c1 on c1.id = a1.goods_category_id AND c1.del_flag = '0'
+		LEFT JOIN scm_platform_goods_price p1 on p1.model_id = m1.id
+			AND p1.pm_id = #{pmId}
+            AND p1.merchant_id = #{buyerMerchantId}
+			AND p1.status = '1'
+            AND p1.del_flag = '0'
+			AND (#{queryDate} BETWEEN p1.start_date AND p1.end_date)
+		<where>
+			a1.del_flag = '0'
+            <if test="queryStatus != null and queryStatus != ''">
+                AND a1.is_marketable = #{queryStatus}
+            </if>
+		</where>
+	</select>
+
+	<select id="countProcess" resultType="java.lang.Integer">
+		SELECT
+		COUNT(1)
+		FROM scm_trade_order a
+		<where>
+			a.del_flag = "0"
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE(#{deliveryTime})
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="opStatusArry != null and opStatusArry.length > 0">
+				AND a.op_status in
+				<foreach  item="item" index="index" collection="opStatusArry" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="countOrderAmount" resultType="java.math.BigDecimal">
+		SELECT
+		sum(a.buy_price*a.sort_out_num)
+		FROM scm_trade_order a
+		<where>
+			a.del_flag = "0"
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+			<if test="deliveryType != null and deliveryType != ''">
+				AND a.delivery_type = #{deliveryType}
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+		</where>
+	</select>
+
+	<select id="goodsSortProcessList" resultType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsApiTradeSortProcessResp">
+		SELECT
+			a.buy_id AS buyId,
+			b1.buyer_name AS buyerName
+		FROM scm_trade_order a
+		<include refid="tradeOrderJoins"/>
+		<where>
+			a.del_flag = "0"
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="opStatusArry != null and opStatusArry.length > 0">
+				AND a.op_status in
+				<foreach  item="item" index="index" collection="opStatusArry" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+		</where>
+		GROUP BY a.buy_id,b1.buyer_name
+	</select>
+
+	<select id="countGoodsProcess" resultType="java.lang.Integer">
+		SELECT
+		count(a.goods_id)
+		FROM scm_trade_order a
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="buyId != null and buyId != ''">
+				AND a.buy_id = #{buyId}
+			</if>
+			<if test="buySeq != null and buySeq != ''">
+				AND a.buy_seq = #{buySeq}
+			</if>
+			<if test="opStatusArry != null and opStatusArry.length > 0">
+				AND a.op_status in
+				<foreach  item="item" index="index" collection="opStatusArry" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+		</where>
+	</select>
+
+	<select id="countFreightNum" resultType="java.lang.Integer">
+		SELECT
+	    count(DISTINCT a.goods_id)
+		FROM scm_trade_order a
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+		</where>
+		GROUP BY a.supplier_id
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_trade_order(
+			tenant_id,
+			id,
+			pm_id,
+			trade_id,
+			summary_buy_id,
+			buy_id,
+			offer_type,
+			offer_id,
+			buyer_id,
+			supplier_id,
+			buy_seq,
+			goods_id,
+			goods_name,
+			goods_img,
+			goods_model,
+			unit,
+			buy_num,
+			buy_time,
+			buy_node,
+			market_price,
+			supply_price,
+			buy_price,
+			deal_time,
+			contact,
+			contact_phone,
+			delivery_time,
+			delivery_address,
+			supplier_status,
+			trans_status,
+			buyer_status,
+			sort_out_num,
+			buy_operator,
+			delivery_type,
+			goods_category,
+			create_by,
+			op_status,
+			create_date,
+			delivery_status,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{tradeId},
+			#{summaryBuyId},
+			#{buyId},
+			#{offerType},
+			#{offerId},
+			#{buyerId},
+			#{supplierId},
+			#{buySeq},
+			#{goodsId},
+			#{goodsName},
+			#{goodsImg},
+			#{goodsModel},
+			#{unit},
+			#{buyNum},
+			#{buyTime},
+			#{buyNode},
+			#{marketPrice},
+			#{supplyPrice},
+			#{buyPrice},
+			#{dealTime},
+			#{contact},
+			#{contactPhone},
+			DATE (#{deliveryTime}),
+			#{deliveryAddress},
+			#{supplierStatus},
+			#{transStatus},
+			#{buyerStatus},
+			#{sortOutNum},
+			#{buyOperator},
+			#{deliveryType},
+			#{goodsCategory},
+			#{createBy.id},
+			#{opStatus},
+			#{createDate},
+			#{deliveryStatus},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_trade_order SET
+		    pm_id = #{pmId},
+			trade_id = #{tradeId},
+			summary_buy_id = #{summaryBuyId},
+			buy_id = #{buyId},
+			offer_type = #{offerType},
+			offer_id = #{offerId},
+			buyer_id = #{buyerId},
+			supplier_id = #{supplierId},
+			buy_seq = #{buySeq},
+			goods_id = #{goodsId},
+			goods_name = #{goodsName},
+			goods_img = #{goodsImg},
+			goods_model = #{goodsModel},
+			unit = #{unit},
+			buy_num = #{buyNum},
+			buy_time = #{buyTime},
+			buy_node = #{buyNode},
+			market_price = #{marketPrice},
+			supply_price = #{supplyPrice},
+			buy_price = #{buyPrice},
+			deal_time = #{dealTime},
+			contact = #{contact},
+			contact_phone = #{contactPhone},
+			delivery_time = DATE (#{deliveryTime}),
+			delivery_address = #{deliveryAddress},
+			supplier_status = #{supplierStatus},
+			trans_status = #{transStatus},
+			buyer_status = #{buyerStatus},
+			op_status = #{opStatus},
+			delivery_status = #{deliveryStatus},
+			sort_out_num = #{sortOutNum},
+			buy_operator = #{buyOperator},
+			delivery_type = #{deliveryType},
+			goods_category = #{goodsCategory},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_trade_order SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByDateSeqPmId">
+		UPDATE scm_trade_order SET
+		del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			del_flag = #{DEL_FLAG_NORMAL}
+			AND delivery_time = #{deliveryTime}
+			AND pm_id = #{pmId}
+			AND buy_seq = #{buySeq}
+		</where>
+	</update>
+
+    <select id="findJoinList" resultType="TradeOrder">
+        SELECT
+        <include refid="tradeOrderColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_trade_order a
+        <include refid="tradeOrderJoins"/>
+        <include refid="pdsSupplierJoin"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="tradeId != null and tradeId != ''">
+                AND a.trade_id = #{tradeId}
+            </if>
+            <if test="summaryBuyId != null and summaryBuyId != ''">
+                AND a.summary_buy_id = #{summaryBuyId}
+            </if>
+            <if test="buyId != null and buyId != ''">
+                AND a.buy_id = #{buyId}
+            </if>
+            <if test="offerType != null and offerType != ''">
+                AND a.offer_type = #{offerType}
+            </if>
+            <if test="offerId != null and offerId != ''">
+                AND a.offer_id = #{offerId}
+            </if>
+            <if test="buyerId != null and buyerId != ''">
+                AND a.buyer_id = #{buyerId}
+            </if>
+            <if test="supplierId != null and supplierId != ''">
+                AND a.supplier_id = #{supplierId}
+            </if>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="goodsName != null and goodsName != ''">
+                AND a.goods_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+            </if>
+            <if test="beginBuyTime != null and endBuyTime != null and beginBuyTime != '' and endBuyTime != ''">
+                AND a.buy_time BETWEEN #{beginBuyTime} AND #{endBuyTime}
+            </if>
+            <if test="supplierStatus != null and supplierStatus != ''">
+                AND a.supplier_status = #{supplierStatus}
+            </if>
+            <if test="transStatus != null and transStatus != ''">
+                AND a.trans_status = #{transStatus}
+            </if>
+            <if test="buyerStatus != null and buyerStatus != ''">
+                AND a.buyer_status = #{buyerStatus}
+            </if>
+            <if test="opStatus != null and opStatus != ''">
+                AND a.op_status = #{opStatus}
+            </if>
+            <if test="buySeq != null and buySeq != ''">
+                AND a.buy_seq = #{buySeq}
+            </if>
+            <if test="deliveryTime != null and deliveryTime != ''">
+                AND a.delivery_time = DATE (#{deliveryTime})
+            </if>
+            <if test="deliveryStatus != null and deliveryStatus != ''">
+                AND a.delivery_status = #{deliveryStatus}
+            </if>
+            <if test="buyOperator != null and buyOperator != ''">
+                AND a.buy_operator = #{buyOperator}
+            </if>
+            <if test="deliveryType != null and deliveryType != ''">
+                AND a.delivery_type = #{deliveryType}
+            </if>
+            <if test="opStatusArry != null and opStatusArry.length > 0">
+                AND a.op_status in
+                <foreach  item="item" index="index" collection="opStatusArry" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.trade_id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="updateStatus">
+		UPDATE scm_trade_order SET
+            <if test="supplierStatus != null and supplierStatus != ''">
+                supplier_status = #{supplierStatus},
+            </if>
+            <if test="transStatus != null and transStatus != ''">
+                trans_status = #{transStatus},
+            </if>
+            <if test="buyerStatus != null and buyerStatus != ''">
+                buyer_status = #{buyerStatus},
+            </if>
+            <if test="opStatus != null and opStatus != ''">
+                op_status = #{opStatus},
+            </if>
+            <if test="deliveryStatus != null and deliveryStatus != ''">
+                delivery_status = #{deliveryStatus},
+            </if>
+            update_date = NOW()
+		WHERE id = #{id}
+	</update>
+
+    <!--  按配送情况(配送编号/配送日期/物流车号) 修改配送状态 -->
+    <update id="updateStatusByDelivery">
+        UPDATE scm_trade_order x
+        INNER JOIN
+            (SELECT
+                distinct d.trade_id
+            FROM
+                scm_lms_delivery_flow a
+            LEFT JOIN scm_distribution d ON a.delivery_id = d.delivery_id AND d.del_flag = #{DEL_FLAG_NORMAL}
+            WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+                <if test="pmId != null and pmId != ''">
+                    AND a.pm_id = #{pmId}
+                </if>
+                <if test="deliveryId != null and deliveryId != ''">
+                    AND a.delivery_id = #{deliveryId}
+                </if>
+                <if test="deliveryDate != null  and deliveryDate != ''">
+                    AND DATE(a.delivery_date) = DATE(#{deliveryDate})
+                </if>
+                <if test="truckNo != null and truckNo != ''">
+                    AND a.truck_no = #{truckNo}
+                </if>
+            ) y ON x.trade_id = y.trade_id
+        SET
+            x.delivery_status = #{finalStatus},
+            update_date = NOW()
+        WHERE x.del_flag = #{DEL_FLAG_NORMAL}
+            AND x.delivery_status = #{status}
+    </update>
+
+	<select id="countBuyOrderNum" resultType="java.lang.Integer">
+		SELECT
+		count(distinct a.buy_id)
+		FROM scm_trade_order a
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+			<if test="buyerStatus != null and buyerStatus != ''">
+				AND a.buyer_status = #{buyerStatus}
+			</if>
+			<if test="deliveryStatus != null and deliveryStatus != ''">
+				AND a.delivery_status = #{deliveryStatus}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.buy_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+		</where>
+	</select>
+
+	<select id="countTradeOrderNum" resultType="java.lang.Integer">
+		SELECT
+		count(1)
+		FROM scm_trade_order a
+		<where>
+			a.del_flag = '0'
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="deliveryStatus != null and deliveryStatus != ''">
+				AND a.delivery_status = #{deliveryStatus}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.buy_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			<if test="deliveryTime != null and deliveryTime != ''">
+				AND a.delivery_time = DATE (#{deliveryTime})
+			</if>
+			<if test="opStatus != null and opStatus != ''">
+				AND a.op_status = #{opStatus}
+			</if>
+			<if test="transStatus != null and transStatus != ''">
+				AND a.trans_status = #{transStatus}
+			</if>
+		</where>
+	</select>
+
+</mapper>

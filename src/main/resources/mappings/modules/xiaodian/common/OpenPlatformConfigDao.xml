@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.common.OpenPlatformConfigDao">
+    
+	<sql id="openPlatformConfigColumns">
+		a.id AS "id",
+		a.app_id AS "appId",
+		a.app_name AS "appName",
+		a.app_type AS "appType",
+		a.app_secret AS "appSecret",
+		a.callback_url AS "callbackUrl",
+		a.access_token AS "accessToken",
+		a.status AS "status",
+		a.flush_token AS "flushToken",
+		a.auto_create AS "autoCreate",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.memo AS "memo",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="openPlatformConfigJoins">
+	</sql>
+    
+	<select id="get" resultType="OpenPlatformConfig">
+		SELECT 
+			<include refid="openPlatformConfigColumns"/>
+		FROM scm_open_platform_config a
+		<include refid="openPlatformConfigJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OpenPlatformConfig">
+		SELECT 
+			<include refid="openPlatformConfigColumns"/>
+		FROM scm_open_platform_config a
+		<include refid="openPlatformConfigJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+			<if test="appType != null and appType != ''">
+				AND a.app_type = #{appType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.app_type, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OpenPlatformConfig">
+		SELECT 
+			<include refid="openPlatformConfigColumns"/>
+		FROM scm_open_platform_config a
+		<include refid="openPlatformConfigJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_open_platform_config(
+			id,
+			app_id,
+			app_name,
+			app_type,
+			app_secret,
+			callback_url,
+			access_token,
+			status,
+			flush_token,
+			auto_create,
+			create_time,
+			update_time,
+			memo,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{appId},
+			#{appName},
+			#{appType},
+			#{appSecret},
+			#{callbackUrl},
+			#{accessToken},
+			#{status},
+			#{flushToken},
+			#{autoCreate},
+			#{createTime},
+			#{updateTime},
+			#{memo},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_open_platform_config SET
+			app_id = #{appId},
+			app_name = #{appName},
+			app_type = #{appType},
+			app_secret = #{appSecret},
+			callback_url = #{callbackUrl},
+			access_token = #{accessToken},
+			status = #{status},
+			flush_token = #{flushToken},
+			auto_create = #{autoCreate},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			memo = #{memo},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_open_platform_config SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

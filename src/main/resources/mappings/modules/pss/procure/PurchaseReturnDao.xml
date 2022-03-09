@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.procure.PurchaseReturnDao">
+    
+	<sql id="purchaseReturnColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.return_num AS "returnNum",
+		a.goods_num AS "goodsNum",
+		a.total_amount AS "totalAmount",
+		a.sum_amount AS "sumAmount",
+		a.other_amount AS "otherAmount",
+		a.pay_amount AS "payAmount",
+		a.pay_type AS "payType",
+		s.supplier_name AS "supplierName",
+		a.operator AS "operator",
+		a.biz_time AS "bizTime",
+		a.return_status AS "returnStatus",
+		a.return_note AS "returnNote",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.supplier_id AS "supplierId"
+	</sql>
+	
+	<sql id="purchaseReturnJoins">
+		LEFT JOIN scm_sms_supplier s ON s.id = a.supplier_id AND s.del_flag = '0'
+	</sql>
+    
+	<select id="get" resultType="PurchaseReturn">
+		SELECT 
+			<include refid="purchaseReturnColumns"/>
+		FROM scm_pss_purchase_return a
+		<include refid="purchaseReturnJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PurchaseReturn">
+		SELECT 
+			<include refid="purchaseReturnColumns"/>
+		FROM scm_pss_purchase_return a
+		<include refid="purchaseReturnJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="returnNum != null and returnNum != ''">
+				AND a.return_num LIKE 
+					<if test="dbName == 'oracle'">'%'||#{returnNum}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{returnNum}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{returnNum},'%')</if>
+			</if>
+			<if test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+				AND a.biz_time BETWEEN #{beginTime} AND #{endTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PurchaseReturn">
+		SELECT 
+			<include refid="purchaseReturnColumns"/>
+		FROM scm_pss_purchase_return a
+		<include refid="purchaseReturnJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_purchase_return(
+			id,
+			merchant_id,
+			return_num,
+			goods_num,
+			total_amount,
+			sum_amount,
+			other_amount,
+			pay_amount,
+			pay_type,
+			supplier_id,
+			operator,
+			biz_time,
+			return_status,
+			return_note,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{returnNum},
+			#{goodsNum},
+			#{totalAmount},
+			#{sumAmount},
+			#{otherAmount},
+			#{payAmount},
+			#{payType},
+			#{supplierId},
+			#{operator},
+			#{bizTime},
+			#{returnStatus},
+			#{returnNote},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_purchase_return SET
+			merchant_id = #{merchantId},
+			return_num = #{returnNum},
+			goods_num = #{goodsNum},
+			total_amount = #{totalAmount},
+			sum_amount = #{sumAmount},
+			other_amount = #{otherAmount},
+			pay_amount = #{payAmount},
+			pay_type = #{payType},
+			supplier_id = #{supplierId},
+			operator = #{operator},
+			biz_time = #{bizTime},
+			return_status = #{returnStatus},
+			return_note = #{returnNote},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_purchase_return SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.common.UnionBankNoDao">
+    
+	<sql id="unionBankNoColumns">
+		a.id AS "id",
+		a.bank_no AS "bankNo",
+		a.bank_name AS "bankName",
+		a.liquidation_no AS "liquidationNo",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="unionBankNoJoins">
+	</sql>
+    
+	<select id="get" resultType="UnionBankNo">
+		SELECT 
+			<include refid="unionBankNoColumns"/>
+		FROM scm_union_bank_no a
+		<include refid="unionBankNoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="UnionBankNo">
+		SELECT 
+			<include refid="unionBankNoColumns"/>
+		FROM scm_union_bank_no a
+		<include refid="unionBankNoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="bankNo != null and bankNo != ''">
+				AND a.bank_no LIKE 
+					<if test="dbName == 'oracle'">'%'||#{bankNo}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{bankNo}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{bankNo},'%')</if>
+			</if>
+			<if test="bankName != null and bankName != ''">
+				AND a.bank_name like concat('%',#{bankName},'%')
+			</if>
+			<if test="remarks != null and remarks != ''">
+				and a.bank_name like concat('%',#{remarks},'%')
+			</if>
+			<!--
+            <if test="bankName != null and bankName != ''">
+                AND a.bank_name LIKE
+                    <if test="dbName == 'oracle'">'%'||#{bankName}||'%'</if>
+                    <if test="dbName == 'mssql'">'%'+#{bankName}+'%'</if>
+                    <if test="dbName == 'mysql'">concat('%',#{bankName},'%')</if>
+            </if>
+            -->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UnionBankNo">
+		SELECT 
+			<include refid="unionBankNoColumns"/>
+		FROM scm_union_bank_no a
+		<include refid="unionBankNoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_union_bank_no(
+			id,
+			bank_no,
+			bank_name,
+			liquidation_no,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{bankNo},
+			#{bankName},
+			#{liquidationNo},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_union_bank_no SET
+			bank_no = #{bankNo},
+			bank_name = #{bankName},
+			liquidation_no = #{liquidationNo},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_union_bank_no SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

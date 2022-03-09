@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.common.MerchantEmployeeDao">
+    
+	<sql id="merchantEmployeeColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.merchant_id AS "merchantId",
+		a.passport_id AS "passportId",
+		a.role AS "role",
+		a.telephone AS "telephone",
+		a.name AS "name",
+		a.reg_date AS "regDate",
+		a.origin AS "origin",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="merchantEmployeeJoins">
+	</sql>
+    
+	<select id="get" resultType="MerchantEmployee">
+		SELECT 
+			<include refid="merchantEmployeeColumns"/>
+		FROM scm_merchant_employee a
+		<include refid="merchantEmployeeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MerchantEmployee">
+		SELECT 
+			<include refid="merchantEmployeeColumns"/>
+		FROM scm_merchant_employee a
+		<include refid="merchantEmployeeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="passportId != null and passportId != ''">
+				AND a.passport_id = #{passportId}
+			</if>
+			<if test="telephone != null and telephone != ''">
+				AND a.telephone = #{telephone}
+			</if>
+			<if test="role != null and role != ''">
+				AND a.role = #{role}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="beginRegDate != null and endRegDate != null and beginRegDate != '' and endRegDate != ''">
+				AND a.reg_date BETWEEN #{beginRegDate} AND #{endRegDate}
+			</if>
+			<if test="origin != null and origin != ''">
+				AND a.origin = #{origin}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MerchantEmployee">
+		SELECT 
+			<include refid="merchantEmployeeColumns"/>
+		FROM scm_merchant_employee a
+		<include refid="merchantEmployeeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_merchant_employee(
+			id,
+			pm_id,
+			merchant_id,
+			passport_id,
+			role,
+			telephone,
+			name,
+			reg_date,
+			origin,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{pmId},
+			#{merchantId},
+			#{passportId},
+			#{role},
+			#{telephone},
+			#{name},
+			#{regDate},
+			#{origin},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_merchant_employee SET
+			pm_id = #{pmId},
+			merchant_id = #{merchantId},
+			passport_id = #{passportId},
+			role = #{role},
+			telephone = #{telephone},
+			name = #{name},
+			reg_date = #{regDate},
+			origin = #{origin},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_merchant_employee SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="MerchantEmployee">
+        SELECT
+        <include refid="merchantEmployeeColumns"/>
+        ,
+        m.merchant_name AS "pmName",
+        m2.merchant_name AS "merchantName"
+        FROM scm_merchant_employee a
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        LEFT JOIN scm_merchant m2 ON m2.id = a.merchant_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="passportId != null and passportId != ''">
+                AND a.passport_id = #{passportId}
+            </if>
+            <if test="telephone != null and telephone != ''">
+                AND a.telephone = #{telephone}
+            </if>
+            <if test="beginRegDate != null and endRegDate != null and beginRegDate != '' and endRegDate != ''">
+                AND a.reg_date BETWEEN #{beginRegDate} AND #{endRegDate}
+            </if>
+            <if test="role != null and role != ''">
+                AND a.role = #{role}
+            </if>
+            <if test="origin != null and origin != ''">
+                AND a.origin = #{origin}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                AND a.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND m.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="fetchPassword" resultType="MerchantEmployee">
+        SELECT
+        <include refid="merchantEmployeeColumns"/>
+        ,
+        u.password AS "password",
+        m.merchant_name AS "pmName",
+        m2.merchant_name AS "merchantName"
+        FROM
+        scm_merchant_employee a
+        LEFT JOIN scm_u_passport u ON a.passport_id = u.id AND u.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        LEFT JOIN scm_merchant m2 ON m2.id = a.merchant_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="telephone != null and telephone != ''">
+                AND a.telephone = #{telephone}
+            </if>
+            <if test="role != null and role != ''">
+                AND a.role = #{role}
+            </if>
+            <if test="name != null and name != ''">
+                AND (a.name = #{name} OR a.telephone = #{name})
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+    </select>
+	
+</mapper>

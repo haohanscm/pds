@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.SaleRulesDao">
+    
+	<sql id="saleRulesColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.goods_id AS "goodsId",
+		a.area_id AS "area.id",
+		a.sale_arrive_type as "saleArriveType",
+		a.min_sale_num AS "minSaleNum",
+		a.limit_buy_times AS "limitBuyTimes",
+		a.sale_delivery_type AS "saleDeliveryType",
+		a.begin_sale_date AS "beginSaleDate",
+		a.end_sale_date AS "endSaleDate",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a4.name AS "area.name",
+		a4.code AS "area.code"
+	</sql>
+	
+	<sql id="saleRulesJoins">
+		LEFT JOIN sys_area a4 ON a4.id = a.area_id
+	</sql>
+    
+	<select id="get" resultType="SaleRules">
+		SELECT 
+			<include refid="saleRulesColumns"/>
+		FROM scm_cms_sale_rules a
+		<include refid="saleRulesJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SaleRules">
+		SELECT 
+			<include refid="saleRulesColumns"/>
+		FROM scm_cms_sale_rules a
+		<include refid="saleRulesJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="saleArriveType != null and saleArriveType != ''">
+				AND a.sale_arrive_type = #{saleArriveType}
+			</if>
+			<if test="saleDeliveryType != null and saleDeliveryType != ''">
+				AND a.sale_delivery_type = #{saleDeliveryType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SaleRules">
+		SELECT 
+			<include refid="saleRulesColumns"/>
+		FROM scm_cms_sale_rules a
+		<include refid="saleRulesJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_sale_rules(
+			id,
+			merchant_id,
+			goods_id,
+			area_id,
+			sale_arrive_type,
+			min_sale_num,
+			limit_buy_times,
+			sale_delivery_type,
+			begin_sale_date,
+			end_sale_date,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{goodsId},
+			#{area.id},
+			#{saleArriveType},
+			#{minSaleNum},
+			#{limitBuyTimes},
+			#{saleDeliveryType},
+			#{beginSaleDate},
+			#{endSaleDate},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_sale_rules SET
+			merchant_id = #{merchantId},
+			goods_id = #{goodsId},
+			area_id = #{area.id},
+			sale_arrive_type = #{saleArriveType},
+			min_sale_num = #{minSaleNum},
+			limit_buy_times = #{limitBuyTimes},
+			sale_delivery_type = #{saleDeliveryType},
+			begin_sale_date = #{beginSaleDate},
+			end_sale_date = #{endSaleDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_sale_rules SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByGoodsId">
+		UPDATE scm_cms_sale_rules SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE goods_id = #{goodsId}
+	</update>
+
+</mapper>

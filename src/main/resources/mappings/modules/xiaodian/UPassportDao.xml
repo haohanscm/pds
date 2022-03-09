@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.UPassportDao">
+    
+	<sql id="uPassportColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.avatar AS "avatar",
+		a.login_name AS "loginName",
+		a.email AS "email",
+		a.telephone AS "telephone",
+		a.password AS "password",
+		a.salt AS "salt",
+		a.reg_time AS "regTime",
+		a.reg_ip AS "regIp",
+		a.reg_type AS "regType",
+		a.reg_from AS "regFrom",
+		a.union_id AS "unionId",
+		a.service_id AS "serviceId",
+		a.status AS "status",
+		a.reason AS "reason",
+		a.memo AS "memo",
+		a.is_test AS "isTest",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		b.merchant_name AS "merchantName"
+	</sql>
+	
+	<sql id="uPassportJoins">
+		left JOIN scm_merchant  b on b.id = a.merchant_id and b.del_flag = #{DEL_FLAG_NORMAL}
+	</sql>
+    
+	<select id="get" resultType="UPassport">
+		SELECT 
+			<include refid="uPassportColumns"/>
+		FROM scm_u_passport a
+		<include refid="uPassportJoins"/>
+		WHERE a.id = #{id}
+        AND a.del_flag = #{DEL_FLAG_NORMAL}
+    </select>
+	
+	<select id="findList" resultType="UPassport">
+		SELECT 
+			<include refid="uPassportColumns"/>
+		FROM scm_u_passport a
+		<include refid="uPassportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="unionId != null and unionId != ''">
+				AND a.union_id = #{unionId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{loginName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{loginName},'%')</if>
+			</if>
+			<if test="telephone != null and telephone != ''">
+				AND a.telephone = #{telephone}
+			</if>
+			<if test="beginRegTime != null and endRegTime != null and beginRegTime != '' and endRegTime != ''">
+				AND a.reg_time BETWEEN #{beginRegTime} AND #{endRegTime}
+			</if>
+			<if test="regType != null and regType != ''">
+				AND a.reg_type = #{regType}
+			</if>
+			<if test="regFrom != null and regFrom != ''">
+				AND a.reg_from = #{regFrom}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="isTest != null and isTest != ''">
+				AND a.is_test = #{isTest}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countUserNum" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM scm_u_passport a
+		<where>
+			a.del_flag = '0'
+			<if test="startTime != null and endTime != null and startTime != '' and endTime != ''">
+				AND a.create_date BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="UPassport">
+		SELECT 
+			<include refid="uPassportColumns"/>
+		FROM scm_u_passport a
+		<include refid="uPassportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_u_passport(
+			id,
+			merchant_id,
+			avatar,
+			login_name,
+			email,
+			telephone,
+			password,
+			salt,
+			reg_time,
+			reg_ip,
+			reg_type,
+			reg_from,
+			union_id,
+			service_id,
+			status,
+			reason,
+			memo,
+			is_test,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{avatar},
+			#{loginName},
+			#{email},
+			#{telephone},
+			#{password},
+			#{salt},
+			#{regTime},
+			#{regIp},
+			#{regType},
+			#{regFrom},
+			#{unionId},
+			#{serviceId},
+			#{status},
+			#{reason},
+			#{memo},
+			#{isTest},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_u_passport SET
+			merchant_id = #{merchantId},
+			avatar = #{avatar},
+			login_name = #{loginName},
+			email = #{email},
+			telephone = #{telephone},
+			password = #{password},
+			salt = #{salt},
+			reg_time = #{regTime},
+			reg_ip = #{regIp},
+			reg_type = #{regType},
+			reg_from = #{regFrom},
+			union_id = #{unionId},
+			service_id = #{serviceId},
+			status = #{status},
+			reason = #{reason},
+			memo = #{memo},
+			is_test = #{isTest},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_u_passport SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

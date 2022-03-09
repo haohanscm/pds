@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.order.GoodsOrderDao">
+
+	<resultMap id="MercSaleOrderRespResultMap" type="com.haohan.platform.service.sys.modules.xiaodian.api.entity.merchant.delivery.resp.MercSaleOrderResp">
+		<result column="merchantId" property="merchantId"/>
+		<result column="orderId" property="orderId"/>
+		<result column="payId" property="payId"/>
+		<result column="shopId" property="shopId"/>
+		<result column="shopName" property="shopName"/>
+		<result column="orderType" property="orderType"/>
+		<result column="orderStatus" property="orderStatus"/>
+		<result column="orderFrom" property="orderFrom"/>
+		<result column="orderMarks" property="orderMarks"/>
+		<result column="appid" property="appid"/>
+		<result column="uid" property="uid"/>
+		<result column="userName" property="userName"/>
+		<result column="insureFee" property="insureFee"/>
+		<result column="deliveryType" property="deliveryType"/>
+		<result column="shippingFee" property="shippingFee"/>
+		<result column="shippingTime" property="shippingTime"/>
+		<result column="payStatus" property="payStatus"/>
+		<result column="payTime" property="payTime"/>
+		<result column="payType" property="payType"/>
+		<result column="orderAmount" property="orderAmount"/>
+		<result column="orderInfo" property="orderInfo"/>
+		<result column="orderDesc" property="orderDesc"/>
+		<result column="orderTime" property="orderTime"/>
+		<result column="addressId" property="addressId"/>
+		<result column="updateDate" property="updateDate"/>
+		<result column="delFlag" property="delFlag"/>
+		<collection property="goodsList" ofType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.merchant.delivery.resp.MercGoodsOrderDetailResp">
+			<result column="goodsName" property="goodsName"/>
+			<result column="goodsNum" property="goodsNum"/>
+			<result column="goodsUrl" property="goodsUrl"/>
+			<result column="goodsUnit" property="goodsUnit"/>
+			<result column="goodsPrice" property="goodsPrice"/>
+		</collection>
+	</resultMap>
+
+	<sql id="goodsOrderColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.partner_num AS "partnerNum",
+		a.order_id AS "orderId",
+		a.pay_id AS "payId",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.order_type AS "orderType",
+		a.order_status AS "orderStatus",
+		a.order_from AS "orderFrom",
+		a.order_marks AS "orderMarks",
+		a.uid AS "uid",
+		a.user_name AS "userName",
+		a.delivery_type AS "deliveryType",
+		a.shipping_id AS "shippingId",
+		a.insure_fee AS "insureFee",
+		a.shipping_fee AS "shippingFee",
+		a.shipping_ontime AS "shippingOntime",
+		a.shipping_time AS "shippingTime",
+		a.pay_status AS "payStatus",
+		a.pay_time AS "payTime",
+		a.pay_type AS "payType",
+		a.order_amount AS "orderAmount",
+		a.order_info AS "orderInfo",
+		a.order_desc AS "orderDesc",
+		a.order_time AS "orderTime",
+		a.appid AS "appid",
+		a.address_id AS "addressId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="MercSaleOrderRespColumns">
+		a.merchant_id AS "merchantId",
+		a.order_id AS "orderId",
+		a.pay_id AS "payId",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.order_type AS "orderType",
+		a.order_status AS "orderStatus",
+		a.order_from AS "orderFrom",
+		a.order_marks AS "orderMarks",
+		a.appid AS "appid",
+		a.uid AS "uid",
+		a.user_name AS "userName",
+		a.insure_fee AS "insureFee",
+		a.delivery_type AS "deliveryType",
+		a.shipping_fee AS "shippingFee",
+		a.shipping_time AS "shippingTime",
+		a.pay_status AS "payStatus",
+		a.pay_time AS "payTime",
+		a.pay_type AS "payType",
+		a.order_amount AS "orderAmount",
+		a.order_info AS "orderInfo",
+		a.order_desc AS "orderDesc",
+		a.order_time AS "orderTime",
+		a.address_id AS "addressId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		g.goods_name AS "goodsName",
+		g.goods_num AS "goodsNum",
+		g.goods_unit AS "goodsUnit",
+		g.goods_price AS "goodsPrice",
+		d.thumb_url AS "goodsUrl"
+	</sql>
+
+	<sql id="goodsOrderJoins">
+	</sql>
+
+	<sql id="saleOrderJoins">
+		INNER JOIN scm_goods_order_detail g ON g.order_id = a.order_id LEFT JOIN scm_goods d ON d.id = g.goods_id
+	</sql>
+
+	<select id="get" resultType="GoodsOrder">
+		SELECT
+		<include refid="goodsOrderColumns"/>
+		FROM scm_goods_order a
+		<include refid="goodsOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="GoodsOrder">
+		SELECT
+		<include refid="goodsOrderColumns"/>
+		FROM scm_goods_order a
+		<include refid="goodsOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="partnerNum != null and partnerNum != ''">
+				AND a.partner_num = #{partnerNum}
+			</if>
+			<if test="payId != null and payId != ''">
+				AND a.pay_id = #{payId}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="orderType != null and orderType != ''">
+				AND a.order_type = #{orderType}
+			</if>
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="appid != null and appid != ''">
+				AND a.appid = #{appid}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime !=''">
+				AND a.pay_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findMercSaleOrderList" resultMap="MercSaleOrderRespResultMap">
+		SELECT
+		<include refid="MercSaleOrderRespColumns"/>
+		FROM scm_goods_order a
+		<include refid="saleOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="beginTime != null and beginTime != '' and endTime != null and endTime !=''">
+				AND a.order_time BETWEEN #{beginTime} AND #{endTime}
+			</if>
+			<if test="orderStatus != null and orderStatus != ''">
+				AND a.order_status = #{orderStatus}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="GoodsOrder">
+		SELECT
+		<include refid="goodsOrderColumns"/>
+		FROM scm_goods_order a
+		<include refid="goodsOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countOrderNum" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM scm_goods_order a
+		<where>
+			a.del_flag = '0'
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="orderStatus != null and orderStatus != ''">
+				AND a.order_status = #{orderStatus}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="startTime != null and endTime != null and startTime != '' and endTime != ''">
+				AND a.order_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+
+	</select>
+
+	<select id="sumSaleAmount" resultType="BigDecimal">
+		SELECT SUM(a.order_amount)
+		FROM scm_goods_order a
+		<where>
+			a.del_flag = '0'
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="orderStatus != null and orderStatus != ''">
+				AND a.order_status = #{orderStatus}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.order_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+	</select>
+
+	<select id="sumRefundAmount" resultType="java.math.BigDecimal">
+		SELECT sum(r.refund_amount)
+		FROM scm_goods_order a
+		INNER JOIN scm_refund_manage r ON r.order_id = a.order_id AND r.status = '2' AND r.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.order_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+	</select>
+
+	<select id="saleCurve" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.order.resp.GoodsOrderSaleCurveApiResp">
+		SELECT
+		IFNULL(SUM(a.order_amount),0) AS saleAmount,
+		COUNT(DISTINCT a.order_id) AS orderNum,
+		DATE_FORMAT(a.order_time,'%Y-%m-%d') as orderDate
+		FROM scm_goods_order a
+		<where>
+			a.del_flag = '0'
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.order_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+		</where>
+		GROUP BY orderDate
+	</select>
+
+	<select id="countBuyerNum" resultType="java.lang.Integer">
+		SELECT COUNT(a.uid)
+		FROM scm_goods_order a
+		<where>
+			a.del_flag = '0'
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.order_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_goods_order(
+			id,
+			merchant_id,
+			merchant_name,
+			partner_num,
+			order_id,
+			pay_id,
+			shop_id,
+			shop_name,
+			order_type,
+			order_status,
+			order_from,
+			order_marks,
+			uid,
+			user_name,
+			shipping_id,
+			insure_fee,
+			shipping_fee,
+			shipping_ontime,
+			shipping_time,
+			pay_status,
+			pay_time,
+			pay_type,
+			order_amount,
+			order_info,
+			order_desc,
+			order_time,
+			appid,
+			address_id,
+			delivery_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{merchantName},
+			#{partnerNum},
+			#{orderId},
+			#{payId},
+			#{shopId},
+			#{shopName},
+			#{orderType},
+			#{orderStatus},
+			#{orderFrom},
+			#{orderMarks},
+			#{uid},
+			#{userName},
+			#{shippingId},
+			#{insureFee},
+			#{shippingFee},
+			#{shippingOntime},
+			#{shippingTime},
+			#{payStatus},
+			#{payTime},
+			#{payType},
+			#{orderAmount},
+			#{orderInfo},
+			#{orderDesc},
+			#{orderTime},
+			#{appid},
+			#{addressId},
+			#{deliveryType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE scm_goods_order SET
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			partner_num = #{partnerNum},
+			order_id = #{orderId},
+			pay_id = #{payId},
+			shop_id = #{shopId},
+			shop_name = #{shopName},
+			order_type = #{orderType},
+			order_status = #{orderStatus},
+			order_from = #{orderFrom},
+			order_marks = #{orderMarks},
+			uid = #{uid},
+			user_name = #{userName},
+			shipping_id = #{shippingId},
+			insure_fee = #{insureFee},
+			shipping_fee = #{shippingFee},
+			shipping_ontime = #{shippingOntime},
+			shipping_time = #{shippingTime},
+			pay_status = #{payStatus},
+			pay_time = #{payTime},
+			pay_type = #{payType},
+			order_amount = #{orderAmount},
+			order_info = #{orderInfo},
+			order_desc = #{orderDesc},
+			order_time = #{orderTime},
+			appid = #{appid},
+			address_id = #{addressId},
+			delivery_type = #{deliveryType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE scm_goods_order SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 修改 订单状态  orderStatus   -->
+	<update id="modifyOrderStatus">
+		UPDATE scm_goods_order SET
+			order_status = #{orderStatus},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

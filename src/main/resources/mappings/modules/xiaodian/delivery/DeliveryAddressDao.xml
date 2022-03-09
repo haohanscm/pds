@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.DeliveryAddressDao">
+    
+	<sql id="deliveryAddressColumns">
+		a.id AS "id",
+		a.uuid AS "uuid",
+		a.receiver AS "receiver",
+		a.province AS "province",
+		a.province_name AS "provinceName",
+		a.city AS "city",
+		a.city_name AS "cityName",
+		a.region AS "region",
+		a.region_name AS "regionName",
+		a.street AS "street",
+		a.receiver_mobile AS "receiverMobile",
+		a.receive_address AS "receiveAddress",
+		a.community_id AS "communityId",
+		a.community_name AS "communityName",
+		a.district_area AS "districtArea",
+		a.district_area_name AS "districtAreaName",
+		a.building_id AS "buildingId",
+		a.floor AS "floor",
+		a.ext_address AS "extAddress",
+		a.is_default AS "isDefault",
+		a.tag AS "tag",
+		a.js_app_id AS "jsAppId",
+		a.js_address_id AS "jsAddressId",
+		a.merchant_id AS "merchantId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="deliveryAddressJoins">
+	</sql>
+    
+	<select id="get" resultType="DeliveryAddress">
+		SELECT 
+			<include refid="deliveryAddressColumns"/>
+		FROM scm_cms_delivery_address a
+		<include refid="deliveryAddressJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DeliveryAddress">
+		SELECT 
+			<include refid="deliveryAddressColumns"/>
+		FROM scm_cms_delivery_address a
+		<include refid="deliveryAddressJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="uuid != null and uuid != ''">
+				AND a.uuid = #{uuid}
+			</if>
+			<if test="receiver != null and receiver != ''">
+				AND a.receiver LIKE 
+					<if test="dbName == 'oracle'">'%'||#{receiver}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{receiver}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{receiver},'%')</if>
+			</if>
+			<if test="receiverMobile != null and receiverMobile != ''">
+				AND a.receiver_mobile = #{receiverMobile}
+			</if>
+			<if test="jsAppId != null and jsAppId != ''">
+				AND a.js_app_id = #{jsAppId}
+			</if>
+			<if test="jsAddressId != null and jsAddressId != ''">
+				AND a.js_address_id = #{jsAddressId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DeliveryAddress">
+		SELECT 
+			<include refid="deliveryAddressColumns"/>
+		FROM scm_cms_delivery_address a
+		<include refid="deliveryAddressJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_delivery_address(
+			id,
+			uuid,
+			receiver,
+			province,
+			province_name,
+			city,
+			city_name,
+			region,
+			region_name,
+			street,
+			receiver_mobile,
+			receive_address,
+			community_id,
+			community_name,
+			district_area,
+			district_area_name,
+			building_id,
+			floor,
+			ext_address,
+			is_default,
+			tag,
+			js_app_id,
+			js_address_id,
+			merchant_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{uuid},
+			#{receiver},
+			#{province},
+			#{provinceName},
+			#{city},
+			#{cityName},
+			#{region},
+			#{regionName},
+			#{street},
+			#{receiverMobile},
+			#{receiveAddress},
+			#{communityId},
+			#{communityName},
+			#{districtArea},
+			#{districtAreaName},
+			#{buildingId},
+			#{floor},
+			#{extAddress},
+			#{isDefault},
+			#{tag},
+			#{jsAppId},
+			#{jsAddressId},
+			#{merchantId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_delivery_address SET
+			uuid = #{uuid},
+			receiver = #{receiver},
+			province = #{province},
+			province_name = #{provinceName},
+			city = #{city},
+			city_name = #{cityName},
+			region = #{region},
+			region_name = #{regionName},
+			street = #{street},
+			receiver_mobile = #{receiverMobile},
+			receive_address = #{receiveAddress},
+			community_id = #{communityId},
+			community_name = #{communityName},
+			district_area = #{districtArea},
+			district_area_name = #{districtAreaName},
+			building_id = #{buildingId},
+			floor = #{floor},
+			ext_address = #{extAddress},
+			is_default = #{isDefault},
+			tag = #{tag},
+			js_app_id = #{jsAppId},
+			js_address_id = #{jsAddressId},
+			merchant_id = #{merchantId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_delivery_address SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

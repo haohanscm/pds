@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.info.SupplierPayrecordDao">
+    
+	<sql id="supplierPayrecordColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.supplier_id AS "supplierId",
+		a.pay_amount AS "payAmount",
+		a.pay_time AS "payTime",
+		a.pay_note AS "payNote",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="supplierPayrecordJoins">
+	</sql>
+    
+	<select id="get" resultType="SupplierPayrecord">
+		SELECT 
+			<include refid="supplierPayrecordColumns"/>
+		FROM scm_sms_supplier_payrecord a
+		<include refid="supplierPayrecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SupplierPayrecord">
+		SELECT 
+			<include refid="supplierPayrecordColumns"/>
+		FROM scm_sms_supplier_payrecord a
+		<include refid="supplierPayrecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="payTime != null and payTime != ''">
+				AND a.pay_time = #{payTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SupplierPayrecord">
+		SELECT 
+			<include refid="supplierPayrecordColumns"/>
+		FROM scm_sms_supplier_payrecord a
+		<include refid="supplierPayrecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_sms_supplier_payrecord(
+			id,
+			merchant_id,
+			supplier_id,
+			pay_amount,
+			pay_time,
+			pay_note,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{supplierId},
+			#{payAmount},
+			#{payTime},
+			#{payNote},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_sms_supplier_payrecord SET
+			merchant_id = #{merchantId},
+			supplier_id = #{supplierId},
+			pay_amount = #{payAmount},
+			pay_time = #{payTime},
+			pay_note = #{payNote},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_sms_supplier_payrecord SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

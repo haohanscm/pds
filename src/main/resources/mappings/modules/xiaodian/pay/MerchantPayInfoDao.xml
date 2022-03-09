@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.pay.MerchantPayInfoDao">
+
+	<sql id="merchantPayInfoColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.partner_id AS "partnerId",
+		a.auth_code AS "authCode",
+		a.merc_nm AS "mercNm",
+		a.merc_abbr AS "mercAbbr",
+		a.merc_typ AS "mercTyp",
+		a.merc_trd_cls AS "mercTrdCls",
+		a.merc_sub_cls AS "mercSubCls",
+		a.merc_third_cls AS "mercThirdCls",
+		a.merc_third_cls_all AS "mercThirdClsAll",
+		a.crp_nm AS "crpNm",
+		a.crp_id_no AS "crpIdNo",
+		a.crp_id_expire AS "crpIdExpireDay",
+		a.reg_id AS "regId",
+		a.organization_code AS "organizationCode",
+		a.bus_addr AS "busAddr",
+		a.merc_prov AS "mercProv",
+		a.merc_city AS "mercCity",
+		a.agr_no AS "agrNo",
+		a.usr_opr_nm AS "usrOprNm",
+		a.usr_opr_mbl AS "usrOprMbl",
+		a.stl_perd AS "stlPerd",
+		a.stl_day_flg AS "stlDayFlg",
+		a.wc_lbnk_no AS "wcLbnkNo",
+		a.bus_psn_flg AS "busPsnFlg",
+		a.stl_oac AS "stlOac",
+		a.bnk_acnm AS "bnkAcnm",
+		a.wc_bank AS "wcBank",
+		a.lbnk_nm AS "lbnkNm",
+		a.opn_bnk_prov AS "opnBnkProv",
+		a.opn_bnk_city AS "opnBnkCity",
+		a.usr_opr_log_id AS "usrOprLogId",
+		a.merc_area AS "mercArea",
+		a.contact_email AS "contactEmail",
+		a.bank_branch_no AS "bankBranchNo",
+		a.merchant_level AS "merchantLevel",
+		a.idexpire_time AS "idExpireTime",
+		a.opn_bnk_area AS "opnBnkArea",
+		a.bank_channel AS "bankChannel",
+		a.create_by AS "createBy.id",
+		a.resp_code AS "respCode",
+		a.resp_desc AS "respDesc",
+		a.reg_time AS "regTime",
+		a.reg_status AS "regStatus",
+		a.is_enable AS "isEnable",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u32.name AS "createBy.name"
+	</sql>
+
+	<sql id="merchantPayInfoJoins">
+		LEFT JOIN sys_user u32 ON u32.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="MerchantPayInfo">
+		SELECT
+		<include refid="merchantPayInfoColumns"/>
+		FROM scm_merchant_pay_info a
+		<include refid="merchantPayInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="MerchantPayInfo">
+		SELECT
+		<include refid="merchantPayInfoColumns"/>
+		FROM scm_merchant_pay_info a
+		<include refid="merchantPayInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="partnerId != null and partnerId != ''">
+				AND a.partner_id = #{partnerId}
+			</if>
+			<if test="bankChannel != null and bankChannel != ''">
+				AND a.bank_channel = #{bankChannel}
+			</if>
+			<if test="mercAbbr != null and mercAbbr != ''">
+				AND a.merc_abbr LIKE
+				<if test="dbName == 'oracle'">'%'||#{mercAbbr}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{mercAbbr}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{mercAbbr},'%')</if>
+			</if>
+			<if test="crpNm != null and crpNm != ''">
+				AND a.crp_nm LIKE
+				<if test="dbName == 'oracle'">'%'||#{crpNm}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{crpNm}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{crpNm},'%')</if>
+			</if>
+			<if test="mercProv != null and mercProv != ''">
+				AND a.merc_prov = #{mercProv}
+			</if>
+			<if test="usrOprMbl != null and usrOprMbl != ''">
+				AND a.usr_opr_mbl LIKE
+				<if test="dbName == 'oracle'">'%'||#{usrOprMbl}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{usrOprMbl}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{usrOprMbl},'%')</if>
+			</if>
+			<if test="mercTrdCls != null and mercTrdCls != ''">
+				AND a.merc_trd_cls = #{mercTrdCls}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="regStatus != null and regStatus != ''">
+				AND a.reg_status = #{regStatus}
+			</if>
+			<if test="isEnable != null and isEnable != ''">
+				AND a.is_enable = #{isEnable}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="MerchantPayInfo">
+		SELECT
+		<include refid="merchantPayInfoColumns"/>
+		FROM scm_merchant_pay_info a
+		<include refid="merchantPayInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_merchant_pay_info(
+			id,
+			merchant_id,
+			partner_id,
+			auth_code,
+			merc_nm,
+			merc_abbr,
+			merc_typ,
+			merc_trd_cls,
+			merc_sub_cls,
+			merc_third_cls,
+			merc_third_cls_all,
+			crp_nm,
+			crp_id_no,
+			crp_id_expire,
+			reg_id,
+			organization_code,
+			bus_addr,
+			merc_prov,
+			merc_city,
+			agr_no,
+			usr_opr_nm,
+			usr_opr_mbl,
+			stl_perd,
+			stl_day_flg,
+			wc_lbnk_no,
+			bus_psn_flg,
+			stl_oac,
+			bnk_acnm,
+			wc_bank,
+			lbnk_nm,
+			opn_bnk_prov,
+			opn_bnk_city,
+			opn_bnk_area,
+			usr_opr_log_id,
+			merc_area,
+			contact_email,
+			bank_branch_no,
+			merchant_level,
+			idexpire_time,
+			bank_channel,
+			is_enable,
+			create_by,
+			resp_code,
+			resp_desc,
+			reg_time,
+			reg_status,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{partnerId},
+			#{authCode},
+			#{mercNm},
+			#{mercAbbr},
+			#{mercTyp},
+			#{mercTrdCls},
+			#{mercSubCls},
+			#{mercThirdCls},
+			#{mercThirdClsAll},
+			#{crpNm},
+			#{crpIdNo},
+			#{crpIdExpireDay},
+			#{regId},
+			#{organizationCode},
+			#{busAddr},
+			#{mercProv},
+			#{mercCity},
+			#{agrNo},
+			#{usrOprNm},
+			#{usrOprMbl},
+			#{stlPerd},
+			#{stlDayFlg},
+			#{wcLbnkNo},
+			#{busPsnFlg},
+			#{stlOac},
+			#{bnkAcnm},
+			#{wcBank},
+			#{lbnkNm},
+			#{opnBnkProv},
+			#{opnBnkCity},
+			#{opnBnkArea},
+			#{usrOprLogId},
+			#{mercArea},
+			#{contactEmail},
+			#{bankBranchNo},
+		 	#{merchantLevel},
+		 	#{idExpireTime},
+			#{bankChannel},
+			#{isEnable},
+			#{createBy.id},
+			#{respCode},
+			#{respDesc},
+			#{regTime},
+			#{regStatus},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE scm_merchant_pay_info SET 	
+			merchant_id = #{merchantId},
+			partner_id = #{partnerId},
+			auth_code = #{authCode},
+			merc_nm = #{mercNm},
+			merc_abbr = #{mercAbbr},
+			merc_typ = #{mercTyp},
+			merc_trd_cls = #{mercTrdCls},
+			merc_sub_cls = #{mercSubCls},
+			merc_third_cls = #{mercThirdCls},
+			merc_third_cls_all = #{mercThirdClsAll},
+			crp_nm = #{crpNm},
+			crp_id_no = #{crpIdNo},
+			crp_id_expire = #{crpIdExpireDay},
+			reg_id = #{regId},
+			organization_code = #{organizationCode},
+			bus_addr = #{busAddr},
+			merc_prov = #{mercProv},
+			merc_city = #{mercCity},
+			agr_no = #{agrNo},
+			usr_opr_nm = #{usrOprNm},
+			usr_opr_mbl = #{usrOprMbl},
+			stl_perd = #{stlPerd},
+			stl_day_flg = #{stlDayFlg},
+			wc_lbnk_no = #{wcLbnkNo},
+			bus_psn_flg = #{busPsnFlg},
+			stl_oac = #{stlOac},
+			bnk_acnm = #{bnkAcnm},
+			wc_bank = #{wcBank},
+			lbnk_nm = #{lbnkNm},
+			opn_bnk_prov = #{opnBnkProv},
+			opn_bnk_city = #{opnBnkCity},
+			usr_opr_log_id = #{usrOprLogId},
+		    merc_area = #{mercArea},
+		    contact_email = #{contactEmail},
+			bank_branch_no = #{bankBranchNo},
+			merchant_level = #{merchantLevel},
+			idexpire_time = #{idExpireTime},
+			opn_bnk_area = #{opnBnkArea},
+			resp_code = #{respCode},
+			resp_desc = #{respDesc},
+			reg_time = #{regTime},
+			reg_status = #{regStatus},
+			bank_channel = #{bankChannel},
+			is_enable = #{isEnable},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE scm_merchant_pay_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

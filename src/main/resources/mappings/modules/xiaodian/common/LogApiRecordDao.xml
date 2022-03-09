@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.common.LogApiRecordDao">
+    
+	<sql id="logApiRecordColumns">
+		a.id AS "id",
+		a.platform AS "platform",
+		a.product AS "product",
+		a.version AS "version",
+		a.session_id AS "sessionId",
+		a.req_id AS "reqId",
+		a.req_time AS "reqTime",
+		a.interface_name AS "apiName",
+		a.http_method AS "httpMethod",
+		a.req_uri AS "reqUri",
+		a.req_params AS "reqParams",
+		a.resp_params AS "respParams",
+		a.cost_time AS "costTime",
+		a.resp_time AS "respTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="logApiRecordJoins">
+	</sql>
+    
+	<select id="get" resultType="LogApiRecord">
+		SELECT 
+			<include refid="logApiRecordColumns"/>
+		FROM scm_log_api_record a
+		<include refid="logApiRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="LogApiRecord">
+		SELECT 
+			<include refid="logApiRecordColumns"/>
+		FROM scm_log_api_record a
+		<include refid="logApiRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="platform != null and platform != ''">
+				AND a.platform = #{platform}
+			</if>
+			<if test="apiName != null and apiName != ''">
+				AND a.interface_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{apiName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{apiName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{apiName},'%')</if>
+			</if>
+			<if test="reqParams != null and reqParams != ''">
+				AND a.req_params LIKE 
+					<if test="dbName == 'oracle'">'%'||#{reqParams}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{reqParams}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{reqParams},'%')</if>
+			</if>
+			<if test="respParams != null and respParams != ''">
+				AND a.resp_params LIKE 
+					<if test="dbName == 'oracle'">'%'||#{respParams}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{respParams}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{respParams},'%')</if>
+			</if>
+			<if test="beginReqTime != null and endReqTime != null and beginReqTime != '' and endReqTime != ''">
+				AND a.req_time BETWEEN #{beginReqTime} AND #{endReqTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="LogApiRecord">
+		SELECT 
+			<include refid="logApiRecordColumns"/>
+		FROM scm_log_api_record a
+		<include refid="logApiRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_log_api_record(
+			id,
+			platform,
+			product,
+			version,
+			session_id,
+			req_id,
+			req_time,
+			interface_name,
+			http_method,
+			req_uri,
+			req_params,
+			resp_params,
+			cost_time,
+			resp_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{platform},
+			#{product},
+			#{version},
+			#{sessionId},
+			#{reqId},
+			#{reqTime},
+			#{apiName},
+			#{httpMethod},
+			#{reqUri},
+			#{reqParams},
+			#{respParams},
+			#{costTime},
+			#{respTime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_log_api_record SET
+			platform = #{platform},
+			product = #{product},
+			version = #{version},
+			session_id = #{sessionId},
+			req_id = #{reqId},
+			req_time = #{reqTime},
+			interface_name = #{apiName},
+			http_method = #{httpMethod},
+			req_uri = #{reqUri},
+			req_params = #{reqParams},
+			resp_params = #{respParams},
+			cost_time = #{costTime},
+			resp_time = #{respTime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_log_api_record SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

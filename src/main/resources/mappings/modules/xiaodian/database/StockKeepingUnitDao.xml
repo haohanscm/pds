@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.database.StockKeepingUnitDao">
+    
+	<sql id="stockKeepingUnitColumns">
+		a.id AS "id",
+		a.spu_id AS "spuId",
+		a.attr_name_ids AS "attrNameIds",
+		a.attr_value_ids AS "attrValueIds",
+		a.goods_name AS "goodsName",
+		a.stock_goods_sn AS "stockGoodsSn",
+		a.sale_price AS "salePrice",
+		a.stock AS "stock",
+		a.unit AS "unit",
+		a.attr_detail AS "attrDetail",
+		a.scan_code AS "scanCode",
+		a.attr_photo AS "attrPhoto",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.weight AS "weight",
+		a.volume AS "volume",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="stockKeepingUnitJoins">
+	</sql>
+    
+	<select id="get" resultType="StockKeepingUnit">
+		SELECT 
+			<include refid="stockKeepingUnitColumns"/>
+		FROM scm_cms_stock_keeping_unit a
+		<include refid="stockKeepingUnitJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="StockKeepingUnit">
+		SELECT 
+			<include refid="stockKeepingUnitColumns"/>
+		FROM scm_cms_stock_keeping_unit a
+		<include refid="stockKeepingUnitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="spuId != null and spuId != ''">
+				AND a.spu_id = #{spuId}
+			</if>
+			<if test="stockGoodsSn != null and stockGoodsSn != ''">
+				AND a.stock_goods_sn LIKE
+				<if test="dbName == 'oracle'">'%'||#{stockGoodsSn}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{stockGoodsSn}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{stockGoodsSn},'%')</if>
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="scanCode != null and scanCode != ''">
+				AND a.scan_code = #{scanCode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort, a.stock_goods_sn, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="StockKeepingUnit">
+		SELECT 
+			<include refid="stockKeepingUnitColumns"/>
+		FROM scm_cms_stock_keeping_unit a
+		<include refid="stockKeepingUnitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_stock_keeping_unit(
+			id,
+			spu_id,
+			attr_name_ids,
+			attr_value_ids,
+			goods_name,
+			stock_goods_sn,
+			sale_price,
+			stock,
+			unit,
+			attr_detail,
+			scan_code,
+			attr_photo,
+			sort,
+			create_by,
+			weight,
+			volume,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{spuId},
+			#{attrNameIds},
+			#{attrValueIds},
+			#{goodsName},
+			#{stockGoodsSn},
+			#{salePrice},
+			#{stock},
+			#{unit},
+			#{attrDetail},
+			#{scanCode},
+			#{attrPhoto},
+			#{sort},
+			#{createBy.id},
+			#{weight},
+			#{volume},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_stock_keeping_unit SET
+			spu_id = #{spuId},
+			attr_name_ids = #{attrNameIds},
+			attr_value_ids = #{attrValueIds},
+			goods_name = #{goodsName},
+			stock_goods_sn = #{stockGoodsSn},
+			sale_price = #{salePrice},
+			stock = #{stock},
+			unit = #{unit},
+			attr_detail = #{attrDetail},
+			scan_code = #{scanCode},
+			attr_photo = #{attrPhoto},
+			sort = #{sort},
+			weight = #{weight},
+			volume = #{volume},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_stock_keeping_unit SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- sku 详情 带spu信息 -->
+    <select id="getSkuInfo" resultType="com.haohan.platform.service.sys.modules.xiaodian.api.entity.database.RespSku">
+        SELECT
+        <include refid="stockKeepingUnitColumns"/>
+        ,
+        p.goods_category_id AS "goodsCategoryId",
+        p.detail_desc AS "detailDesc",
+        p.general_sn AS "generalSn",
+        p.industry AS "industry",
+        p.brand AS "brand",
+        p.manufacturer AS "manufacturer",
+        ( SELECT group_concat( c1.name ) FROM scm_cms_product_category c1 WHERE FIND_IN_SET( c1.id, p.goods_category_id ) ) AS "categoryName"
+        FROM scm_cms_stock_keeping_unit a
+        <include refid="stockKeepingUnitJoins"/>
+        LEFT JOIN scm_cms_standard_product_unit p ON a.spu_id = p.id
+        WHERE a.id = #{id}
+    </select>
+
+	<!-- sku列表 带attrInfo -->
+	<select id="findListWithAttrInfo" resultType="StockKeepingUnit">
+		SELECT
+		<include refid="stockKeepingUnitColumns"/>
+		,
+        b.attrInfo AS "attrInfo"
+        FROM scm_cms_stock_keeping_unit a
+        LEFT JOIN (
+            SELECT
+                x.id,
+                GROUP_CONCAT( CONCAT_WS( ':', n.attr_name, v.attr_value ) ORDER BY n.sort, v.sort ) AS "attrInfo"
+            FROM scm_cms_stock_keeping_unit x
+            LEFT JOIN scm_cms_product_attr_value v ON FIND_IN_SET( v.id, x.attr_value_ids )
+            LEFT JOIN scm_cms_product_attr_name n ON n.id = v.attr_name_id
+            <where>
+                x.del_flag = #{DEL_FLAG_NORMAL}
+            </where>
+            GROUP BY x.id
+        ) b ON a.id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="spuId != null and spuId != ''">
+				AND a.spu_id = #{spuId}
+			</if>
+			<if test="stockGoodsSn != null and stockGoodsSn != ''">
+				AND a.stock_goods_sn LIKE
+				<if test="dbName == 'oracle'">'%'||#{stockGoodsSn}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{stockGoodsSn}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{stockGoodsSn},'%')</if>
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+			<if test="scanCode != null and scanCode != ''">
+				AND a.scan_code = #{scanCode}
+			</if>
+		</where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.sort, a.update_date DESC
+            </otherwise>
+        </choose>
+	</select>
+
+    <select id="findEmptySnSpuList" resultType="StockKeepingUnit">
+        SELECT
+        DISTINCT
+        a.spu_id AS "spuId",
+        p.general_sn AS "generalSn"
+        FROM scm_cms_stock_keeping_unit a
+        LEFT JOIN scm_cms_standard_product_unit p ON a.spu_id = p.id
+        WHERE
+        a.del_flag = '0'
+        AND p.del_flag = '0'
+        AND (a.stock_goods_sn Is NULL OR a.stock_goods_sn = '')
+    </select>
+</mapper>

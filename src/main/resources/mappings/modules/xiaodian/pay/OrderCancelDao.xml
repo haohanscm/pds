@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.pay.OrderCancelDao">
+    
+	<sql id="orderCancelColumns">
+		a.id AS "id",
+		a.request_id AS "requestId",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.partner_id AS "partnerId",
+		a.order_id AS "orderId",
+		a.re_time AS "reTime",
+		a.resp_code AS "respCode",
+		a.resp_desc AS "respDesc",
+		a.resp_time AS "respTime",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="orderCancelJoins">
+	</sql>
+    
+	<select id="get" resultType="OrderCancel">
+		SELECT 
+			<include refid="orderCancelColumns"/>
+		FROM scm_order_cancel a
+		<include refid="orderCancelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderCancel">
+		SELECT 
+			<include refid="orderCancelColumns"/>
+		FROM scm_order_cancel a
+		<include refid="orderCancelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="requestId != null and requestId != ''">
+				AND a.request_id = #{requestId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="beginReTime != null and endReTime != null and beginReTime != '' and endReTime != ''">
+				AND a.re_time BETWEEN #{beginReTime} AND #{endReTime}
+			</if>
+			<if test="respCode != null and respCode != ''">
+				AND a.resp_code = #{respCode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderCancel">
+		SELECT 
+			<include refid="orderCancelColumns"/>
+		FROM scm_order_cancel a
+		<include refid="orderCancelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_order_cancel(
+			id,
+			request_id,
+			merchant_id,
+			merchant_name,
+			partner_id,
+			order_id,
+			re_time,
+			resp_code,
+			resp_desc,
+			resp_time,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{requestId},
+			#{merchantId},
+			#{merchantName},
+			#{partnerId},
+			#{orderId},
+			#{reTime},
+			#{respCode},
+			#{respDesc},
+			#{respTime},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_order_cancel SET
+			request_id = #{requestId},
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			partner_id = #{partnerId},
+			order_id = #{orderId},
+			re_time = #{reTime},
+			resp_code = #{respCode},
+			resp_desc = #{respDesc},
+			resp_time = #{respTime},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_order_cancel SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.AppPayRelationDao">
+    
+	<sql id="appPayRelationColumns">
+		a.id AS "id",
+		a.partner_id AS "partnerId",
+		a.app_id AS "appId",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="appPayRelationJoins">
+	</sql>
+    
+	<select id="get" resultType="AppPayRelation">
+		SELECT 
+			<include refid="appPayRelationColumns"/>
+		FROM scm_app_pay_relation a
+		<include refid="appPayRelationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+    <sql id="appPayRelationCondition">
+        a.del_flag = #{DEL_FLAG_NORMAL}
+        <if test="partnerId != null and partnerId != ''">
+            AND a.partner_id = #{partnerId}
+        </if>
+        <if test="appId != null and appId != ''">
+            AND a.app_id = #{appId}
+        </if>
+        <if test="status != null and status != ''">
+            AND a.status = #{status}
+        </if>
+    </sql>
+
+	<select id="findList" resultType="AppPayRelation">
+		SELECT
+			<include refid="appPayRelationColumns"/>
+		FROM scm_app_pay_relation a
+		<include refid="appPayRelationJoins"/>
+		<where>
+            <include refid="appPayRelationCondition"/>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AppPayRelation">
+		SELECT 
+			<include refid="appPayRelationColumns"/>
+		FROM scm_app_pay_relation a
+		<include refid="appPayRelationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_app_pay_relation(
+			id,
+			partner_id,
+			app_id,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{partnerId},
+			#{appId},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_app_pay_relation SET
+			partner_id = #{partnerId},
+			app_id = #{appId},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_app_pay_relation SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="AppPayRelation">
+        SELECT
+        <include refid="appPayRelationColumns"/>
+        ,
+        b.app_name AS "appName"
+        FROM scm_app_pay_relation a
+        <include refid="appPayRelationJoins"/>
+        LEFT JOIN scm_auth_app b ON a.app_id = b.app_id
+        <where>
+            <include refid="appPayRelationCondition"/>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

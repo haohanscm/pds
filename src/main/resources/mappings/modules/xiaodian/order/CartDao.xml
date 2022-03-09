@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.order.CartDao">
+    
+	<sql id="cartColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.session_id AS "sessionId",
+		a.shop_id AS "shopId",
+		a.goods_id AS "goodsId",
+		a.goods_sn AS "goodsSn",
+		a.product_id AS "productId",
+		a.goods_name AS "goodsName",
+		a.market_price AS "marketPrice",
+		a.goods_price AS "goodsPrice",
+		a.goods_unit AS "goodsUnit",
+		a.goods_num AS "goodsNum",
+		a.goods_attr_ids AS "goodsAttrIds",
+		a.is_real AS "isReal",
+		a.ext_attr AS "extAttr",
+		a.parent_id AS "parentId",
+		a.cart_goods_type AS "cartGoodsType",
+		a.activity_id AS "activityId",
+		a.is_shipping AS "isShipping",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="cartJoins">
+	</sql>
+    
+	<select id="get" resultType="Cart">
+		SELECT 
+			<include refid="cartColumns"/>
+		FROM scm_cart a
+		<include refid="cartJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Cart">
+		SELECT 
+			<include refid="cartColumns"/>
+		FROM scm_cart a
+		<include refid="cartJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Cart">
+		SELECT 
+			<include refid="cartColumns"/>
+		FROM scm_cart a
+		<include refid="cartJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cart(
+			id,
+			user_id,
+			session_id,
+			shop_id,
+			goods_id,
+			goods_sn,
+			product_id,
+			goods_name,
+			market_price,
+			goods_price,
+			goods_unit,
+			goods_num,
+			goods_attr_ids,
+			is_real,
+			ext_attr,
+			parent_id,
+			cart_goods_type,
+			activity_id,
+			is_shipping,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{userId},
+			#{sessionId},
+			#{shopId},
+			#{goodsId},
+			#{goodsSn},
+			#{productId},
+			#{goodsName},
+			#{marketPrice},
+			#{goodsPrice},
+			#{goodsUnit},
+			#{goodsNum},
+			#{goodsAttrIds},
+			#{isReal},
+			#{extAttr},
+			#{parentId},
+			#{cartGoodsType},
+			#{activityId},
+			#{isShipping},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cart SET
+			user_id = #{userId},
+			session_id = #{sessionId},
+			shop_id = #{shopId},
+			goods_id = #{goodsId},
+			goods_sn = #{goodsSn},
+			product_id = #{productId},
+			goods_name = #{goodsName},
+			market_price = #{marketPrice},
+			goods_price = #{goodsPrice},
+			goods_unit = #{goodsUnit},
+			goods_num = #{goodsNum},
+			goods_attr_ids = #{goodsAttrIds},
+			is_real = #{isReal},
+			ext_attr = #{extAttr},
+			parent_id = #{parentId},
+			cart_goods_type = #{cartGoodsType},
+			activity_id = #{activityId},
+			is_shipping = #{isShipping},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cart SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

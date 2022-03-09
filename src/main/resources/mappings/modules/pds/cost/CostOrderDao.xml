@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.cost.CostOrderDao">
+    
+	<sql id="costOrderColumns">
+		a.id AS "id",
+		a.deal_date AS "dealDate",
+		a.pm_id AS "pmId",
+		a.total_order_num AS "totalOrderNum",
+		a.spu_num AS "spuNum",
+		a.sku_num AS "skuNum",
+		a.supplier_payment AS "supplierPayment",
+		a.buyer_payment AS "buyerPayment",
+		a.after_sale_payment AS "afterSalePayment",
+		a.cost_total AS "costTotal",
+		a.gross_profit AS "grossProfit",
+		a.gross_rate AS "grossRate",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="costOrderJoins">
+	</sql>
+    
+	<select id="get" resultType="CostOrder">
+		SELECT 
+			<include refid="costOrderColumns"/>
+		FROM scm_cost_order a
+		<include refid="costOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CostOrder">
+		SELECT 
+			<include refid="costOrderColumns"/>
+		FROM scm_cost_order a
+		<include refid="costOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="dealDate != null and dealDate != ''">
+				AND a.deal_date = #{dealDate}
+			</if>
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CostOrder">
+		SELECT 
+			<include refid="costOrderColumns"/>
+		FROM scm_cost_order a
+		<include refid="costOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cost_order(
+			tenant_id,
+			id,
+			deal_date,
+			pm_id,
+			total_order_num,
+			spu_num,
+			sku_num,
+			supplier_payment,
+			buyer_payment,
+			after_sale_payment,
+			cost_total,
+			gross_profit,
+			gross_rate,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{dealDate},
+			#{pmId},
+			#{totalOrderNum},
+			#{spuNum},
+			#{skuNum},
+			#{supplierPayment},
+			#{buyerPayment},
+			#{afterSalePayment},
+			#{costTotal},
+			#{grossProfit},
+			#{grossRate},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cost_order SET
+			deal_date = #{dealDate},
+			pm_id = #{pmId},
+			total_order_num = #{totalOrderNum},
+			spu_num = #{spuNum},
+			sku_num = #{skuNum},
+			supplier_payment = #{supplierPayment},
+			buyer_payment = #{buyerPayment},
+			after_sale_payment = #{afterSalePayment},
+			cost_total = #{costTotal},
+			gross_profit = #{grossProfit},
+			gross_rate = #{grossRate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cost_order SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

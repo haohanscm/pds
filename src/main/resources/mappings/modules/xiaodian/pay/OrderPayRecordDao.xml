@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.pay.OrderPayRecordDao">
+
+	<sql id="orderPayRecordColumns">
+		a.id AS "id",
+		a.partner_num AS "partnerNum",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.shop_id AS "shopId",
+		a.shop_name AS "shopName",
+		a.order_id AS "orderId",
+		a.order_type AS "orderType",
+		a.client_ip AS "clientIp",
+		a.request_id AS "requestId",
+		a.trans_id AS "transId",
+		a.partner_id AS "partnerId",
+		a.goods_name AS "goodsName",
+		a.order_time AS "orderTime",
+		a.order_amount AS "orderAmount",
+		a.auth_code AS "authCode",
+		a.pay_channel AS "payChannel",
+		a.pay_type AS "payType",
+		a.limit_pay AS "limitPay",
+		a.resp_code AS "respCode",
+		a.resp_desc AS "respDesc",
+		a.resp_time AS "respTime",
+		a.order_qrcode AS "orderQrcode",
+		a.openid AS "openid",
+		a.appid AS "appid",
+		a.prepay_id AS "prepayId",
+		a.pay_sign AS "paySign",
+		a.time_stamp AS "timeStamp",
+		a.noncestr AS "noncestr",
+		a.pay_status AS "payStatus",
+		a.order_info AS "orderInfo",
+		a.order_detail AS "orderDetail",
+		a.buyer_id AS "buyerId",
+		a.pay_info AS "payInfo",
+		a.partner_notify_url AS "partnerNotifyUrl",
+		a.device_id AS "deviceId",
+		a.fee AS "fee",
+		a.rate AS "rate",
+		a.bank_channel AS "bankChannel",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="orderPayRecordJoins">
+	</sql>
+
+	<select id="get" resultType="OrderPayRecord">
+		SELECT
+		<include refid="orderPayRecordColumns"/>
+		FROM scm_order_pay_record a
+		<include refid="orderPayRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="OrderPayRecord">
+		SELECT
+		<include refid="orderPayRecordColumns"/>
+		FROM scm_order_pay_record a
+		<include refid="orderPayRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="partnerNum != null and partnerNum != ''">
+				AND a.partner_num = #{partnerNum}
+			</if>
+			<if test="partnerId != null and partnerId != ''">
+				AND a.partner_id = #{partnerId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="requestId != null and requestId != ''">
+				AND a.request_id = #{requestId}
+			</if>
+			<if test="transId != null and transId != ''">
+				AND a.trans_id = #{transId}
+			</if>
+			<if test="beginOrderTime != null and endOrderTime != null and beginOrderTime != '' and endOrderTime != ''">
+				AND a.order_time BETWEEN #{beginOrderTime} AND #{endOrderTime}
+			</if>
+			<if test="bankChannel != null and bankChannel != ''">
+				AND a.bank_channel = #{bankChannel}
+			</if>
+			<if test="orderType != null and orderType != ''">
+				AND a.order_type = #{orderType}
+			</if>
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="OrderPayRecord">
+		SELECT
+		<include refid="orderPayRecordColumns"/>
+		FROM scm_order_pay_record a
+		<include refid="orderPayRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="sumSaleAmount" resultType="BigDecimal">
+		SELECT SUM(order_amount) FROM scm_order_pay_record a
+		<where>
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.resp_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			AND a.del_flag = '0'
+		</where>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO scm_order_pay_record(
+			id,
+			partner_num,
+			merchant_id,
+			merchant_name,
+			shop_id,
+			shop_name,
+			order_id,
+			order_type,
+			client_ip,
+			request_id,
+			trans_id,
+			partner_id,
+			goods_name,
+			order_time,
+			order_amount,
+			auth_code,
+			pay_channel,
+			pay_type,
+			limit_pay,
+			resp_code,
+			resp_desc,
+			resp_time,
+			order_qrcode,
+			openid,
+			buyer_id,
+			appid,
+			prepay_id,
+			pay_sign,
+			time_stamp,
+			noncestr,
+			pay_status,
+			order_info,
+			order_detail,
+			pay_info,
+			partner_notify_url,
+			device_id,
+			fee,
+			rate,
+			bank_channel,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{partnerNum},
+			#{merchantId},
+			#{merchantName},
+			#{shopId},
+			#{shopName},
+			#{orderId},
+			#{orderType},
+			#{clientIp},
+			#{requestId},
+			#{transId},
+			#{partnerId},
+			#{goodsName},
+			#{orderTime},
+			#{orderAmount},
+			#{authCode},
+			#{payChannel},
+			#{payType},
+			#{limitPay},
+			#{respCode},
+			#{respDesc},
+			#{respTime},
+			#{orderQrcode},
+			#{openid},
+			#{buyerId},
+			#{appid},
+			#{prepayId},
+			#{paySign},
+			#{timeStamp},
+			#{noncestr},
+			#{payStatus},
+			#{orderInfo},
+			#{orderDetail},
+			#{payInfo},
+			#{partnerNotifyUrl},
+			#{deviceId},
+			#{fee},
+			#{rate},
+			#{bankChannel},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE scm_order_pay_record SET 	
+			merchant_id = #{merchantId},
+			partner_num = #{partnerNum},
+			merchant_name = #{merchantName},
+			shop_id = #{shopId},
+			shop_name = #{shopName},
+			order_id = #{orderId},
+			order_type = #{orderType},
+			client_ip = #{clientIp},
+			request_id = #{requestId},
+			trans_id = #{transId},
+			partner_id = #{partnerId},
+			goods_name = #{goodsName},
+			order_time = #{orderTime},
+			order_amount = #{orderAmount},
+			auth_code = #{authCode},
+			pay_channel = #{payChannel},
+			pay_type = #{payType},
+			limit_pay = #{limitPay},
+			resp_code = #{respCode},
+			resp_desc = #{respDesc},
+			resp_time = #{respTime},
+			order_qrcode = #{orderQrcode},
+			openid = #{openid},
+			appid = #{appid},
+			prepay_id = #{prepayId},
+			pay_sign = #{paySign},
+			time_stamp = #{timeStamp},
+			noncestr = #{noncestr},
+			pay_status = #{payStatus},
+			order_info = #{orderInfo},
+			order_detail = #{orderDetail},
+			pay_info = #{payInfo},
+			partner_notify_url = #{partnerNotifyUrl},
+			device_id = #{deviceId},
+			fee = #{fee},
+			rate = #{rate},
+			bank_channel =#{bankChannel},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE scm_order_pay_record SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 营业额查询 -->
+	<select id="fetchTurnover" resultType="BigDecimal">
+		SELECT SUM(order_amount) FROM scm_order_pay_record a
+		<where>
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+				AND a.resp_time BETWEEN #{startTime} AND #{endTime}
+			</if>
+			AND a.del_flag = '0'
+		</where>
+	</select>
+</mapper>

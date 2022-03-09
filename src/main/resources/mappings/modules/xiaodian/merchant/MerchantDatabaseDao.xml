@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.merchant.MerchantDatabaseDao">
+    
+	<sql id="merchantDatabaseColumns">
+		a.id AS "id",
+		a.reg_name AS "regName",
+		a.reg_user AS "regUser",
+		a.area_id AS "area.id",
+		a.op_address AS "opAddress",
+		a.contact AS "contact",
+		a.telephone AS "telephone",
+		a.phone_number AS "phoneNumber",
+		a.merchant_type AS "merchantType",
+		a.industry AS "industry",
+		a.website AS "website",
+		a.taobao_shop AS "taobaoShop",
+		a.market_platform AS "marketPlatform",
+		a.pay_tools AS "payTools",
+		a.shop_name AS "shopName",
+		a.operate_area AS "operateArea",
+		a.worker_num AS "workerNum",
+		a.shop_desc AS "shopDesc",
+		a.service_time AS "serviceTime",
+		a.biz_desc AS "bizDesc",
+		a.shop_address AS "shopAddress",
+		a.biz_license AS "bizLicense",
+		a.environment AS "environment",
+		a.shop_service AS "shopService",
+		a.shop_sale AS "shopSale",
+		a.picture_file AS "pictureFile",
+		a.init_time AS "initTime",
+		a.bizfrom_type AS "bizfromType",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a4.name AS "area.name"
+	</sql>
+	
+	<sql id="merchantDatabaseJoins">
+		LEFT JOIN sys_area a4 ON a4.id = a.area_id
+	</sql>
+    
+	<select id="get" resultType="MerchantDatabase">
+		SELECT 
+			<include refid="merchantDatabaseColumns"/>
+		FROM scm_mms_merchant_database a
+		<include refid="merchantDatabaseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MerchantDatabase">
+		SELECT 
+			<include refid="merchantDatabaseColumns"/>
+		FROM scm_mms_merchant_database a
+		<include refid="merchantDatabaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="regName != null and regName != ''">
+				AND a.reg_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{regName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{regName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{regName},'%')</if>
+			</if>
+			<if test="regUser != null and regUser != ''">
+				AND a.reg_user LIKE 
+					<if test="dbName == 'oracle'">'%'||#{regUser}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{regUser}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{regUser},'%')</if>
+			</if>
+			<if test="area != null and area.id != null and area.id != ''">
+				AND a.area_id = #{area.id}
+			</if>
+			<if test="contact != null and contact != ''">
+				AND a.contact LIKE 
+					<if test="dbName == 'oracle'">'%'||#{contact}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{contact}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{contact},'%')</if>
+			</if>
+			<if test="telephone != null and telephone != ''">
+				AND a.telephone = #{telephone}
+			</if>
+			<if test="shopName != null and shopName != ''">
+				AND a.shop_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{shopName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{shopName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{shopName},'%')</if>
+			</if>
+			<if test="merchantType != null and merchantType != ''">
+				AND a.merchant_type = #{merchantType}
+			</if>
+			<if test="industry != null and industry != ''">
+				AND a.industry = #{industry}
+			</if>
+			<if test="bizfromType != null and bizfromType != ''">
+				AND a.bizfrom_type = #{bizfromType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="marketPlatform != null and marketPlatform != ''">
+				AND a.market_platform = #{marketPlatform}
+			</if>
+			<if test="beginInitTime != null and endInitTime != null and beginInitTime != '' and endInitTime != ''">
+				AND a.init_time BETWEEN #{beginInitTime} AND #{endInitTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.init_time DESC ,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MerchantDatabase">
+		SELECT 
+			<include refid="merchantDatabaseColumns"/>
+		FROM scm_mms_merchant_database a
+		<include refid="merchantDatabaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.init_time DESC ,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_mms_merchant_database(
+			id,
+			reg_name,
+			reg_user,
+			area_id,
+			op_address,
+			contact,
+			telephone,
+			phone_number,
+			merchant_type,
+			industry,
+			website,
+			taobao_shop,
+			market_platform,
+			pay_tools,
+			shop_name,
+			operate_area,
+			worker_num,
+			shop_desc,
+			service_time,
+			biz_desc,
+			shop_address,
+			biz_license,
+			environment,
+			shop_service,
+			shop_sale,
+			picture_file,
+			init_time,
+			bizfrom_type,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{regName},
+			#{regUser},
+			#{area.id},
+			#{opAddress},
+			#{contact},
+			#{telephone},
+			#{phoneNumber},
+			#{merchantType},
+			#{industry},
+			#{website},
+			#{taobaoShop},
+			#{marketPlatform},
+			#{payTools},
+			#{shopName},
+			#{operateArea},
+			#{workerNum},
+			#{shopDesc},
+			#{serviceTime},
+			#{bizDesc},
+			#{shopAddress},
+			#{bizLicense},
+			#{environment},
+			#{shopService},
+			#{shopSale},
+			#{pictureFile},
+			#{initTime},
+			#{bizfromType},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_mms_merchant_database SET
+			reg_name = #{regName},
+			reg_user = #{regUser},
+			area_id = #{area.id},
+			op_address = #{opAddress},
+			contact = #{contact},
+			telephone = #{telephone},
+			phone_number = #{phoneNumber},
+			merchant_type = #{merchantType},
+			industry = #{industry},
+			website = #{website},
+			taobao_shop = #{taobaoShop},
+			market_platform = #{marketPlatform},
+			pay_tools = #{payTools},
+			shop_name = #{shopName},
+			operate_area = #{operateArea},
+			worker_num = #{workerNum},
+			shop_desc = #{shopDesc},
+			service_time = #{serviceTime},
+			biz_desc = #{bizDesc},
+			shop_address = #{shopAddress},
+			biz_license = #{bizLicense},
+			environment = #{environment},
+			shop_service = #{shopService},
+			shop_sale = #{shopSale},
+			picture_file = #{pictureFile},
+			init_time = #{initTime},
+			bizfrom_type= #{bizfromType},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_mms_merchant_database SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据注册名称查找 -->
+	<select id="fetchByRegName" resultType="MerchantDatabase">
+		SELECT
+		<include refid="merchantDatabaseColumns"/>
+		FROM scm_mms_merchant_database a
+		<include refid="merchantDatabaseJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		AND a.reg_name = #{regName}
+	</select>
+
+
+</mapper>

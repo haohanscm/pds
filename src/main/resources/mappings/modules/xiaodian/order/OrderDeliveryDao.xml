@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.order.OrderDeliveryDao">
+    
+	<sql id="orderDeliveryColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.shop_id AS "shopId",
+		a.user_id AS "userId",
+		a.order_from AS "orderFrom",
+		a.order_type AS "orderType",
+		a.order_status AS "orderStatus",
+		a.order_id AS "orderId",
+		a.delivery_fee AS "deliveryFee",
+		a.insure_fee AS "insureFee",
+		a.pay_fee AS "payFee",
+		a.service_fee AS "serviceFee",
+		a.money_paid AS "moneyPaid",
+		a.order_amount AS "orderAmount",
+		a.pay_mark AS "payMark",
+		a.pay_type AS "payType",
+		a.pay_status AS "payStatus",
+		a.province AS "province",
+		a.city AS "city",
+		a.region AS "region",
+		a.street AS "street",
+		a.district_area AS "districtArea",
+		a.community_name AS "communityName",
+		a.community_id AS "communityId",
+		a.buildings_num AS "buildingsNum",
+		a.floor AS "floor",
+		a.house_num AS "houseNum",
+		a.address AS "address",
+		a.zipcode AS "zipcode",
+		a.express_order AS "expressOrder",
+		a.express_company AS "expressCompany",
+		a.delivery_status AS "deliveryStatus",
+		a.delivery_man_id AS "deliveryManId",
+		a.delivery_man_name AS "deliveryManName",
+		a.delivery_man_tel AS "deliveryManTel",
+		a.receiver AS "receiver",
+		a.receiver_mobile AS "receiverMobile",
+		a.order_mark AS "orderMark",
+		a.start_delivery_date AS "startDeliveryDate",
+		a.delivery_ontime AS "deliveryOntime",
+		a.arrive_type AS "arriveType",
+		a.delivery_type AS "deliveryType",
+		a.plan_gen_status AS "planGenStatus",
+		a.plan_gen_desc AS "planGenDesc",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.name AS "shopName"
+	</sql>
+	
+	<sql id="orderDeliveryJoins">
+		left join scm_shop s on s.id = a.shop_id
+	</sql>
+    
+	<select id="get" resultType="OrderDelivery">
+		SELECT 
+			<include refid="orderDeliveryColumns"/>
+		FROM scm_cms_order_delivery a
+		<include refid="orderDeliveryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderDelivery">
+		SELECT 
+			<include refid="orderDeliveryColumns"/>
+		FROM scm_cms_order_delivery a
+		<include refid="orderDeliveryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name = #{merchantName}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="orderFrom != null and orderFrom != ''">
+				AND a.order_from = #{orderFrom}
+			</if>
+			<if test="orderType != null and orderType != ''">
+				AND a.order_type = #{orderType}
+			</if>
+			<if test="orderStatus != null and orderStatus != ''">
+				AND a.order_status = #{orderStatus}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="payStatus != null and payStatus != ''">
+				AND a.pay_status = #{payStatus}
+			</if>
+			<if test="deliveryStatus != null and deliveryStatus != ''">
+				AND a.delivery_status = #{deliveryStatus}
+			</if>
+			<if test="deliveryManId != null and deliveryManId != ''">
+				AND a.delivery_man_id = #{deliveryManId}
+			</if>
+			<if test="districtArea != null and districtArea != ''">
+				AND a.district_area = #{districtArea}
+			</if>
+			<if test="communityId != null and communityId != ''">
+				AND a.community_id = #{communityId}
+			</if>
+			<if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND DATE(a.start_delivery_date) BETWEEN DATE(#{beginDate}) AND DATE(#{endDate})
+			</if>
+			<if test="beginDate != null and beginDate != '' and (endDate == null or endDate == '')">
+				AND a.start_delivery_date &gt;= #{beginDate}
+			</if>
+			<if test="(beginDate == null or beginDate == '') and endDate != null and endDate != ''">
+				AND a.start_delivery_date &lt; #{endDate}
+			</if>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderDelivery">
+		SELECT 
+			<include refid="orderDeliveryColumns"/>
+		FROM scm_cms_order_delivery a
+		<include refid="orderDeliveryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_order_delivery(
+			id,
+			merchant_id,
+			merchant_name,
+			shop_id,
+			user_id,
+			order_from,
+			order_type,
+			order_status,
+			order_id,
+			delivery_fee,
+			insure_fee,
+			pay_fee,
+			service_fee,
+			money_paid,
+			order_amount,
+			pay_mark,
+			pay_type,
+			pay_status,
+			province,
+			city,
+			region,
+			street,
+			district_area,
+			community_name,
+			community_id,
+			buildings_num,
+			floor,
+			house_num,
+			address,
+			zipcode,
+			express_order,
+			express_company,
+			delivery_status,
+			delivery_man_id,
+			delivery_man_name,
+			delivery_man_tel,
+			receiver,
+			receiver_mobile,
+			order_mark,
+			start_delivery_date,
+			delivery_ontime,
+			arrive_type,
+			delivery_type,
+			plan_gen_status,
+			plan_gen_desc,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{merchantName},
+			#{shopId},
+			#{userId},
+			#{orderFrom},
+			#{orderType},
+			#{orderStatus},
+			#{orderId},
+			#{deliveryFee},
+			#{insureFee},
+			#{payFee},
+			#{serviceFee},
+			#{moneyPaid},
+			#{orderAmount},
+			#{payMark},
+			#{payType},
+			#{payStatus},
+			#{province},
+			#{city},
+			#{region},
+			#{street},
+			#{districtArea},
+			#{communityName},
+			#{communityId},
+			#{buildingsNum},
+			#{floor},
+			#{houseNum},
+			#{address},
+			#{zipcode},
+			#{expressOrder},
+			#{expressCompany},
+			#{deliveryStatus},
+			#{deliveryManId},
+			#{deliveryManName},
+			#{deliveryManTel},
+			#{receiver},
+			#{receiverMobile},
+			#{orderMark},
+			#{startDeliveryDate},
+			#{deliveryOntime},
+			#{arriveType},
+			#{deliveryType},
+			#{planGenStatus},
+			#{planGenDesc},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_order_delivery SET
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			shop_id = #{shopId},
+			user_id = #{userId},
+			order_from = #{orderFrom},
+			order_type = #{orderType},
+			order_status = #{orderStatus},
+			order_id = #{orderId},
+			delivery_fee = #{deliveryFee},
+			insure_fee = #{insureFee},
+			pay_fee = #{payFee},
+			service_fee = #{serviceFee},
+			money_paid = #{moneyPaid},
+			order_amount = #{orderAmount},
+			pay_mark = #{payMark},
+			pay_type = #{payType},
+			pay_status = #{payStatus},
+			province = #{province},
+			city = #{city},
+			region = #{region},
+			street = #{street},
+			district_area = #{districtArea},
+			community_name = #{communityName},
+			community_id = #{communityId},
+			buildings_num = #{buildingsNum},
+			floor = #{floor},
+			house_num = #{houseNum},
+			address = #{address},
+			zipcode = #{zipcode},
+			express_order = #{expressOrder},
+			express_company = #{expressCompany},
+			delivery_status = #{deliveryStatus},
+			delivery_man_id = #{deliveryManId},
+			delivery_man_name = #{deliveryManName},
+			delivery_man_tel = #{deliveryManTel},
+			receiver = #{receiver},
+			receiver_mobile = #{receiverMobile},
+			order_mark = #{orderMark},
+			start_delivery_date = #{startDeliveryDate},
+			delivery_ontime = #{deliveryOntime},
+			arrive_type = #{arriveType},
+			delivery_type = #{deliveryType},
+			plan_gen_status = #{planGenStatus},
+			plan_gen_desc = #{planGenDesc},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_order_delivery SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!--  修改 订单配送状态  deliveryStatus/orderStatus   -->
+	<update id="modifyStatus">
+		UPDATE scm_cms_order_delivery SET
+			delivery_status = #{deliveryStatus},
+			order_status = #{orderStatus},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+</mapper>

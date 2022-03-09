@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.order.TradeMatchDao">
+    
+	<sql id="tradeMatchColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.ask_order_id AS "askOrderId",
+		a.offer_order_id AS "offerOrderId",
+		a.supplier_id AS "supplierId",
+		a.supply_num AS "supplyNum",
+		a.offer_type AS "offerType",
+		a.offer_price AS "offerPrice",
+		a.deal_price AS "dealPrice",
+		a.buy_num AS "buyNum",
+		a.status AS "status",
+		a.resp_desc AS "respDesc",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s1.supplier_name AS "supplierName"
+	</sql>
+	
+	<sql id="tradeMatchJoins">
+		LEFT JOIN scm_sms_supplier s1 on s1.id = a.supplier_id
+	</sql>
+    
+	<select id="get" resultType="TradeMatch">
+		SELECT 
+			<include refid="tradeMatchColumns"/>
+		FROM scm_trade_match a
+		<include refid="tradeMatchJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TradeMatch">
+		SELECT 
+			<include refid="tradeMatchColumns"/>
+		FROM scm_trade_match a
+		<include refid="tradeMatchJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="askOrderId != null and askOrderId != ''">
+				AND a.ask_order_id = #{askOrderId}
+			</if>
+			<if test="offerOrderId != null and offerOrderId != ''">
+				AND a.offer_order_id = #{offerOrderId}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="offerType != null and offerType != ''">
+				AND a.offer_type = #{offerType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.ask_order_id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TradeMatch">
+		SELECT 
+			<include refid="tradeMatchColumns"/>
+		FROM scm_trade_match a
+		<include refid="tradeMatchJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_trade_match(
+			tenant_id,
+			id,
+			pm_id,
+			ask_order_id,
+			offer_order_id,
+			supplier_id,
+			supply_num,
+			offer_type,
+			offer_price,
+			deal_price,
+			buy_num,
+			status,
+			resp_desc,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{askOrderId},
+			#{offerOrderId},
+			#{supplierId},
+			#{supplyNum},
+			#{offerType},
+			#{offerPrice},
+			#{dealPrice},
+			#{buyNum},
+			#{status},
+			#{respDesc},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_trade_match SET
+            pm_id = #{pmId},
+			ask_order_id = #{askOrderId},
+			offer_order_id = #{offerOrderId},
+			supplier_id = #{supplierId},
+			supply_num = #{supplyNum},
+			offer_type = #{offerType},
+			offer_price = #{offerPrice},
+			deal_price = #{dealPrice},
+			buy_num = #{buyNum},
+			status = #{status},
+			resp_desc = #{respDesc},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_trade_match SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="TradeMatch">
+        SELECT
+        <include refid="tradeMatchColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_trade_match a
+        <include refid="tradeMatchJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="askOrderId != null and askOrderId != ''">
+                AND a.ask_order_id = #{askOrderId}
+            </if>
+            <if test="offerOrderId != null and offerOrderId != ''">
+                AND a.offer_order_id = #{offerOrderId}
+            </if>
+            <if test="supplierId != null and supplierId != ''">
+                AND a.supplier_id = #{supplierId}
+            </if>
+            <if test="offerType != null and offerType != ''">
+                AND a.offer_type = #{offerType}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.ask_order_id DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

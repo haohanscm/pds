@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.storage.GoodsAllotDetailDao">
+    
+	<sql id="goodsAllotDetailColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.supplier_id AS "supplierId",
+		a.allot_id AS "allotId",
+		a.goods_code AS "goodsCode",
+		a.goods_name AS "goodsName",
+		a.model_name AS "modelName",
+		a.goods_category AS "goodsCategory",
+		a.unit AS "unit",
+		a.price AS "price",
+		a.goods_num AS "goodsNum",
+		a.outorig_stock AS "outorigStock",
+		a.out_stock AS "outStock",
+		a.inorig_stock AS "inorigStock",
+		a.in_stock AS "inStock",
+		a.operator AS "operator",
+		a.oprate_time AS "oprateTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsAllotDetailJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsAllotDetail">
+		SELECT 
+			<include refid="goodsAllotDetailColumns"/>
+		FROM scm_pss_goods_allot_detail a
+		<include refid="goodsAllotDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsAllotDetail">
+		SELECT 
+			<include refid="goodsAllotDetailColumns"/>
+		FROM scm_pss_goods_allot_detail a
+		<include refid="goodsAllotDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="allotId != null and allotId != ''">
+				AND a.allot_id = #{allotId}
+			</if>
+			<if test="goodsCode != null and goodsCode != ''">
+				AND a.goods_code = #{goodsCode}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND a.goods_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{goodsName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{goodsName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{goodsName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsAllotDetail">
+		SELECT 
+			<include refid="goodsAllotDetailColumns"/>
+		FROM scm_pss_goods_allot_detail a
+		<include refid="goodsAllotDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_goods_allot_detail(
+			id,
+			merchant_id,
+			supplier_id,
+			allot_id,
+			goods_code,
+			goods_name,
+			model_name,
+			goods_category,
+			unit,
+			price,
+			goods_num,
+			outorig_stock,
+			out_stock,
+			inorig_stock,
+			in_stock,
+			operator,
+			oprate_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{supplierId},
+			#{allotId},
+			#{goodsCode},
+			#{goodsName},
+			#{modelName},
+			#{goodsCategory},
+			#{unit},
+			#{price},
+			#{goodsNum},
+			#{outorigStock},
+			#{outStock},
+			#{inorigStock},
+			#{inStock},
+			#{operator},
+			#{oprateTime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_goods_allot_detail SET
+			merchant_id = #{merchantId},
+			supplier_id = #{supplierId},
+			allot_id = #{allotId},
+			goods_code = #{goodsCode},
+			goods_name = #{goodsName},
+			model_name = #{modelName},
+			goods_category = #{goodsCategory},
+			unit = #{unit},
+			price = #{price},
+			goods_num = #{goodsNum},
+			outorig_stock = #{outorigStock},
+			out_stock = #{outStock},
+			inorig_stock = #{inorigStock},
+			in_stock = #{inStock},
+			operator = #{operator},
+			oprate_time = #{oprateTime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_goods_allot_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

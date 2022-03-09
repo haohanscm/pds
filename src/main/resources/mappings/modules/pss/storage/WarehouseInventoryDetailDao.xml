@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.storage.WarehouseInventoryDetailDao">
+    
+	<sql id="warehouseInventoryDetailColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.warehouse_stock_id AS "warehouseStockId",
+		a.warehouse_id AS "warehouseId",
+		a.goods_code AS "goodsCode",
+		a.orig_num AS "origNum",
+		a.modify_num AS "modifyNum",
+		u8.id AS "operator.id",
+		u8.login_name AS "operator.loginName",
+		a.check_time AS "checkTime",
+		a.supplier_id AS "supplierId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="warehouseInventoryDetailJoins">
+		LEFT JOIN sys_user u8 ON u8.id = a.operator
+	</sql>
+    
+	<select id="get" resultType="WarehouseInventoryDetail">
+		SELECT 
+			<include refid="warehouseInventoryDetailColumns"/>
+		FROM scm_pss_warehouse_inventory_detail a
+		<include refid="warehouseInventoryDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="WarehouseInventoryDetail">
+		SELECT 
+			<include refid="warehouseInventoryDetailColumns"/>
+		FROM scm_pss_warehouse_inventory_detail a
+		<include refid="warehouseInventoryDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="warehouseStockId != null and warehouseStockId != ''">
+				AND a.warehouse_stock_id = #{warehouseStockId}
+			</if>
+			<if test="warehouseId != null and warehouseId != ''">
+				AND a.warehouse_id = #{warehouseId}
+			</if>
+			<if test="goodsCode != null and goodsCode != ''">
+				AND a.goods_code = #{goodsCode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="WarehouseInventoryDetail">
+		SELECT 
+			<include refid="warehouseInventoryDetailColumns"/>
+		FROM scm_pss_warehouse_inventory_detail a
+		<include refid="warehouseInventoryDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_warehouse_inventory_detail(
+			id,
+			merchant_id,
+			warehouse_stock_id,
+			warehouse_id,
+			goods_code,
+			orig_num,
+			modify_num,
+			operator,
+			check_time,
+			supplier_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{warehouseStockId},
+			#{warehouseId},
+			#{goodsCode},
+			#{origNum},
+			#{modifyNum},
+			#{operator.id},
+			#{checkTime},
+			#{supplierId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_warehouse_inventory_detail SET
+			merchant_id = #{merchantId},
+			warehouse_stock_id = #{warehouseStockId},
+			warehouse_id = #{warehouseId},
+			goods_code = #{goodsCode},
+			orig_num = #{origNum},
+			modify_num = #{modifyNum},
+			operator = #{operator.id},
+			check_time = #{checkTime},
+			supplier_id = #{supplierId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_warehouse_inventory_detail SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.printer.CloudPrintTerminalDao">
+    
+	<sql id="cloudPrintTerminalColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.shop_id AS "shopId",
+		a.client_id AS "clientId",
+		a.machine_code AS "machineCode",
+		a.secret AS "secret",
+		a.name AS "name",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="cloudPrintTerminalJoins">
+	</sql>
+    
+	<select id="get" resultType="CloudPrintTerminal">
+		SELECT 
+			<include refid="cloudPrintTerminalColumns"/>
+		FROM scm_cloud_print_terminal a
+		<include refid="cloudPrintTerminalJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CloudPrintTerminal">
+		SELECT 
+			<include refid="cloudPrintTerminalColumns"/>
+		FROM scm_cloud_print_terminal a
+		<include refid="cloudPrintTerminalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="shopId != null and shopId != ''">
+				AND a.shop_id = #{shopId}
+			</if>
+			<if test="clientId != null and clientId != ''">
+				AND a.client_id = #{clientId}
+			</if>
+			<if test="machineCode != null and machineCode != ''">
+				AND a.machine_code = #{machineCode}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CloudPrintTerminal">
+		SELECT 
+			<include refid="cloudPrintTerminalColumns"/>
+		FROM scm_cloud_print_terminal a
+		<include refid="cloudPrintTerminalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cloud_print_terminal(
+			tenant_id,
+			id,
+			merchant_id,
+			shop_id,
+			client_id,
+			machine_code,
+			secret,
+			name,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{merchantId},
+			#{shopId},
+			#{clientId},
+			#{machineCode},
+			#{secret},
+			#{name},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cloud_print_terminal SET
+			merchant_id = #{merchantId},
+			shop_id = #{shopId},
+			client_id = #{clientId},
+			machine_code = #{machineCode},
+			secret = #{secret},
+			name = #{name},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cloud_print_terminal SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 用于列表展示  shopName/merchantName -->
+    <select id="findJoinList" resultType="CloudPrintTerminal">
+        SELECT
+        <include refid="cloudPrintTerminalColumns"/>
+        ,
+        s.name AS "shopName",
+        m.merchant_name AS "merchantName"
+        FROM scm_cloud_print_terminal a
+        <include refid="cloudPrintTerminalJoins"/>
+        LEFT JOIN scm_shop s ON a.shop_id = s.id
+        LEFT JOIN scm_merchant m ON m.id = a.merchant_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="shopId != null and shopId != ''">
+                AND a.shop_id = #{shopId}
+            </if>
+            <if test="clientId != null and clientId != ''">
+                AND a.client_id = #{clientId}
+            </if>
+            <if test="machineCode != null and machineCode != ''">
+                AND a.machine_code = #{machineCode}
+            </if>
+            <if test="name != null and name != ''">
+                AND a.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

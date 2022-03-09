@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.weixin.mp.base.dao.WechatUserMsgeventDao">
+    
+	<sql id="wechatUserMsgeventColumns">
+		a.id AS "id",
+		a.msg_id AS "msgId",
+		a.open_wx_name AS "openWxName",
+		a.open_wx_id AS "openWxId",
+		a.wx_id AS "wxId",
+		a.wx_name AS "wxName",
+		a.wx_type AS "wxType",
+		a.passport_uid AS "passportUid",
+		a.open_uid AS "openUid",
+		a.nick_name AS "nickName",
+		a.album_url AS "albumUrl",
+		a.open_id AS "openId",
+		a.union_id AS "unionId",
+		a.msg_type AS "msgType",
+		a.msg_name AS "msgName",
+		a.msg_content AS "msgContent",
+		a.send_time AS "sendTime",
+		a.full_msg_pkg AS "fullMsgPkg",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="wechatUserMsgeventJoins">
+	</sql>
+    
+	<select id="get" resultType="WechatUserMsgevent">
+		SELECT 
+			<include refid="wechatUserMsgeventColumns"/>
+		FROM scm_ms_wechat_user_msgevent a
+		<include refid="wechatUserMsgeventJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="WechatUserMsgevent">
+		SELECT 
+			<include refid="wechatUserMsgeventColumns"/>
+		FROM scm_ms_wechat_user_msgevent a
+		<include refid="wechatUserMsgeventJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="msgId != null and msgId != ''">
+				AND a.msg_id = #{msgId}
+			</if>
+			<if test="openWxName != null and openWxName != ''">
+				AND a.open_wx_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{openWxName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{openWxName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{openWxName},'%')</if>
+			</if>
+			<if test="openWxId != null and openWxId != ''">
+				AND a.open_wx_id = #{openWxId}
+			</if>
+			<if test="wxId != null and wxId != ''">
+				AND a.wx_id = #{wxId}
+			</if>
+			<if test="wxName != null and wxName != ''">
+				AND a.wx_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{wxName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{wxName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{wxName},'%')</if>
+			</if>
+			<if test="wxType != null and wxType != ''">
+				AND a.wx_type = #{wxType}
+			</if>
+			<if test="passportUid != null and passportUid != ''">
+				AND a.passport_uid = #{passportUid}
+			</if>
+			<if test="openUid != null and openUid != ''">
+				AND a.open_uid = #{openUid}
+			</if>
+			<if test="nickName != null and nickName != ''">
+				AND a.nick_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{nickName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{nickName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{nickName},'%')</if>
+			</if>
+			<if test="openId != null and openId != ''">
+				AND a.open_id = #{openId}
+			</if>
+			<if test="unionId != null and unionId != ''">
+				AND a.union_id = #{unionId}
+			</if>
+			<if test="msgType != null and msgType != ''">
+				AND a.msg_type = #{msgType}
+			</if>
+			<if test="msgName != null and msgName != ''">
+				AND a.msg_name = #{msgName}
+			</if>
+			<if test="beginSendTime != null and endSendTime != null and beginSendTime != '' and endSendTime != ''">
+				AND a.send_time BETWEEN #{beginSendTime} AND #{endSendTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="WechatUserMsgevent">
+		SELECT 
+			<include refid="wechatUserMsgeventColumns"/>
+		FROM scm_ms_wechat_user_msgevent a
+		<include refid="wechatUserMsgeventJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_ms_wechat_user_msgevent(
+			id,
+			msg_id,
+			open_wx_name,
+			open_wx_id,
+			wx_id,
+			wx_name,
+			wx_type,
+			passport_uid,
+			open_uid,
+			nick_name,
+			album_url,
+			open_id,
+			union_id,
+			msg_type,
+			msg_name,
+			msg_content,
+			send_time,
+			full_msg_pkg,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{msgId},
+			#{openWxName},
+			#{openWxId},
+			#{wxId},
+			#{wxName},
+			#{wxType},
+			#{passportUid},
+			#{openUid},
+			#{nickName},
+			#{albumUrl},
+			#{openId},
+			#{unionId},
+			#{msgType},
+			#{msgName},
+			#{msgContent},
+			#{sendTime},
+			#{fullMsgPkg},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_ms_wechat_user_msgevent SET
+			msg_id = #{msgId},
+			open_wx_name = #{openWxName},
+			open_wx_id = #{openWxId},
+			wx_id = #{wxId},
+			wx_name = #{wxName},
+			wx_type = #{wxType},
+			passport_uid = #{passportUid},
+			open_uid = #{openUid},
+			nick_name = #{nickName},
+			album_url = #{albumUrl},
+			open_id = #{openId},
+			union_id = #{unionId},
+			msg_type = #{msgType},
+			msg_name = #{msgName},
+			msg_content = #{msgContent},
+			send_time = #{sendTime},
+			full_msg_pkg = #{fullMsgPkg},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_ms_wechat_user_msgevent SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

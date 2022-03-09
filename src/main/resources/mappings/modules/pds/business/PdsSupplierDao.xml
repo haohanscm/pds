@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.business.PdsSupplierDao">
+    
+	<sql id="pdsSupplierColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.passport_id AS "passportId",
+		a.merchant_id AS "merchantId",
+		a.merchant_name AS "merchantName",
+		a.supplier_name AS "supplierName",
+		a.short_name AS "shortName",
+		a.contact AS "contact",
+		a.telephone AS "telephone",
+		a.wechat_id AS "wechatId",
+		a.operator AS "operator",
+		a.pay_period AS "payPeriod",
+		a.pay_day AS "payDay",
+		a.address AS "address",
+		a.tags AS "tags",
+		a.status AS "status",
+		a.supplier_type AS "supplierType",
+		a.need_push AS "needPush",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="pdsSupplierJoins">
+	</sql>
+    
+	<select id="get" resultType="PdsSupplier">
+		SELECT 
+			<include refid="pdsSupplierColumns"/>
+		FROM scm_sms_supplier a
+		<include refid="pdsSupplierJoins"/>
+		WHERE
+			a.del_flag = '0'
+			AND a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PdsSupplier">
+		SELECT 
+			<include refid="pdsSupplierColumns"/>
+		FROM scm_sms_supplier a
+		<include refid="pdsSupplierJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="passportId != null and passportId != ''">
+				AND a.passport_id = #{passportId}
+			</if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND a.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+			<if test="telephone != null and telephone != ''">
+                AND a.telephone = #{telephone}
+			</if>
+			<if test="supplierName != null and supplierName != ''">
+				AND a.supplier_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{supplierName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{supplierName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{supplierName},'%')</if>
+			</if>
+			<if test="shortName != null and shortName != ''">
+				AND a.short_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{shortName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{shortName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{shortName},'%')</if>
+			</if>
+			<if test="supplierType != null and supplierType != ''">
+				AND a.supplier_type = #{supplierType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+            <if test="needPush != null and needPush != ''">
+                AND a.need_push = #{needPush}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort+0, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PdsSupplier">
+		SELECT 
+			<include refid="pdsSupplierColumns"/>
+		FROM scm_sms_supplier a
+		<include refid="pdsSupplierJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort+0, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_sms_supplier(
+			tenant_id,
+			id,
+			pm_id,
+			passport_id,
+			merchant_id,
+			merchant_name,
+			supplier_name,
+			short_name,
+			contact,
+			telephone,
+			wechat_id,
+			operator,
+			pay_period,
+			pay_day,
+			address,
+			tags,
+			status,
+			supplier_type,
+			need_push,
+			sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{passportId},
+			#{merchantId},
+			#{merchantName},
+			#{supplierName},
+			#{shortName},
+			#{contact},
+			#{telephone},
+			#{wechatId},
+			#{operator},
+			#{payPeriod},
+			#{payDay},
+			#{address},
+			#{tags},
+			#{status},
+			#{supplierType},
+			#{needPush},
+			#{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_sms_supplier SET
+			pm_id = #{pmId},
+			passport_id = #{passportId},
+			merchant_id = #{merchantId},
+			merchant_name = #{merchantName},
+			supplier_name = #{supplierName},
+			short_name = #{shortName},
+			contact = #{contact},
+			telephone = #{telephone},
+			wechat_id = #{wechatId},
+			operator = #{operator},
+			pay_period = #{payPeriod},
+			pay_day = #{payDay},
+			address = #{address},
+			tags = #{tags},
+			status = #{status},
+			supplier_type = #{supplierType},
+			need_push = #{needPush},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_sms_supplier SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findJoinList" resultType="PdsSupplier">
+        SELECT
+        <include refid="pdsSupplierColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_sms_supplier a
+        <include refid="pdsSupplierJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+			<if test="supplierType != null and supplierType != ''">
+				AND a.supplier_type = #{supplierType}
+			</if>
+            <if test="passportId != null and passportId != ''">
+                AND a.passport_id = #{passportId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND a.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+            <if test="telephone != null and telephone != ''">
+                AND a.telephone = #{telephone}
+            </if>
+            <if test="supplierName != null and supplierName != ''">
+                AND a.supplier_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{supplierName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{supplierName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{supplierName},'%')</if>
+            </if>
+            <if test="shortName != null and shortName != ''">
+                AND a.short_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{shortName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{shortName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{shortName},'%')</if>
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="bindStatus != null and bindStatus != ''">
+                AND if( #{bindStatus}='1',LENGTH(a.passport_id)>8 , (a.passport_id ='' OR a.passport_id is NULL))
+            </if>
+            <if test="needPush != null and needPush != ''">
+                AND a.need_push = #{needPush}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.sort+0, a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findMerchantList" resultType="PdsSupplier">
+        SELECT
+        DISTINCT
+        a.merchant_id AS "merchantId",
+        a.merchant_name AS "merchantName"
+        FROM scm_sms_supplier a
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.merchant_name DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询供应商的商品(sku)报价
+         用于查询提供该商品的供应商及供应商报价(supplyPrice);
+         供应商作为平台商家时无采购商采购价,则价格为市场价; -->
+    <select id="findListWithSupplyPrice" resultType="PdsSupplier">
+        SELECT
+        <include refid="pdsSupplierColumns"/>
+        ,
+        IFNULL( gp.price, gm.model_price ) AS "supplyPrice"
+        FROM scm_sms_supplier a
+        INNER JOIN scm_sms_supplier_goods sg
+            ON sg.supplier_id = a.id
+            AND sg.del_flag = #{DEL_FLAG_NORMAL}
+            AND sg.pm_id = a.pm_id
+            AND sg.goods_model_id = #{goodsModelId}
+            AND sg.status = #{status}
+        LEFT JOIN scm_cms_goods_model gm ON sg.supplier_model_id = gm.id AND gm.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_cms_goods g ON gm.goods_id = g.id AND g.del_flag = #{DEL_FLAG_NORMAL}
+        LEFT JOIN scm_platform_goods_price gp
+            ON gp.model_id = sg.supplier_model_id
+            AND gp.pm_id = sg.supplier_merchant_id
+            AND gp.merchant_id = sg.pm_id
+            AND gp.del_flag = #{DEL_FLAG_NORMAL}
+            AND gp.status = #{status}
+            AND ( CURDATE( ) BETWEEN gp.start_date AND gp.end_date )
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.pm_id = #{pmId}
+            AND a.status = #{status}
+            AND g.is_marketable = #{status}
+        </where>
+    </select>
+	
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.common.PhotoGalleryDao">
+    
+	<sql id="photoGalleryColumns">
+		a.id AS "id",
+		a.pic_name AS "picName",
+		a.pic_url AS "picUrl",
+		a.pic_type AS "picType",
+		a.pic_size AS "picSize",
+		a.pic_from AS "picFrom",
+		a.oss_type AS "ossType",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="photoGalleryJoins">
+	</sql>
+    
+	<select id="get" resultType="PhotoGallery">
+		SELECT 
+			<include refid="photoGalleryColumns"/>
+		FROM scm_photo_gallery a
+		<include refid="photoGalleryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PhotoGallery">
+		SELECT 
+			<include refid="photoGalleryColumns"/>
+		FROM scm_photo_gallery a
+		<include refid="photoGalleryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="picName != null and picName != ''">
+				AND a.pic_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{picName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{picName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{picName},'%')</if>
+			</if>
+			<if test="ossType != null and ossType != ''">
+				AND a.oss_type = #{ossType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PhotoGallery">
+		SELECT 
+			<include refid="photoGalleryColumns"/>
+		FROM scm_photo_gallery a
+		<include refid="photoGalleryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_photo_gallery(
+			id,
+			pic_name,
+			pic_url,
+			pic_type,
+			pic_size,
+			pic_from,
+			oss_type,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{picName},
+			#{picUrl},
+			#{picType},
+			#{picSize},
+			#{picFrom},
+			#{ossType},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_photo_gallery SET
+			pic_name = #{picName},
+			pic_url = #{picUrl},
+			pic_type = #{picType},
+			pic_size = #{picSize},
+			pic_from = #{picFrom},
+			oss_type = #{ossType},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_photo_gallery SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

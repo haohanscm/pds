@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.delivery.DeliveryFlowDao">
+    
+	<sql id="deliveryFlowColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.delivery_id AS "deliveryId",
+		a.delivery_date AS "deliveryDate",
+		a.truck_no AS "truckNo",
+		a.driver AS "driver",
+		a.line_no AS "lineNo",
+		a.onday_trains AS "ondayTrains",
+		a.load_truck_time AS "loadTruckTime",
+		a.depart_truck_time AS "departTruckTime",
+		a.finish_time AS "finishTime",
+		a.goods_num AS "goodsNum",
+		a.goods_weight AS "goodsWeight",
+		a.goods_volume AS "goodsVolume",
+		a.status AS "status",
+		a.delivery_seq AS "deliverySeq",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="deliveryFlowJoins">
+	</sql>
+    
+	<select id="get" resultType="DeliveryFlow">
+		SELECT 
+			<include refid="deliveryFlowColumns"/>
+		FROM scm_lms_delivery_flow a
+		<include refid="deliveryFlowJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DeliveryFlow">
+		SELECT 
+			<include refid="deliveryFlowColumns"/>
+		FROM scm_lms_delivery_flow a
+		<include refid="deliveryFlowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="deliveryId != null and deliveryId != ''">
+				AND a.delivery_id = #{deliveryId}
+			</if>
+			<if test="beginDeliveryDate != null and endDeliveryDate != null and beginDeliveryDate != '' and endDeliveryDate != ''">
+				AND a.delivery_date BETWEEN #{beginDeliveryDate} AND #{endDeliveryDate}
+			</if>
+			<if test="deliveryDate != null and deliveryDate != ''">
+				AND a.delivery_date = DATE (#{deliveryDate})
+			</if>
+			<if test="truckNo != null and truckNo != ''">
+				AND a.truck_no = #{truckNo}
+			</if>
+			<if test="lineNo != null and lineNo != ''">
+				AND a.line_no = #{lineNo}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="deliverySeq != null and deliverySeq != ''">
+				AND a.delivery_seq = #{deliverySeq}
+			</if>
+			<if test="driver != null and driver != ''">
+				AND a.driver = #{driver}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.delivery_id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DeliveryFlow">
+		SELECT 
+			<include refid="deliveryFlowColumns"/>
+		FROM scm_lms_delivery_flow a
+		<include refid="deliveryFlowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPermissionTrucks" resultType="com.haohan.platform.service.sys.modules.pds.entity.delivery.TruckManage">
+		SELECT
+		DISTINCT a.truck_no AS truckNo,
+		t.truck_name AS truckName,
+		t.principal AS principal,
+		t.driver AS driver,
+		t.telephone AS telephone
+		FROM scm_lms_delivery_flow a
+		LEFT JOIN scm_lms_truck_manage t on t.truck_no = a.truck_no AND t.del_flag = '0'
+		<where>
+			a.del_flag = '0'
+			AND a.delivery_date = #{deliveryDate}
+			AND a.delivery_seq = #{deliverySeq}
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_lms_delivery_flow(
+			tenant_id,
+			id,
+			pm_id,
+			delivery_id,
+			delivery_date,
+			truck_no,
+			driver,
+			line_no,
+			onday_trains,
+			load_truck_time,
+			depart_truck_time,
+			finish_time,
+			goods_num,
+			goods_weight,
+			goods_volume,
+			status,
+			delivery_seq,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{deliveryId},
+			#{deliveryDate},
+			#{truckNo},
+			#{driver},
+			#{lineNo},
+			#{ondayTrains},
+			#{loadTruckTime},
+			#{departTruckTime},
+			#{finishTime},
+			#{goodsNum},
+			#{goodsWeight},
+			#{goodsVolume},
+			#{status},
+			#{deliverySeq},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_lms_delivery_flow SET
+			pm_id = #{pmId},
+			delivery_id = #{deliveryId},
+			delivery_date = #{deliveryDate},
+			truck_no = #{truckNo},
+			driver = #{driver},
+			line_no = #{lineNo},
+			onday_trains = #{ondayTrains},
+			load_truck_time = #{loadTruckTime},
+			depart_truck_time = #{departTruckTime},
+			finish_time = #{finishTime},
+			goods_num = #{goodsNum},
+			goods_weight = #{goodsWeight},
+			goods_volume = #{goodsVolume},
+			status = #{status},
+			delivery_seq = #{deliverySeq},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_lms_delivery_flow SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByDateSeqPmId">
+		UPDATE scm_lms_delivery_flow SET
+		del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			del_flag = #{DEL_FLAG_NORMAL}
+			AND delivery_date = #{deliveryDate}
+			AND pm_id = #{pmId}
+			AND delivery_seq = #{deliverySeq}
+		</where>
+	</update>
+
+    <select id="findJoinList" resultType="DeliveryFlow">
+        SELECT
+        <include refid="deliveryFlowColumns"/>
+        ,
+        m.merchant_name AS "pmName"
+        FROM scm_lms_delivery_flow a
+        <include refid="deliveryFlowJoins"/>
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="deliveryId != null and deliveryId != ''">
+                AND a.delivery_id = #{deliveryId}
+            </if>
+            <if test="beginDeliveryDate != null and endDeliveryDate != null and beginDeliveryDate != '' and endDeliveryDate != ''">
+                AND a.delivery_date BETWEEN #{beginDeliveryDate} AND #{endDeliveryDate}
+            </if>
+            <if test="deliveryDate != null and deliveryDate != ''">
+                AND a.delivery_date = DATE (#{deliveryDate})
+            </if>
+            <if test="truckNo != null and truckNo != ''">
+                AND a.truck_no = #{truckNo}
+            </if>
+            <if test="lineNo != null and lineNo != ''">
+                AND a.line_no = #{lineNo}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="deliverySeq != null and deliverySeq != ''">
+                AND a.delivery_seq = #{deliverySeq}
+            </if>
+            <if test="driver != null and driver != ''">
+                AND a.driver = #{driver}
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.delivery_id DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+</mapper>

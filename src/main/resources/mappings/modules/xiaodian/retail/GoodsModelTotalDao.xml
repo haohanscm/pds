@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.retail.GoodsModelTotalDao">
+    
+	<sql id="goodsModelTotalColumns">
+		a.id AS "id",
+		a.goods_id AS "goodsId",
+		a.model_name AS "modelName",
+		a.model_id AS "modelId",
+		a.sub_model_id AS "subModelId",
+		a.sub_model_name AS "subModelName",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsModelTotalJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsModelTotal">
+		SELECT 
+			<include refid="goodsModelTotalColumns"/>
+		FROM scm_cms_goods_model_total a
+		<include refid="goodsModelTotalJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsModelTotal">
+		SELECT 
+			<include refid="goodsModelTotalColumns"/>
+		FROM scm_cms_goods_model_total a
+		<include refid="goodsModelTotalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="modelName != null and modelName != ''">
+				AND a.model_name = #{modelName}
+			</if>
+			<if test="modelId != null and modelId != ''">
+				AND a.model_id = #{modelId}
+			</if>
+			<if test="subModelId != null and subModelId != ''">
+				AND a.sub_model_id = #{subModelId}
+			</if>
+			<if test="subModelName != null and subModelName != ''">
+				AND a.sub_model_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{subModelName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{subModelName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{subModelName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsModelTotal">
+		SELECT 
+			<include refid="goodsModelTotalColumns"/>
+		FROM scm_cms_goods_model_total a
+		<include refid="goodsModelTotalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_goods_model_total(
+			tenant_id,
+			id,
+			goods_id,
+			model_name,
+			model_id,
+			sub_model_id,
+			sub_model_name,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{goodsId},
+			#{modelName},
+			#{modelId},
+			#{subModelId},
+			#{subModelName},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_goods_model_total SET
+			goods_id = #{goodsId},
+			model_name = #{modelName},
+			model_id = #{modelId},
+			sub_model_id = #{subModelId},
+			sub_model_name = #{subModelName},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_goods_model_total SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByGoodsId">
+		UPDATE scm_cms_goods_model_total SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE goods_id = #{goodsId}
+	</update>
+
+	
+</mapper>

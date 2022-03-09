@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.procure.ProcurementDao">
+    <resultMap id="procurementDetailResultMap" type="com.haohan.platform.service.sys.modules.pss.entity.procure.Procurement">
+		<result column="id" property="id"/>
+		<result column="merchantId" property="merchantId"/>
+		<result column="procureNum" property="procureNum"/>
+		<result column="supplierId" property="supplierId"/>
+		<result column="supplierName" property="supplierName"/>
+		<result column="stockStatus" property="stockStatus"/>
+		<result column="num" property="num"/>
+		<result column="totalAmount" property="totalAmount"/>
+		<result column="payAmount" property="payAmount"/>
+		<result column="sumAmount" property="sumAmount"/>
+		<result column="otherAmount" property="otherAmount"/>
+		<result column="payType" property="payType"/>
+		<result column="bizNote" property="bizNote"/>
+		<result column="operator" property="operator"/>
+		<result column="opTime" property="opTime"/>
+		<result column="warehouseId" property="warehouseId"/>
+		<result column="warehouseName" property="warehouseName"/>
+		<collection property="detailList" ofType="com.haohan.platform.service.sys.modules.pss.entity.procure.ProcurementDetail">
+			<result column="detail_id" property="id"/>
+			<result column="detail_procureNum" property="procureNum"/>
+			<result column="detail_goodsName" property="goodsName"/>
+			<result column="detail_goodsModelId" property="goodsModelId"/>
+			<result column="detail_price" property="price"/>
+			<result column="detail_goodsNum" property="goodsNum"/>
+			<result column="detail_modelName" property="modelName"/>
+			<result column="detail_sumAmount" property="sumAmount"/>
+			<result column="detail_unit" property="unit"/>
+			<result column="detail_categrory" property="categrory"/>
+			<result column="detail_stockStatus" property="stockStatus"/>
+		</collection>
+	</resultMap>
+
+	<sql id="procurementColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.procure_num AS "procureNum",
+		a.supplier_id AS "supplierId",
+		a.stock_status AS "stockStatus",
+		a.num AS "num",
+		a.total_amount AS "totalAmount",
+		a.pay_amount AS "payAmount",
+		a.sum_amount AS "sumAmount",
+		a.other_amount AS "otherAmount",
+		a.pay_type AS "payType",
+		a.biz_note AS "bizNote",
+		a.operator AS "operator",
+		a.op_time AS "opTime",
+		a.warehouse_id AS "warehouseId",
+		a.procure_date AS "procureDate",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.supplier_name AS "supplierName",
+		w1.name AS "warehouseName"
+	</sql>
+
+	<sql id="procurementDetailColumns">
+		,d.id AS "detail_id",
+		d.procure_num AS "detail_procureNum",
+		d.goods_name AS "detail_goodsName",
+		d.goods_model_id AS "detail_goodsModelId",
+		d.price AS "detail_price",
+		d.goods_num AS "detail_goodsNum",
+		d.model_name AS "detail_modelName",
+		d.sum_amount AS "detail_sumAmount",
+		d.unit AS "detail_unit",
+		d.categrory AS "detail_categrory",
+		d.stock_status AS "detail_stockStatus"
+	</sql>
+	
+	<sql id="procurementJoins">
+		LEFT JOIN scm_pss_warehouse w1 ON w1.id = a.warehouse_id AND w1.del_flag = '0'
+		LEFT JOIN scm_sms_supplier s ON s.id = a.supplier_id AND s.del_flag = '0'
+	</sql>
+	<sql id="procurementDetailJoin">
+		LEFT JOIN scm_pss_procurement_detail d ON d.procure_num = a.procure_num AND d.del_flag = '0'
+	</sql>
+
+	<select id="get" resultType="Procurement">
+		SELECT 
+			<include refid="procurementColumns"/>
+		FROM scm_pss_procurement a
+		<include refid="procurementJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Procurement">
+		SELECT 
+			<include refid="procurementColumns"/>
+		FROM scm_pss_procurement a
+		<include refid="procurementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="procureNum != null and procureNum != ''">
+				AND a.procure_num LIKE 
+					<if test="dbName == 'oracle'">'%'||#{procureNum}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{procureNum}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{procureNum},'%')</if>
+			</if>
+			<if test="stockStatus != null and stockStatus != ''">
+				AND a.stock_status = #{stockStatus}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+			<if test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+				AND a.op_time BETWEEN #{beginTime} AND #{endTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findJoinList" resultMap="procurementDetailResultMap">
+		SELECT
+		<include refid="procurementColumns"/>
+		<include refid="procurementDetailColumns"/>
+		FROM scm_pss_procurement a
+		<include refid="procurementJoins"/>
+		<include refid="procurementDetailJoin"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="procureNum != null and procureNum != ''">
+				AND a.procure_num = #{procureNum}
+			</if>
+			<if test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+				AND a.op_time BETWEEN #{beginTime} AND #{endTime}
+			</if>
+			<if test="stockStatus != null and stockStatus != ''">
+				AND a.stock_status = #{stockStatus}
+			</if>
+			<if test="supplierId != null and supplierId != ''">
+				AND a.supplier_id = #{supplierId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Procurement">
+		SELECT 
+			<include refid="procurementColumns"/>
+		FROM scm_pss_procurement a
+		<include refid="procurementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_procurement(
+			id,
+			merchant_id,
+			procure_num,
+			supplier_id,
+			stock_status,
+			num,
+			total_amount,
+			pay_amount,
+			sum_amount,
+			other_amount,
+			pay_type,
+			biz_note,
+			operator,
+			op_time,
+			warehouse_id,
+			procure_date,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{procureNum},
+			#{supplierId},
+			#{stockStatus},
+			#{num},
+			#{totalAmount},
+			#{payAmount},
+			#{sumAmount},
+			#{otherAmount},
+			#{payType},
+			#{bizNote},
+			#{operator},
+			#{opTime},
+			#{warehouseId},
+			#{procureDate},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_procurement SET
+			merchant_id = #{merchantId},
+			procure_num = #{procureNum},
+			supplier_id = #{supplierId},
+			stock_status = #{stockStatus},
+			num = #{num},
+			total_amount = #{totalAmount},
+			pay_amount = #{payAmount},
+			sum_amount = #{sumAmount},
+			other_amount = #{otherAmount},
+			pay_type = #{payType},
+			biz_note = #{bizNote},
+			operator = #{operator},
+			op_time = #{opTime},
+			warehouse_id = #{warehouseId},
+			procure_date = #{procureDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_procurement SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

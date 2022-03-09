@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pds.dao.cost.BuyerPaymentDao">
+    
+	<sql id="buyerPaymentColumns">
+		a.id AS "id",
+		a.pm_id AS "pmId",
+		a.buy_id AS "buyId",
+		a.buyer_id AS "buyerId",
+		a.buy_date AS "buyDate",
+		a.goods_num AS "goodsNum",
+		a.buyer_payment AS "buyerPayment",
+		a.after_sale_payment AS "afterSalePayment",
+		a.status AS "status",
+		a.ship_fee AS "shipFee",
+		a.service_id AS "serviceId",
+		a.buyer_payment_id AS "buyerPaymentId",
+		a.bill_type AS "billType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="buyerPaymentJoins">
+
+	</sql>
+    
+	<select id="get" resultType="BuyerPayment">
+		SELECT 
+			<include refid="buyerPaymentColumns"/>
+		FROM scm_buyer_payment a
+		<include refid="buyerPaymentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="BuyerPayment">
+		SELECT 
+			<include refid="buyerPaymentColumns"/>
+		FROM scm_buyer_payment a
+		<include refid="buyerPaymentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pmId != null and pmId != ''">
+				AND a.pm_id = #{pmId}
+			</if>
+			<if test="buyId != null and buyId != ''">
+				AND a.buy_id = #{buyId}
+			</if>
+			<if test="buyerId != null and buyerId != ''">
+				AND a.buyer_id = #{buyerId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="beginBuyDate != null and endBuyDate != null and beginBuyDate != '' and endBuyDate != ''">
+				AND DATE(a.buy_date) BETWEEN DATE(#{beginBuyDate}) AND DATE(#{endBuyDate})
+			</if>
+            <if test="billType != null and billType != ''">
+                AND a.bill_type = #{billType}
+            </if>
+            <if test="buyerPaymentId != null and buyerPaymentId != ''">
+                AND a.buyer_payment_id = #{buyerPaymentId}
+            </if>
+            <if test="serviceId != null and serviceId != ''">
+                AND FIND_IN_SET(#{serviceId}, a.service_id)
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.buyer_payment_id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="BuyerPayment">
+		SELECT 
+			<include refid="buyerPaymentColumns"/>
+		FROM scm_buyer_payment a
+		<include refid="buyerPaymentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_buyer_payment(
+			tenant_id,
+			id,
+			pm_id,
+			buy_id,
+			buyer_id,
+			buy_date,
+			goods_num,
+			buyer_payment,
+			after_sale_payment,
+			status,
+			ship_fee,
+			service_id,
+			buyer_payment_id,
+			bill_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{tenantId},
+			#{id},
+			#{pmId},
+			#{buyId},
+			#{buyerId},
+			#{buyDate},
+			#{goodsNum},
+			#{buyerPayment},
+			#{afterSalePayment},
+			#{status},
+			#{shipFee},
+			#{serviceId},
+			#{buyerPaymentId},
+			#{billType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_buyer_payment SET
+			pm_id = #{pmId},
+		    buy_id = #{buyId},
+			buyer_id = #{buyerId},
+			buy_date = #{buyDate},
+			goods_num = #{goodsNum},
+			buyer_payment = #{buyerPayment},
+			after_sale_payment = #{afterSalePayment},
+			status = #{status},
+			ship_fee = #{shipFee},
+			service_id = #{serviceId},
+			buyer_payment_id = #{buyerPaymentId},
+			bill_type = #{billType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_buyer_payment SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="countPayment" resultType="BuyerPayment">
+        SELECT
+        IF( sum( a.status = '0' ) > 0, '0', '1' ) AS "status",
+        IFNULL(sum(a.buyer_payment), 0) AS "buyerPayment",
+        IFNULL(sum(a.after_sale_payment), 0) AS "afterSalePayment"
+        FROM scm_buyer_payment a
+        <if test="merchantId != null and merchantId != ''">
+            LEFT JOIN scm_buyer b ON a.buyer_id = b.id
+        </if>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="buyerId != null and buyerId != ''">
+                AND a.buyer_id = #{buyerId}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND b.merchant_id = #{merchantId}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="beginBuyDate != null and endBuyDate != null and beginBuyDate != '' and endBuyDate != ''">
+                AND DATE(a.buy_date) BETWEEN DATE(#{beginBuyDate}) AND DATE(#{endBuyDate})
+            </if>
+        </where>
+    </select>
+
+    <update id="updateStatusBatch">
+		UPDATE scm_buyer_payment SET
+			status = #{finalStatus},
+			update_date = NOW()
+		WHERE del_flag = #{DEL_FLAG_NORMAL}
+		AND status = #{status}
+        AND pm_id = #{pmId}
+		AND FIND_IN_SET(buyer_payment_id, #{buyerPaymentId})
+	</update>
+
+    <!-- 带buyerName/merchantId/merchantName -->
+    <select id="findJoinList" resultType="BuyerPayment">
+        SELECT
+        <include refid="buyerPaymentColumns"/>
+        ,
+        b.buyer_name AS "buyerName",
+        b.merchant_id AS "merchantId",
+        b.merchant_name AS "merchantName",
+        m.merchant_name AS "pmName"
+        FROM scm_buyer_payment a
+        LEFT JOIN scm_buyer b ON a.buyer_id = b.id
+        LEFT JOIN scm_merchant m ON m.id = a.pm_id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="pmId != null and pmId != ''">
+                AND a.pm_id = #{pmId}
+            </if>
+            <if test="buyId != null and buyId != ''">
+                AND a.buy_id = #{buyId}
+            </if>
+            <if test="buyerId != null and buyerId != ''">
+                AND a.buyer_id = #{buyerId}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="beginBuyDate != null and endBuyDate != null and beginBuyDate != '' and endBuyDate != ''">
+                AND DATE(a.buy_date) BETWEEN DATE(#{beginBuyDate}) AND DATE(#{endBuyDate})
+            </if>
+            <if test="billType != null and billType != ''">
+                AND a.bill_type = #{billType}
+            </if>
+            <if test="buyerPaymentId != null and buyerPaymentId != ''">
+                AND a.buyer_payment_id = #{buyerPaymentId}
+            </if>
+            <if test="serviceId != null and serviceId != ''">
+                AND FIND_IN_SET(#{serviceId}, a.service_id)
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND b.merchant_id = #{merchantId}
+            </if>
+            <if test="merchantName != null and merchantName != ''">
+                AND b.merchant_name LIKE
+                <if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.buyer_payment_id DESC, a.buy_id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <resultMap id="rangeAmountResultMap" type="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsRangeAmountResultResp">
+        <id property="merchantId" column="merchantId" />
+        <result property="merchantName" column="merchantName"/>
+        <result property="totalBuyAmount" column="totalBuyAmount"/>
+        <result property="totalAfterSaleAmount" column="totalAfterSaleAmount"/>
+        <result property="totalPayAmount" column="totalPayAmount"/>
+        <collection property="dateAmountList" ofType="com.haohan.platform.service.sys.modules.pds.api.entity.resp.admin.PdsRangeAmountBaseResp">
+            <id property="date" column="rowdate"/>
+            <result property="buyAmount" column="buyAmount"/>
+            <result property="afterSaleAmount" column="afterSaleAmount"/>
+            <result property="payAmount" column="payAmount"/>
+            <result property="status" column="status"/>
+        </collection>
+    </resultMap>
+
+    <select id="rangeAmount" resultMap="rangeAmountResultMap">
+        SELECT
+        d.rowdate AS "rowdate",
+        b1.merchant_id AS "merchantId",
+        b1.merchant_name AS "merchantName",
+        IFNULL(x.buyAmount, 0) AS "buyAmount",
+        IFNULL(x.afterSaleAmount,0) AS "afterSaleAmount",
+        IFNULL( x.buyAmount + x.afterSaleAmount,0 ) AS "payAmount",
+        IFNULL(x.status , 0) AS "status"
+        FROM
+        (
+            SELECT
+            @rowdate := date_add( @rowdate, INTERVAL 1 DAY ) AS rowdate
+            FROM
+            ( SELECT @rowdate := date_add( DATE(#{beginBuyDate}), INTERVAL - 1 DAY ) ) r,
+            scm_buyer_payment
+            WHERE
+            @rowdate &lt; DATE(#{endBuyDate})
+        ) d
+        JOIN (
+            SELECT
+                DISTINCT pb.merchant_id,
+                pb.merchant_name
+            FROM scm_buyer pb
+            <where>
+                pb.del_flag = #{DEL_FLAG_NORMAL}
+                <if test="pmId != null and pmId != ''">
+                    AND pb.pm_id = #{pmId}
+                </if>
+                <if test="merchantId != null and merchantId != ''">
+                    AND pb.merchant_id = #{merchantId}
+                </if>
+            </where>
+        ) b1
+        LEFT JOIN (
+            SELECT
+                b.merchant_id,
+                SUM( a.buyer_payment ) AS "buyAmount",
+                SUM( a.after_sale_payment ) AS "afterSaleAmount",
+                IF( sum( a.status = '0' ) > 0, '0', '1' ) AS "status",
+                DATE( a.buy_date ) AS "rowdate"
+            FROM scm_buyer_payment a
+            LEFT JOIN scm_buyer b ON a.buyer_id = b.id
+            <where>
+                a.del_flag = #{DEL_FLAG_NORMAL}
+                <if test="pmId != null and pmId != ''">
+                    AND a.pm_id = #{pmId}
+                </if>
+                <if test="merchantId != null and merchantId != ''">
+                    AND b.merchant_id = #{merchantId}
+                </if>
+                AND (DATE( a.buy_date ) BETWEEN DATE(#{beginBuyDate}) AND DATE(#{endBuyDate}))
+            </where>
+            GROUP BY
+            b.merchant_id,rowdate
+        ) x ON d.rowdate = x.rowdate AND b1.merchant_id = x.merchant_id
+        ORDER BY rowdate
+    </select>
+
+</mapper>

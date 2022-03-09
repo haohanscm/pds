@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.customer.CustomerProjectManageDao">
+    
+	<sql id="customerProjectManageColumns">
+		a.id AS "id",
+		a.quarter AS "quarter",
+		a.sign_time AS "signTime",
+		a.merchant_name AS "merchantName",
+		a.area AS "area.id",
+		a.service_product AS "serviceProduct",
+		a.service_type AS "serviceType",
+		a.service_list AS "serviceList",
+		a.pay_type AS "payType",
+		a.pay_time AS "payTime",
+		a.pay_amount AS "payAmount",
+		a.biz_user AS "bizUser.id",
+		a.op_user AS "opUser.id",
+		a.tech_user AS "techUser.id",
+		a.finance_user AS "financeUser.id",
+		a.project_info AS "projectInfo",
+		a.project_desc AS "projectDesc",
+		a.project_step AS "projectStep",
+		a.online_status AS "onlineStatus",
+		a.online_time AS "onlineTime",
+		a.merchant_database AS "merchantDatabase",
+		a.merchant AS "merchant",
+		a.merchant_app AS "merchantApp",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a5.name AS "area.name",
+		u12.name AS "bizUser.name",
+		u13.name AS "opUser.name",
+		u14.name AS "techUser.name",
+		u15.name AS "financeUser.name"
+	</sql>
+	
+	<sql id="customerProjectManageJoins">
+		LEFT JOIN sys_area a5 ON a5.id = a.area
+		LEFT JOIN sys_user u12 ON u12.id = a.biz_user
+		LEFT JOIN sys_user u13 ON u13.id = a.op_user
+		LEFT JOIN sys_user u14 ON u14.id = a.tech_user
+		LEFT JOIN sys_user u15 ON u15.id = a.finance_user
+	</sql>
+    
+	<select id="get" resultType="CustomerProjectManage">
+		SELECT 
+			<include refid="customerProjectManageColumns"/>
+		FROM scm_customer_project_manage a
+		<include refid="customerProjectManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CustomerProjectManage">
+		SELECT 
+			<include refid="customerProjectManageColumns"/>
+		FROM scm_customer_project_manage a
+		<include refid="customerProjectManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="beginSignTime != null and endSignTime != null and beginSignTime != '' and endSignTime != ''">
+				AND a.sign_time BETWEEN #{beginSignTime} AND #{endSignTime}
+			</if>
+			<if test="merchantName != null and merchantName != ''">
+				AND a.merchant_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{merchantName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{merchantName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{merchantName},'%')</if>
+			</if>
+			<if test="area != null and area.id != null and area.id != ''">
+				AND a.area = #{area.id}
+			</if>
+			<if test="serviceProduct != null and serviceProduct != ''">
+				AND a.service_product = #{serviceProduct}
+			</if>
+			<if test="serviceType != null and serviceType != ''">
+				AND a.service_type = #{serviceType}
+			</if>
+			<if test="payType != null and payType != ''">
+				AND a.pay_type = #{payType}
+			</if>
+			<if test="bizUser != null and bizUser.id != null and bizUser.id != ''">
+				AND a.biz_user = #{bizUser.id}
+			</if>
+			<if test="opUser != null and opUser.id != null and opUser.id != ''">
+				AND a.op_user = #{opUser.id}
+			</if>
+			<if test="projectStep != null and projectStep != ''">
+				AND a.project_step = #{projectStep}
+			</if>
+			<if test="onlineStatus != null and onlineStatus != ''">
+				AND a.online_status = #{onlineStatus}
+			</if>
+			<if test="beginOnlineTime != null and endOnlineTime != null and beginOnlineTime != '' and endOnlineTime != ''">
+				AND a.online_time BETWEEN #{beginOnlineTime} AND #{endOnlineTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CustomerProjectManage">
+		SELECT 
+			<include refid="customerProjectManageColumns"/>
+		FROM scm_customer_project_manage a
+		<include refid="customerProjectManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_customer_project_manage(
+			id,
+			quarter,
+			sign_time,
+			merchant_name,
+			area,
+			service_product,
+			service_type,
+			service_list,
+			pay_type,
+			pay_time,
+			pay_amount,
+			biz_user,
+			op_user,
+			tech_user,
+			finance_user,
+			project_info,
+			project_desc,
+			project_step,
+			online_status,
+			online_time,
+			merchant_database,
+			merchant,
+			merchant_app,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{quarter},
+			#{signTime},
+			#{merchantName},
+			#{area.id},
+			#{serviceProduct},
+			#{serviceType},
+			#{serviceList},
+			#{payType},
+			#{payTime},
+			#{payAmount},
+			#{bizUser.id},
+			#{opUser.id},
+			#{techUser.id},
+			#{financeUser.id},
+			#{projectInfo},
+			#{projectDesc},
+			#{projectStep},
+			#{onlineStatus},
+			#{onlineTime},
+			#{merchantDatabase},
+			#{merchant},
+			#{merchantApp},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_customer_project_manage SET
+			quarter = #{quarter},
+			sign_time = #{signTime},
+			merchant_name = #{merchantName},
+			area = #{area.id},
+			service_product = #{serviceProduct},
+			service_type = #{serviceType},
+			service_list = #{serviceList},
+			pay_type = #{payType},
+			pay_time = #{payTime},
+			pay_amount = #{payAmount},
+			biz_user = #{bizUser.id},
+			op_user = #{opUser.id},
+			tech_user = #{techUser.id},
+			finance_user = #{financeUser.id},
+			project_info = #{projectInfo},
+			project_desc = #{projectDesc},
+			project_step = #{projectStep},
+			online_status = #{onlineStatus},
+			online_time = #{onlineTime},
+			merchant_database = #{merchantDatabase},
+			merchant = #{merchant},
+			merchant_app = #{merchantApp},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_customer_project_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.pss.dao.info.WarehouseDao">
+    
+	<sql id="warehouseColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.warehouse_num AS "warehouseNum",
+		a.name AS "name",
+		a.manager AS "manager",
+		a.contact AS "contact",
+		a.address AS "address",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="warehouseJoins">
+	</sql>
+    
+	<select id="get" resultType="PssWarehouse">
+		SELECT 
+			<include refid="warehouseColumns"/>
+		FROM scm_pss_warehouse a
+		<include refid="warehouseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PssWarehouse">
+		SELECT 
+			<include refid="warehouseColumns"/>
+		FROM scm_pss_warehouse a
+		<include refid="warehouseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="warehouseNum != null and warehouseNum != ''">
+				AND a.warehouse_num = #{warehouseNum}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PssWarehouse">
+		SELECT 
+			<include refid="warehouseColumns"/>
+		FROM scm_pss_warehouse a
+		<include refid="warehouseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_pss_warehouse(
+			id,
+			merchant_id,
+			warehouse_num,
+			name,
+			manager,
+			contact,
+			address,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{warehouseNum},
+			#{name},
+			#{manager},
+			#{contact},
+			#{address},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_pss_warehouse SET
+			merchant_id = #{merchantId},
+			warehouse_num = #{warehouseNum},
+			name = #{name},
+			manager = #{manager},
+			contact = #{contact},
+			address = #{address},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_pss_warehouse SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.CommunityManageDao">
+    
+	<sql id="communityManageColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.street AS "street",
+		a.name AS "name",
+		a.alias AS "alias",
+		a.developer AS "developer",
+		a.buildings AS "buildings",
+		a.residents AS "residents",
+		a.longitude AS "longitude",
+		a.latitude AS "latitude",
+		a.areas AS "areas",
+		a.detail_address AS "detailAddress",
+		a.post_code AS "postCode",
+		a.status AS "status",
+		a.province AS "province",
+		a.city AS "city",
+		a.region AS "region",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="communityManageJoins">
+	</sql>
+    
+	<select id="get" resultType="CommunityManage">
+		SELECT 
+			<include refid="communityManageColumns"/>
+		FROM scm_community_manage a
+		<include refid="communityManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CommunityManage">
+		SELECT 
+			<include refid="communityManageColumns"/>
+		FROM scm_community_manage a
+		<include refid="communityManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="alias != null and alias != ''">
+				AND a.alias LIKE
+				<if test="dbName == 'oracle'">'%'||#{alias}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{alias}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{alias},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="districtId != null and districtId != ''">
+				AND FIND_IN_SET(a.id,(SELECT b.community_ids from scm_district_manage b WHERE b.id = #{districtId})) >0
+			</if>
+			<if test="street != null and street != ''">
+				AND a.street LIKE
+				<if test="dbName == 'oracle'">'%'||#{street}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{street}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{street},'%')</if>
+			</if>
+			<if test="province != null and province != ''">
+				AND a.province = #{province}
+			</if>
+			<if test="city != null and city != ''">
+				AND a.city = #{city}
+			</if>
+			<if test="region != null and region != ''">
+				AND a.region = #{region}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CommunityManage">
+		SELECT 
+			<include refid="communityManageColumns"/>
+		FROM scm_community_manage a
+		<include refid="communityManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_community_manage(
+			id,
+			merchant_id,
+			street,
+			name,
+			alias,
+			developer,
+			buildings,
+			residents,
+			longitude,
+			latitude,
+			areas,
+			detail_address,
+			post_code,
+			status,
+			province,
+			city,
+			region,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{street},
+			#{name},
+			#{alias},
+			#{developer},
+			#{buildings},
+			#{residents},
+			#{longitude},
+			#{latitude},
+			#{areas},
+			#{detailAddress},
+			#{postCode},
+			#{status},
+			#{province},
+			#{city},
+			#{region},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_community_manage SET
+			merchant_id = #{merchantId},
+			street = #{street},
+			name = #{name},
+			alias = #{alias},
+			developer = #{developer},
+			buildings = #{buildings},
+			residents = #{residents},
+			longitude = #{longitude},
+			latitude = #{latitude},
+			areas = #{areas},
+			detail_address = #{detailAddress},
+			post_code = #{postCode},
+			status = #{status},
+			province = #{province},
+			city = #{city},
+			region = #{region},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_community_manage SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

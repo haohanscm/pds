@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haohan.platform.service.sys.modules.xiaodian.dao.delivery.GoodsGiftsDao">
+    
+	<sql id="goodsGiftsColumns">
+		a.id AS "id",
+		a.merchant_id AS "merchantId",
+		a.goods_id AS "goodsId",
+		a.gift_id AS "giftId",
+		a.gift_name AS "giftName",
+		a.gift_rule AS "giftRule",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.gift_schedule AS "giftSchedule",
+		a.gift_num AS "giftNum",
+		a.gift_url AS "giftUrl",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="goodsGiftsJoins">
+	</sql>
+    
+	<select id="get" resultType="GoodsGifts">
+		SELECT 
+			<include refid="goodsGiftsColumns"/>
+		FROM scm_cms_goods_gifts a
+		<include refid="goodsGiftsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GoodsGifts">
+		SELECT 
+			<include refid="goodsGiftsColumns"/>
+		FROM scm_cms_goods_gifts a
+		<include refid="goodsGiftsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantId != null and merchantId != ''">
+				AND a.merchant_id = #{merchantId}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="giftName != null and giftName != ''">
+				AND a.gift_name = #{giftName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GoodsGifts">
+		SELECT 
+			<include refid="goodsGiftsColumns"/>
+		FROM scm_cms_goods_gifts a
+		<include refid="goodsGiftsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scm_cms_goods_gifts(
+			id,
+			merchant_id,
+			goods_id,
+			gift_id,
+			gift_name,
+			gift_rule,
+			begin_date,
+			end_date,
+			gift_schedule,
+			gift_num,
+			gift_url,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantId},
+			#{goodsId},
+			#{giftId},
+			#{giftName},
+			#{giftRule},
+			#{beginDate},
+			#{endDate},
+			#{giftSchedule},
+			#{giftNum},
+			#{giftUrl},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scm_cms_goods_gifts SET
+			merchant_id = #{merchantId},
+			goods_id = #{goodsId},
+			gift_id = #{giftId},
+			gift_name = #{giftName},
+			gift_rule = #{giftRule},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			gift_schedule = #{giftSchedule},
+			gift_num = #{giftNum},
+			gift_url = #{giftUrl},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE scm_cms_goods_gifts SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByGoodsId">
+		UPDATE scm_cms_goods_gifts SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE goods_id = #{goodsId}
+	</update>
+
+</mapper>
