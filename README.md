@@ -26,9 +26,18 @@
 
 
 商业版本支持更多高阶功能，及多种应用场景。<br/>
-商业版本请移步 <http://www.haohanscm.com> 了解详情。
+采用最新 <http://wwww.pig4cloud.com>微服务架构.<br/>
+更多高阶功能请移步 <http://www.haohanscm.com/demo> <br/>
 
+商业版PDS采购配送系统 <br/>
 
+产品功能：<http://haohanscm.com/demo/72-cn.html> <br/>
+视频介绍：<https://www.bilibili.com/video/BV1vB4y1P7k7> <br/>
+
+体验账号登录地址：<http://cloud.haohanscm.com> <br/>
+企业code: cs01 
+账号: cscp
+秘钥: cs123456
 
 
 #### 技术说明
@@ -48,7 +57,7 @@
 工具类：Apache Commons、Jackson 2.2、Xstream 1.4、Dozer 5.3、POI 3.9 <br/>
 消息中间件：Apache-Rocketmq <br/>
 
-2. 前端 代码VUE+Element-UI 参考 <https://gitee.com/haohanscm/pds-ui>
+2. 前端 代码VUE+Element-UI 参考 <https://github.com/haohanscm/pds-ui>
 
 
 
